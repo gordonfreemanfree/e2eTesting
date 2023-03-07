@@ -1,4 +1,4 @@
-// import { Add } from './Add';
+// import { NoobToken } from './noobToken';
 // import {
 //   isReady,
 //   shutdown,
@@ -7,6 +7,7 @@
 //   PrivateKey,
 //   PublicKey,
 //   AccountUpdate,
+//   UInt64,
 // } from 'snarkyjs';
 
 // /*
@@ -18,30 +19,34 @@
 
 // let proofsEnabled = false;
 
-// describe('Add', () => {
+// describe('BasicTokenContract', () => {
 //   let deployerAccount: PublicKey,
 //     deployerKey: PrivateKey,
 //     senderAccount: PublicKey,
 //     senderKey: PrivateKey,
 //     zkAppAddress: PublicKey,
 //     zkAppPrivateKey: PrivateKey,
-//     zkApp: Add;
+//     zkApp: NoobToken;
 
 //   beforeAll(async () => {
 //     await isReady;
-//     if (proofsEnabled) Add.compile();
+//     if (proofsEnabled) NoobToken.compile();
 //   });
 
 //   beforeEach(() => {
 //     const Local = Mina.LocalBlockchain({ proofsEnabled });
 //     Mina.setActiveInstance(Local);
-//     ({ privateKey: deployerKey, publicKey: deployerAccount } =
-//       Local.testAccounts[0]);
-//     ({ privateKey: senderKey, publicKey: senderAccount } =
-//       Local.testAccounts[1]);
+//     ({
+//       privateKey: deployerKey,
+//       publicKey: deployerAccount,
+//     } = Local.testAccounts[0]);
+//     ({
+//       privateKey: senderKey,
+//       publicKey: senderAccount,
+//     } = Local.testAccounts[1]);
 //     zkAppPrivateKey = PrivateKey.random();
 //     zkAppAddress = zkAppPrivateKey.toPublicKey();
-//     zkApp = new Add(zkAppAddress);
+//     zkApp = new NoobToken(zkAppAddress);
 //   });
 
 //   afterAll(() => {
@@ -54,30 +59,35 @@
 //   async function localDeploy() {
 //     const txn = await Mina.transaction(deployerAccount, () => {
 //       AccountUpdate.fundNewAccount(deployerAccount);
-//       zkApp.deploy();
+//       zkApp.deploy({});
 //     });
 //     await txn.prove();
 //     // this tx needs .sign(), because `deploy()` adds an account update that requires signature authorization
 //     await txn.sign([deployerKey, zkAppPrivateKey]).send();
 //   }
 
-//   it('generates and deploys the `Add` smart contract', async () => {
+//   it('generates and deploys the `BasicTokenContract` smart contract', async () => {
 //     await localDeploy();
-//     const num = zkApp.num.get();
-//     expect(num).toEqual(Field(1));
+//     const tokenAmount = zkApp.totalAmountInCirculation.get();
+//     expect(tokenAmount).toEqual(UInt64.from(0));
 //   });
 
-//   it('correctly updates the num state on the `Add` smart contract', async () => {
+//   it('correctly updates the num state on the `BasicTokenContract` smart contract', async () => {
 //     await localDeploy();
-
-//     // update transaction
-//     const txn = await Mina.transaction(senderAccount, () => {
-//       zkApp.update();
-//     });
-//     await txn.prove();
-//     await txn.sign([senderKey]).send();
-
-//     const updatedNum = zkApp.num.get();
-//     expect(updatedNum).toEqual(Field(3));
+//     expect(UInt64.from(0)).toEqual(UInt64.from(0));
 //   });
+
+//   // it('correctly updates the num state on the `Add` smart contract', async () => {
+//   //   await localDeploy();
+
+//   //   // update transaction
+//   //   const txn = await Mina.transaction(senderAccount, () => {
+//   //     zkApp.update();
+//   //   });
+//   //   await txn.prove();
+//   //   await txn.sign([senderKey]).send();
+
+//   //   const updatedNum = zkApp.num.get();
+//   //   expect(updatedNum).toEqual(UInt64(3));
+//   // });
 // });

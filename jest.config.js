@@ -19,5 +19,9 @@ export default {
   modulePathIgnorePatterns: ['<rootDir>/build/'],
   moduleNameMapper: {
     '^(\\.{1,2}/.+)\\.js$': '$1',
-  }
+  },
+  setupFiles: ['<rootDir>/setEnvVars.js'],
 };
+// module.exports = {
+//   setupFiles: ['<rootDir>/setEnvVars.js'],
+// };
