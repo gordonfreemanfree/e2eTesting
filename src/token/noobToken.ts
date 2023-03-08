@@ -21,7 +21,7 @@ export class NoobToken extends SmartContract {
       editState: permissionToEdit,
       setTokenSymbol: permissionToEdit,
       send: permissionToEdit,
-      receive: permissionToEdit,
+      // receive: permissionToEdit,
     });
   }
 
@@ -59,8 +59,23 @@ export class NoobToken extends SmartContract {
     this.token.send({
       from: senderAddress,
       to: receiverAddress,
+      amount: amount,
+    });
+  }
+
+  @method mintWithMina(receiverAddress: PublicKey, amount: UInt64) {
+    let totalAmountInCirculation = this.totalAmountInCirculation.get();
+    this.totalAmountInCirculation.assertEquals(totalAmountInCirculation);
+    let balance = this.account.balance.get();
+    this.account.balance.assertEquals(balance);
+
+    balance.assertGreaterThanOrEqual(amount);
+    this.token.mint({
+      address: receiverAddress,
       amount,
     });
+    let newTotalAmountInCirculation = totalAmountInCirculation.add(amount);
+    this.totalAmountInCirculation.set(newTotalAmountInCirculation);
   }
 
   //   @method increaseVesting(

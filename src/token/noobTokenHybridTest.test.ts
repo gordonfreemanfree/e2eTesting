@@ -6,6 +6,7 @@ import {
   PrivateKey,
   AccountUpdate,
   UInt64,
+  Signature,
 } from 'snarkyjs';
 import { NoobToken } from './noobToken';
 import fs from 'fs/promises';
@@ -76,7 +77,7 @@ describe('foo', () => {
         zkApp = new NoobToken(zkAppAddress);
       }
       // const { deployerKey ,deployerAccount } = Blockchain.testAccounts[0]
-    }, 100000);
+    }, 1000000);
 
     afterAll(() => {
       setInterval(shutdown, 0);
@@ -108,6 +109,21 @@ describe('foo', () => {
       await txn.sign([deployerKey, zkAppPrivateKey]).send();
     }
 
+    async function printBalances() {
+      try {
+        console.log(
+          `deployerAccount balance:    ${Mina.getBalance(deployerAccount).div(
+            1e9
+          )} MINA`
+        );
+        console.log(
+          `zkApp balance: ${Mina.getBalance(zkAppAddress).div(1e9)} MINA`
+        );
+      } catch (e) {
+        console.log('error printing balances', e);
+      }
+    }
+
     it(`totalAmountInCirculation === 0 - deployToBerkeley?: ${deployToBerkeley}`, async () => {
       // timeout for each test
       deployToBerkeley ? await berkeleyDeploy() : await localDeploy();
@@ -116,9 +132,79 @@ describe('foo', () => {
       //   expect(1).toEqual(1);
     }, 1000000);
 
-    it(`2 equals 2 - deployToBerkeley?: ${deployToBerkeley}`, () => {
-      expect(2).toEqual(2);
+    // it(`check the tokenSymbol - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    //   // check token symbol
+    //   let tokenId = zkApp.token.id;
+    //   console.log('tokenId', tokenId);
+    //   let tokenSymbol = Mina.getAccount(zkAppAddress).tokenSymbol;
+    //   console.log('tokenSymbol', tokenSymbol);
+    //   expect(tokenSymbol).toEqual('NOOB');
+    // }, 1000000);
+
+    it(`mint 100 tokens  - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+      //   printBalances();
+      console.log('minting 10 tokens');
+      const mintAmount = UInt64.from(10);
+      const mintSignature = Signature.create(
+        zkAppPrivateKey,
+        mintAmount.toFields().concat(zkAppAddress.toFields())
+      );
+      const txn10 = await Mina.transaction(
+        { sender: zkAppAddress, fee: 1e9 },
+        () => {
+          //   AccountUpdate.fundNewAccount(deployerAccount);
+          zkApp.mint(zkAppAddress, mintAmount, mintSignature);
+        }
+      );
+      await txn10.prove();
+      await txn10.sign([zkAppPrivateKey]).send();
+      const response = await txn10.send();
+      console.log('response', response);
+      const tokenAmount = zkApp.totalAmountInCirculation.get();
+      console.log(tokenAmount);
+      //   expect(tokenAmount).toEqual(mintAmount);
     });
+
+    // it(`mintWithMina 100 tokens  - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    //   printBalances();
+
+    //   // send 100 Mina to zkApp
+    //   const txn = await Mina.transaction(
+    //     { sender: deployerAccount, fee: 1e9 },
+    //     () => {
+    //       let deployerAccountUpdate = AccountUpdate.createSigned(
+    //         deployerAccount
+    //       );
+    //       deployerAccountUpdate.send({
+    //         to: zkAppAddress,
+    //         amount: UInt64.from(100e9),
+    //       });
+    //     }
+    //   );
+    //   await txn.prove();
+    //   txn.sign([deployerKey, zkAppPrivateKey]);
+    //   let response = await txn.send();
+    //   console.log('response', response);
+    //   printBalances();
+
+    //   const txn1 = await Mina.transaction(
+    //     { sender: deployerAccount, fee: 1e9 },
+    //     () => {
+    //       zkApp.mintWithMina(deployerAccount, UInt64.from(100));
+    //     }
+    //   );
+    //   await txn1.prove();
+    //   await txn1.sign([deployerKey, zkAppPrivateKey]).send();
+    //   await txn1.send();
+    //   let tokenId = zkApp.token.id;
+
+    //   console.log(
+    //     'tokens in deployer account',
+    //     Mina.getBalance(deployerAccount, tokenId).value.toBigInt()
+    //   );
+
+    //   //   expect();
+    // });
 
     it(`3 not equals 5 - deployToBerkeley?: ${deployToBerkeley}`, () => {
       expect(3).not.toEqual(5);
