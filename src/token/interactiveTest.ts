@@ -6,6 +6,7 @@ import {
   PrivateKey,
   PublicKey,
   shutdown,
+  UInt64,
 } from 'snarkyjs';
 import fs from 'fs/promises';
 
@@ -108,11 +109,25 @@ async function printBalances() {
 }
 
 async function deployTest() {
-  await printBalances();
+  //   await printBalances();
   deployToBerkeley ? await berkeleyDeploy() : await localDeploy();
   const tokenAmount = zkApp.totalAmountInCirculation.get();
   await printBalances();
 }
 
-deployTest();
+async function mintTest() {
+  const txn = await Mina.transaction(
+    { sender: deployerAccount, fee: 1.1e9 },
+    () => {
+      zkApp.mint(zkAppAddress, UInt64.from(100));
+    }
+  );
+  await txn.prove();
+  await txn.sign([deployerKey]).send();
+  const tokenAmount = zkApp.totalAmountInCirculation.get();
+  console.log('tokenAmount', tokenAmount);
+}
+
+await deployTest();
+await mintTest();
 // shutdown();

@@ -15,13 +15,14 @@ export class NoobToken extends SmartContract {
   @state(UInt64) totalAmountInCirculation = State<UInt64>();
   deploy(args: DeployArgs) {
     super.deploy(args);
-    const permissionToEdit = Permissions.proof();
+    const permissionToEdit = Permissions.proofOrSignature();
     this.account.permissions.set({
       ...Permissions.default(),
       editState: permissionToEdit,
       setTokenSymbol: permissionToEdit,
       send: permissionToEdit,
-      // receive: permissionToEdit,
+      receive: permissionToEdit,
+      access: permissionToEdit,
     });
   }
 
@@ -35,9 +36,9 @@ export class NoobToken extends SmartContract {
     amount: UInt64
     // adminSignature: Signature
   ) {
-    // let totalAmountInCirculation = this.totalAmountInCirculation.get();
-    // this.totalAmountInCirculation.assertEquals(totalAmountInCirculation);
-    // let newTotalAmountInCirculation = totalAmountInCirculation.add(amount);
+    let totalAmountInCirculation = this.totalAmountInCirculation.get();
+    this.totalAmountInCirculation.assertEquals(totalAmountInCirculation);
+    let newTotalAmountInCirculation = totalAmountInCirculation.add(amount);
     // adminSignature
     //   .verify(
     //     this.address,
@@ -48,7 +49,7 @@ export class NoobToken extends SmartContract {
       address: receiverAddress,
       amount,
     });
-    // this.totalAmountInCirculation.set(newTotalAmountInCirculation);
+    this.totalAmountInCirculation.set(newTotalAmountInCirculation);
   }
 
   @method sendTokens(
