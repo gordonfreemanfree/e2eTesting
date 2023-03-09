@@ -53,8 +53,10 @@ if (deployToBerkeley) {
 } else {
   const Local = Mina.LocalBlockchain({ proofsEnabled });
   Mina.setActiveInstance(Local);
-  ({ privateKey: deployerKey, publicKey: deployerAccount } =
-    Local.testAccounts[0]);
+  ({
+    privateKey: deployerKey,
+    publicKey: deployerAccount,
+  } = Local.testAccounts[0]);
   // ({
   //   privateKey: senderKey,
   //   publicKey: senderAccount,

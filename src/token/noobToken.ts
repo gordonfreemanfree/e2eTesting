@@ -32,23 +32,23 @@ export class NoobToken extends SmartContract {
   }
   @method mint(
     receiverAddress: PublicKey,
-    amount: UInt64,
-    adminSignature: Signature
+    amount: UInt64
+    // adminSignature: Signature
   ) {
-    let totalAmountInCirculation = this.totalAmountInCirculation.get();
-    this.totalAmountInCirculation.assertEquals(totalAmountInCirculation);
-    let newTotalAmountInCirculation = totalAmountInCirculation.add(amount);
-    adminSignature
-      .verify(
-        this.address,
-        amount.toFields().concat(receiverAddress.toFields())
-      )
-      .assertTrue();
+    // let totalAmountInCirculation = this.totalAmountInCirculation.get();
+    // this.totalAmountInCirculation.assertEquals(totalAmountInCirculation);
+    // let newTotalAmountInCirculation = totalAmountInCirculation.add(amount);
+    // adminSignature
+    //   .verify(
+    //     this.address,
+    //     amount.toFields().concat(receiverAddress.toFields())
+    //   )
+    //   .assertTrue();
     this.token.mint({
       address: receiverAddress,
       amount,
     });
-    this.totalAmountInCirculation.set(newTotalAmountInCirculation);
+    // this.totalAmountInCirculation.set(newTotalAmountInCirculation);
   }
 
   @method sendTokens(
@@ -84,19 +84,19 @@ export class NoobToken extends SmartContract {
   //     lockupPeriod: UInt64
   //   ) { }
 
-  // // This method should work again with snarkyjs 0.9.2
-  // @method sendIfCorrectTime(
-  //   senderAddress: PublicKey,
-  //   receiverAddress: PublicKey,
-  //   amount: UInt64,
-  //   startTime: UInt64,
-  //   endTime: UInt64
-  // ) {
-  //   this.network.timestamp.assertBetween(startTime, endTime);
-  //   this.token.send({
-  //     from: senderAddress,
-  //     to: receiverAddress,
-  //     amount,
-  //   });
-  // }
+  // This method should work again with snarkyjs 0.9.2
+  @method sendIfCorrectTime(
+    senderAddress: PublicKey,
+    receiverAddress: PublicKey,
+    amount: UInt64,
+    startTime: UInt64,
+    endTime: UInt64
+  ) {
+    // this.network.timestamp.assertBetween(startTime, endTime);
+    this.token.send({
+      from: senderAddress,
+      to: receiverAddress,
+      amount,
+    });
+  }
 }

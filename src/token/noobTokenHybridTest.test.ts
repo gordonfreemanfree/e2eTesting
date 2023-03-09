@@ -66,8 +66,10 @@ describe('foo', () => {
       } else {
         const Local = Mina.LocalBlockchain({ proofsEnabled });
         Mina.setActiveInstance(Local);
-        ({ privateKey: deployerKey, publicKey: deployerAccount } =
-          Local.testAccounts[0]);
+        ({
+          privateKey: deployerKey,
+          publicKey: deployerAccount,
+        } = Local.testAccounts[0]);
         // ({
         //   privateKey: senderKey,
         //   publicKey: senderAccount,
@@ -132,38 +134,45 @@ describe('foo', () => {
       //   expect(1).toEqual(1);
     }, 1000000);
 
-    // it(`check the tokenSymbol - deployToBerkeley?: ${deployToBerkeley}`, async () => {
-    //   // check token symbol
-    //   let tokenId = zkApp.token.id;
-    //   console.log('tokenId', tokenId);
-    //   let tokenSymbol = Mina.getAccount(zkAppAddress).tokenSymbol;
-    //   console.log('tokenSymbol', tokenSymbol);
-    //   expect(tokenSymbol).toEqual('NOOB');
-    // }, 1000000);
+    it(`check the tokenSymbol is 'NOOB' - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+      // check token symbol
+      let tokenId = zkApp.token.id;
+      console.log('tokenId', tokenId);
+      let tokenSymbol = Mina.getAccount(zkAppAddress).tokenSymbol;
+      console.log('tokenSymbol is', tokenSymbol);
+      expect(tokenSymbol).toEqual('NOOB');
+    }, 1000000);
 
+    // error with     ("Error: File \"src/lib/transaction_logic/zkapp_command_logic.ml\", line 1847, characters 42-49: [[0,[[\"Update_not_permitted_balance\"],[\"Overflow\"]]]]")
     it(`mint 100 tokens  - deployToBerkeley?: ${deployToBerkeley}`, async () => {
       //   printBalances();
       console.log('minting 10 tokens');
       const mintAmount = UInt64.from(10);
-      const mintSignature = Signature.create(
-        zkAppPrivateKey,
-        mintAmount.toFields().concat(zkAppAddress.toFields())
-      );
+      //   const mintSignature = Signature.create(
+      //     zkAppPrivateKey,
+      //     mintAmount.toFields().concat(zkAppAddress.toFields())
+      //   );
+      //   let mintReceiverKey = PrivateKey.random();
+      //   let mintReceiverAddress = mintReceiverKey.toPublicKey();
+      //   const Local = Mina.LocalBlockchain({ proofsEnabled });
       const txn10 = await Mina.transaction(
-        { sender: zkAppAddress, fee: 1e9 },
+        // { sender: deployerAccount, fee: 1e9 },
+        zkAppAddress,
         () => {
+          //   AccountUpdate.fundNewAccount(zkAppAddress);
           //   AccountUpdate.fundNewAccount(deployerAccount);
-          zkApp.mint(zkAppAddress, mintAmount, mintSignature);
+          //   zkApp.mint(mintReceiverAddress, mintAmount, mintSignature);
+          zkApp.mint(zkAppAddress, mintAmount);
         }
       );
       await txn10.prove();
-      await txn10.sign([zkAppPrivateKey]).send();
-      const response = await txn10.send();
-      console.log('response', response);
-      const tokenAmount = zkApp.totalAmountInCirculation.get();
-      console.log(tokenAmount);
+      await txn10.sign([zkAppPrivateKey, deployerKey]).send();
+      //   const response = await txn10.send();
+      //   console.log('response', response);
+      //   const tokenAmount = zkApp.totalAmountInCirculation.get();
+      //   console.log(tokenAmount);
       //   expect(tokenAmount).toEqual(mintAmount);
-    });
+    }, 1000000);
 
     // it(`mintWithMina 100 tokens  - deployToBerkeley?: ${deployToBerkeley}`, async () => {
     //   printBalances();
@@ -205,6 +214,8 @@ describe('foo', () => {
 
     //   //   expect();
     // });
+
+    it(`transfer 10 tokens if the time is correct  - deployToBerkeley?: ${deployToBerkeley}`, async () => {});
 
     it(`3 not equals 5 - deployToBerkeley?: ${deployToBerkeley}`, () => {
       expect(3).not.toEqual(5);
