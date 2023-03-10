@@ -21,8 +21,8 @@ export class NoobToken extends SmartContract {
       editState: permissionToEdit,
       setTokenSymbol: permissionToEdit,
       send: permissionToEdit,
-      receive: permissionToEdit,
-      access: permissionToEdit,
+      receive: Permissions.none(),
+      access: Permissions.none(),
     });
   }
 

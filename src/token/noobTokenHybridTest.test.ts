@@ -166,93 +166,79 @@ describe('foo', () => {
       expect(tokenSymbol).toEqual('NOOB');
     }, 1000000);
 
-    // // leads to too complicated structure!!!
-    // it(`deploy ApproveToken  - deployToBerkeley?: ${deployToBerkeley}`, async () => {
-    //   if (proofsEnabled) await NoobToken.compile();
-    //   let tokenId = zkApp.token.id;
-    //   let zkAppB = new ApproveToken(zkAppBAddress, tokenId);
+    // Method works on Local !!!
+    // it(`mint 10 tokens  - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    //   printBalances();
+    //   console.log('minting 10 tokens');
+    //   const mintAmount = UInt64.from(10);
+    //   //   const mintSignature = Signature.create(
+    //   //     zkAppPrivateKey,
+    //   //     mintAmount.toFields().concat(zkAppAddress.toFields())
+    //   //   );
+    //   //   let mintReceiverKey = PrivateKey.random();
+    //   //   let mintReceiverAddress = mintReceiverKey.toPublicKey();
+    //   //   const Local = Mina.LocalBlockchain({ proofsEnabled });
+    //   const txn10 = await Mina.transaction(
+    //     // { sender: deployerAccount, fee: 1e9 },
+    //     deployerAccount,
+    //     () => {
+    //       AccountUpdate.fundNewAccount(deployerAccount);
+    //       zkApp.mint(zkAppAddress, mintAmount);
+    //     }
+    //   );
+    //   await txn10.prove();
+    //   await txn10.sign([zkAppPrivateKey, deployerKey]);
 
-    //   const txn = await Mina.transaction(zkAppAddress, () => {
-    //     // AccountUpdate.fundNewAccount(deployerAccount);
-    //     zkAppB.deploy({});
-    //   });
-    //   await txn.prove();
-    //   await txn.sign([deployerKey, zkAppPrivateKey]).send();
+    //   const response = await txn10.send();
+    //   console.log('response', response);
+    //   const tokenAmount = zkApp.totalAmountInCirculation.get();
+    //   console.log('totalAmountInCirculation', tokenAmount.value);
+    //   expect(tokenAmount).toEqual(mintAmount);
     // }, 1000000);
 
-    // error with     ("Error: File \"src/lib/transaction_logic/zkapp_command_logic.ml\", line 1847, characters 42-49: [[0,[[\"Update_not_permitted_balance\"],[\"Overflow\"]]]]")
-    it(`mint 100 tokens  - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    it(`mintWithMina 100 tokens  - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+      console.log('mintWithMina 100 tokens');
       printBalances();
-      console.log('minting 10 tokens');
-      const mintAmount = UInt64.from(10);
-      //   const mintSignature = Signature.create(
-      //     zkAppPrivateKey,
-      //     mintAmount.toFields().concat(zkAppAddress.toFields())
-      //   );
-      //   let mintReceiverKey = PrivateKey.random();
-      //   let mintReceiverAddress = mintReceiverKey.toPublicKey();
-      //   const Local = Mina.LocalBlockchain({ proofsEnabled });
-      const txn10 = await Mina.transaction(
-        // { sender: deployerAccount, fee: 1e9 },
-        deployerAccount,
+
+      // send 100 Mina to zkApp
+      const txn = await Mina.transaction(
+        { sender: deployerAccount, fee: 1e9 },
         () => {
-          //   AccountUpdate.fundNewAccount(zkAppAddress);
           //   AccountUpdate.fundNewAccount(deployerAccount);
-          //   zkApp.mint(mintReceiverAddress, mintAmount, mintSignature);
-          AccountUpdate.fundNewAccount(deployerAccount);
-          zkApp.mint(zkAppAddress, mintAmount);
+          let deployerAccountUpdate = AccountUpdate.createSigned(
+            deployerAccount
+          );
+          deployerAccountUpdate.send({
+            to: zkAppAddress,
+            amount: UInt64.from(100e9),
+          });
         }
       );
-      await txn10.prove();
-      await txn10.sign([zkAppPrivateKey, deployerKey]).send();
-      //   const response = await txn10.send();
-      //   console.log('response', response);
-      const tokenAmount = zkApp.totalAmountInCirculation.get();
-      console.log(tokenAmount);
-      //   expect(tokenAmount).toEqual(mintAmount);
+      await txn.prove();
+      txn.sign([deployerKey, zkAppPrivateKey]);
+      let response = await txn.send();
+      console.log('response', response);
       printBalances();
-    }, 1000000);
 
-    // it(`mintWithMina 100 tokens  - deployToBerkeley?: ${deployToBerkeley}`, async () => {
-    //   printBalances();
+      const txn1 = await Mina.transaction(
+        { sender: deployerAccount, fee: 1e9 },
+        () => {
+          AccountUpdate.fundNewAccount(deployerAccount);
+          zkApp.mintWithMina(deployerAccount, UInt64.from(100));
+        }
+      );
+      await txn1.prove();
+      await txn1.sign([deployerKey, zkAppPrivateKey]).send();
+      await txn1.send();
+      let tokenId = zkApp.token.id;
 
-    //   // send 100 Mina to zkApp
-    //   const txn = await Mina.transaction(
-    //     { sender: deployerAccount, fee: 1e9 },
-    //     () => {
-    //       let deployerAccountUpdate = AccountUpdate.createSigned(
-    //         deployerAccount
-    //       );
-    //       deployerAccountUpdate.send({
-    //         to: zkAppAddress,
-    //         amount: UInt64.from(100e9),
-    //       });
-    //     }
-    //   );
-    //   await txn.prove();
-    //   txn.sign([deployerKey, zkAppPrivateKey]);
-    //   let response = await txn.send();
-    //   console.log('response', response);
-    //   printBalances();
+      console.log(
+        'tokens in deployer account',
+        Mina.getBalance(deployerAccount, tokenId).value.toBigInt()
+      );
 
-    //   const txn1 = await Mina.transaction(
-    //     { sender: deployerAccount, fee: 1e9 },
-    //     () => {
-    //       zkApp.mintWithMina(deployerAccount, UInt64.from(100));
-    //     }
-    //   );
-    //   await txn1.prove();
-    //   await txn1.sign([deployerKey, zkAppPrivateKey]).send();
-    //   await txn1.send();
-    //   let tokenId = zkApp.token.id;
-
-    //   console.log(
-    //     'tokens in deployer account',
-    //     Mina.getBalance(deployerAccount, tokenId).value.toBigInt()
-    //   );
-
-    //   //   expect();
-    // });
+      // expect();
+    });
 
     it(`transfer 10 tokens if the time is correct  - deployToBerkeley?: ${deployToBerkeley}`, async () => {});
 
