@@ -7,11 +7,13 @@ import {
   AccountUpdate,
   UInt64,
   Signature,
+  fetchAccount,
+  setGraphqlEndpoint,
 } from 'snarkyjs';
 import { NoobToken } from './noobToken';
-import { ApproveToken } from './approveToken';
 
 import fs from 'fs/promises';
+import { getAccount } from 'snarkyjs/dist/node/lib/mina';
 
 // const SECONDS = 1000;
 // jest.setTimeout(70 * SECONDS);
@@ -202,6 +204,7 @@ describe('foo', () => {
 
       // send 100 Mina to zkApp
       const txn = await Mina.transaction(
+        //   AccountUpdate.getNonce()
         { sender: deployerAccount, fee: 1e9 },
         () => {
           //   AccountUpdate.fundNewAccount(deployerAccount);
@@ -220,24 +223,27 @@ describe('foo', () => {
       console.log('response', response);
       printBalances();
 
-      const txn1 = await Mina.transaction(
+      let accountInfo = getAccount(deployerAccount);
+      console.log('accountinfo is', accountInfo.nonce.toJSON());
+
+      const txn20 = await Mina.transaction(
         { sender: deployerAccount, fee: 1e9 },
         () => {
           AccountUpdate.fundNewAccount(deployerAccount);
           zkApp.mintWithMina(deployerAccount, UInt64.from(100));
         }
       );
-      await txn1.prove();
-      await txn1.sign([deployerKey, zkAppPrivateKey]).send();
-      await txn1.send();
+      //   txn20.transaction.feePayer.body.nonce = txn20.transaction.feePayer.body.nonce.add(
+      //     3
+      //   );
+      console.log('txn20 is', txn20.toPretty());
+      await txn20.prove();
+      await txn20.sign([deployerKey, zkAppPrivateKey]);
+      console.log(txn20.toPretty());
+      await txn20.send();
       let tokenId = zkApp.token.id;
-
-      console.log(
-        'tokens in deployer account',
-        Mina.getBalance(deployerAccount, tokenId).value.toBigInt()
-      );
-
-      // expect();
+      let newNoobBalance = getAccount(deployerAccount, tokenId).balance;
+      expect((newNoobBalance = UInt64.from(100)));
     });
 
     it(`transfer 10 tokens if the time is correct  - deployToBerkeley?: ${deployToBerkeley}`, async () => {});

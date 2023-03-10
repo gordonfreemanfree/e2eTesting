@@ -129,5 +129,5 @@ async function mintTest() {
 }
 
 await deployTest();
-await mintTest();
+
 // shutdown();
