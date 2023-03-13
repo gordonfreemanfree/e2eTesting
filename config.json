@@ -5,6 +5,11 @@
       "url": "https://proxy.berkeley.minaexplorer.com/graphql",
       "keyPath": "keys/berkeley.json",
       "fee": ".1"
+    },
+    "zkapp": {
+      "url": "https://proxy.berkeley.minaexplorer.com/graphql",
+      "keyPath": "keys/zkapp.json",
+      "fee": ".1"
     }
   }
 }

@@ -29,11 +29,6 @@ async function loopUntilAccountExists({
 }
 
 // function to print the time
-function dateNow() {
-  let secondsNow = Date.now();
-  // seconds to normal time
-}
-
 function getFriendlyDateTime() {
   let timestamp = Date.now();
   const date = new Date(timestamp);

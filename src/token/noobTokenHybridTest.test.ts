@@ -9,6 +9,7 @@ import {
   Signature,
   fetchAccount,
   setGraphqlEndpoint,
+  Account,
 } from 'snarkyjs';
 import { NoobToken } from './noobToken';
 
@@ -67,6 +68,13 @@ describe('foo', () => {
         deployerKey = PrivateKey.fromBase58(key.privateKey);
         deployerAccount = deployerKey.toPublicKey();
 
+        // load zkAppKey from config file
+        // let zkAppKey: { privateKey: string } = JSON.parse(
+        //   await fs.readFile(config.keyPath, 'utf8')
+        // );
+        // zkAppPrivateKey = PrivateKey.fromBase58(zkAppKey.privateKey);
+        // zkAppAddress = zkAppPrivateKey.toPublicKey();
+
         zkAppPrivateKey = PrivateKey.random();
         zkAppAddress = zkAppPrivateKey.toPublicKey();
 
@@ -114,15 +122,18 @@ describe('foo', () => {
       const txn = await Mina.transaction(
         { sender: deployerAccount, fee: 1.1e9 },
         () => {
+          AccountUpdate.createSigned(deployerAccount);
           AccountUpdate.fundNewAccount(deployerAccount);
-          zkApp.deploy({});
+          zkApp.deploy({ zkappKey: zkAppPrivateKey });
         }
       );
       console.log('generating proof');
       await txn.prove();
       // this tx needs .sign(), because `deploy()` adds an account update that requires signature authorization
       console.log('signing transaction');
-      await txn.sign([deployerKey, zkAppPrivateKey]).send();
+      await txn.sign([deployerKey, zkAppPrivateKey]);
+      let response = await txn.send();
+      console.log('response from deploy txn', response);
       console.log('generated deploy txn for zkApp', zkAppAddress.toBase58());
     }
 
@@ -144,33 +155,40 @@ describe('foo', () => {
     it(`totalAmountInCirculation === 0 - deployToBerkeley?: ${deployToBerkeley}`, async () => {
       deployToBerkeley ? await berkeleyDeploy() : await localDeploy();
 
-      // wait for the account to exist
-      await loopUntilAccountExists({
-        account: zkAppAddress,
-        eachTimeNotExist: () =>
-          console.log(
-            'waiting for zkApp account to be deployed...',
-            getFriendlyDateTime()
-          ),
-        isZkAppAccount: true,
-      });
-
+      if (blockchainSwitch) {
+        // wait for the account to exist
+        await loopUntilAccountExists({
+          account: zkAppAddress,
+          eachTimeNotExist: () =>
+            console.log(
+              'waiting for zkApp account to be deployed...',
+              getFriendlyDateTime()
+            ),
+          isZkAppAccount: true,
+        });
+      }
       const tokenAmount = zkApp.totalAmountInCirculation.get();
       expect(tokenAmount).toEqual(UInt64.from(0));
       //   expect(1).toEqual(1);
 
       console.log('initializing...');
 
-      const init_txn = await Mina.transaction(deployerAccount, () => {
-        zkApp.init();
-      });
+      const init_txn = await Mina.transaction(
+        { sender: deployerAccount, fee: 1.1e9 },
+        () => {
+          //   AccountUpdate.createSigned(deployerAccount);
+          //   AccountUpdate.fundNewAccount(deployerAccount);
+          zkApp.init();
+        }
+      );
 
       await init_txn.prove();
       init_txn.sign([zkAppPrivateKey, deployerKey]);
-      await init_txn.send();
+      let response = await init_txn.send();
+      console.log('response from init is', response);
 
       console.log('initialized');
-    }, 1000000);
+    }, 10000000);
 
     // it(`check the tokenSymbol is 'NOOB' - deployToBerkeley?: ${deployToBerkeley}`, async () => {
     //   // check token symbol
