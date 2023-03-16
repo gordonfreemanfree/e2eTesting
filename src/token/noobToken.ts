@@ -8,6 +8,7 @@ import {
   UInt64,
   PublicKey,
   Signature,
+  Field,
 } from 'snarkyjs';
 const tokenSymbol = 'NOOB';
 
@@ -23,6 +24,7 @@ export class NoobToken extends SmartContract {
       send: permissionToEdit,
       receive: Permissions.none(),
       access: Permissions.none(),
+      setZkappUri: permissionToEdit,
     });
   }
 
@@ -30,7 +32,9 @@ export class NoobToken extends SmartContract {
     super.init();
     this.account.tokenSymbol.set(tokenSymbol);
     this.totalAmountInCirculation.set(UInt64.from(0));
+    this.account.zkappUri.set('www.zkapp.com');
   }
+
   @method mint(
     receiverAddress: PublicKey,
     amount: UInt64
@@ -86,18 +90,18 @@ export class NoobToken extends SmartContract {
   //   ) { }
 
   // This method should work again with snarkyjs 0.9.2
-  @method sendIfCorrectTime(
-    senderAddress: PublicKey,
-    receiverAddress: PublicKey,
-    amount: UInt64,
-    startTime: UInt64,
-    endTime: UInt64
-  ) {
-    // this.network.timestamp.assertBetween(startTime, endTime);
-    this.token.send({
-      from: senderAddress,
-      to: receiverAddress,
-      amount,
-    });
-  }
+  // @method sendIfCorrectTime(
+  //   senderAddress: PublicKey,
+  //   receiverAddress: PublicKey,
+  //   amount: UInt64,
+  //   startTime: UInt64,
+  //   endTime: UInt64
+  // ) {
+  //   this.network.timestamp.assertBetween(startTime, endTime);
+  //   this.token.send({
+  //     from: senderAddress,
+  //     to: receiverAddress,
+  //     amount,
+  //   });
+  // }
 }
