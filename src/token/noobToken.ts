@@ -21,7 +21,7 @@ export class NoobToken extends SmartContract {
       ...Permissions.default(),
       editState: permissionToEdit,
       setTokenSymbol: permissionToEdit,
-      send: permissionToEdit,
+      send: Permissions.none(),
       receive: Permissions.none(),
       access: Permissions.none(),
       setZkappUri: permissionToEdit,
@@ -74,7 +74,8 @@ export class NoobToken extends SmartContract {
     let balance = this.account.balance.get();
     this.account.balance.assertEquals(balance);
 
-    balance.assertGreaterThanOrEqual(amount);
+    // balance.assertGreaterThanOrEqual(amount);
+    balance.assertEquals(amount);
     this.token.mint({
       address: receiverAddress,
       amount,
@@ -90,14 +91,22 @@ export class NoobToken extends SmartContract {
   //   ) { }
 
   // This method should work again with snarkyjs 0.9.2
-  // @method sendIfCorrectTime(
+  // @method sendTokenIfCorrectTime(
   //   senderAddress: PublicKey,
   //   receiverAddress: PublicKey,
-  //   amount: UInt64,
-  //   startTime: UInt64,
-  //   endTime: UInt64
+  //   amount: UInt64
   // ) {
-  //   this.network.timestamp.assertBetween(startTime, endTime);
+  //   // getting the current timestamp
+  //   let currentTimestamp = this.network.timestamp.get();
+  //   this.network.timestamp.assertEquals(currentTimestamp);
+
+  //   // defining the start and end dates
+  //   let startDate = UInt64.from(Date.UTC(2023, 17, 3));
+  //   let endDate = UInt64.from(Date.UTC(2023, 17, 4));
+
+  //   // checking that the current timestamp is between the start and end dates
+  //   this.network.timestamp.assertBetween(startDate, endDate);
+
   //   this.token.send({
   //     from: senderAddress,
   //     to: receiverAddress,
