@@ -13,7 +13,13 @@ import {
 const tokenSymbol = 'NOOB';
 
 export class NoobToken extends SmartContract {
+  events = {
+    'increase-totalAmountInCirculation-to': UInt64,
+  };
+
   @state(UInt64) totalAmountInCirculation = State<UInt64>();
+  @state(UInt64) dummy = State<UInt64>();
+
   deploy(args: DeployArgs) {
     super.deploy(args);
     const permissionToEdit = Permissions.proofOrSignature();
@@ -32,6 +38,7 @@ export class NoobToken extends SmartContract {
     super.init();
     this.account.tokenSymbol.set(tokenSymbol);
     this.totalAmountInCirculation.set(UInt64.from(0));
+    this.dummy.set(UInt64.from(0));
     this.account.zkappUri.set('www.zkapp.com');
   }
 
@@ -43,12 +50,11 @@ export class NoobToken extends SmartContract {
     let totalAmountInCirculation = this.totalAmountInCirculation.get();
     this.totalAmountInCirculation.assertEquals(totalAmountInCirculation);
     let newTotalAmountInCirculation = totalAmountInCirculation.add(amount);
-    // adminSignature
-    //   .verify(
-    //     this.address,
-    //     amount.toFields().concat(receiverAddress.toFields())
-    //   )
-    //   .assertTrue();
+    this.emitEvent(
+      'increase-totalAmountInCirculation-to',
+      newTotalAmountInCirculation
+    );
+
     this.token.mint({
       address: receiverAddress,
       amount,
@@ -82,6 +88,27 @@ export class NoobToken extends SmartContract {
     });
     let newTotalAmountInCirculation = totalAmountInCirculation.add(amount);
     this.totalAmountInCirculation.set(newTotalAmountInCirculation);
+  }
+
+  // dummy method to test the timestamp. endDate is used to test the assertBetween method
+  // dependecy: need to have minted at least 1 NOOB token before calling this method
+  @method sendNOOBIfCorrectTime(
+    receiverAddress: PublicKey,
+    amount: UInt64,
+    endDate: UInt64
+  ) {
+    // defining the start date
+    let startDate = UInt64.from(1672531200000); // UInt64.from(Date.UTC(2023, 0, 1)) = 1.Jan.2023
+
+    //  checking that the current timestamp is between the start and end dates
+    this.network.timestamp.assertBetween(startDate, endDate);
+
+    // sending NOOB if correct time
+    this.token.send({
+      from: this.address,
+      to: receiverAddress,
+      amount: amount,
+    });
   }
 
   //   @method increaseVesting(
