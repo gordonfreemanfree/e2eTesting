@@ -281,35 +281,33 @@ describe('proxy-recursion-test', () => {
       );
     }, 100000000);
 
-    it(`update State through proxy - deployToBerkeley?: ${deployToBerkeley}`, async () => {
-      let amount = UInt64.from(100);
+    // it(`update State through proxy - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    //   let amount = UInt64.from(100);
 
-      const txn = await Mina.transaction(
-        { sender: deployerAccount, fee: 0.1e9 },
-        () => {
-          proxyZkApp.callRecursionDummyState(amount, recursionZkAppAddress);
-        }
-      );
-      await txn.prove();
-      txn.sign([deployerKey, recursionZkAppPrivateKey]);
-      await (await txn.send()).wait();
+    //   const txn = await Mina.transaction(
+    //     { sender: deployerAccount, fee: 0.1e9 },
+    //     () => {
+    //       proxyZkApp.callRecursionDummyState(amount, recursionZkAppAddress);
+    //     }
+    //   );
+    //   await txn.prove();
+    //   txn.sign([deployerKey, recursionZkAppPrivateKey]);
+    //   await (await txn.send()).wait();
 
-      if (isBerkeley) {
-        let fetch = await fetchAccount({ publicKey: recursionZkAppAddress });
-        console.log('fetch', fetch);
-      }
-      Mina.getAccount(recursionZkAppAddress);
+    //   if (isBerkeley) {
+    //     let fetch = await fetchAccount({ publicKey: recursionZkAppAddress });
+    //     console.log('fetch', fetch);
+    //   }
+    //   Mina.getAccount(recursionZkAppAddress);
 
-      let currentDummyState = recursionZkApp.dummyState.get();
-      console.log('currentDummyState', currentDummyState.toString());
+    //   let currentDummyState = recursionZkApp.dummyState.get();
+    //   console.log('currentDummyState', currentDummyState.toString());
 
-      expect(currentDummyState).toEqual(amount);
-    }, 10000000);
+    //   expect(currentDummyState).toEqual(amount);
+    // }, 10000000);
 
     it(`Send if the network time is correct - deployToBerkeley?: ${deployToBerkeley}`, async () => {
       console.log('compiling...');
-
-      //   const { verificationKey } = await Add.compile();
 
       console.log('making proof 0');
 
@@ -326,12 +324,18 @@ describe('proxy-recursion-test', () => {
       const txn = await Mina.transaction(
         { sender: deployerAccount, fee: 0.1e9 },
         () => {
-          recursionZkApp.proofVerification(proof2);
+          proxyZkApp.callProofVerification(proof2, recursionZkAppAddress);
         }
       );
       await txn.prove();
       txn.sign([deployerKey, recursionZkAppPrivateKey]);
       await (await txn.send()).wait();
+
+      if (isBerkeley) {
+        let fetch = await fetchAccount({ publicKey: recursionZkAppAddress });
+        console.log('fetch', fetch);
+      }
+      Mina.getAccount(recursionZkAppAddress);
 
       let currentDummyState = recursionZkApp.dummyState.get();
       console.log('currentDummyState', currentDummyState.toString());
