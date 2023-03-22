@@ -521,7 +521,7 @@ describe('Token-test', () => {
       if (isBerkeley) {
         await fetchAccount({
           publicKey: zkAppAddress,
-          // tokenId: zkApp.token.id,
+          tokenId: zkApp.token.id,
         });
       }
       // let newBalance = Mina.getAccount(zkAppAddress, tokenId).balance;
