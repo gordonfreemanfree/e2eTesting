@@ -744,6 +744,10 @@ describe('Token-test', () => {
           publicKey: zkAppAddress,
           tokenId: zkApp.token.id,
         });
+        await fetchAccount({
+          publicKey: deployerAccount,
+          tokenId: zkApp.token.id,
+        });
       }
 
       let deployerNoobBalance = Mina.getBalance(
@@ -753,6 +757,34 @@ describe('Token-test', () => {
 
       expect(deployerNoobBalance).toEqual(sendAmount);
     }, 10000000);
+
+    it('waits a block', async () => {
+      console.log('dummy tx');
+      let tx = await Mina.transaction(
+        { sender: deployerAccount, memo: 'Dummy Transaction' },
+        () => {}
+      );
+      await tx.prove();
+      tx.sign([deployerKey]);
+      await (await tx.send()).wait();
+    });
+
+    it('checks again deployerAccount for NOOB - should be 1', async () => {
+      if (isBerkeley) {
+        await fetchAccount({
+          publicKey: zkAppAddress,
+          tokenId: zkApp.token.id,
+        });
+      }
+      let sendAmount = UInt64.from(1e9);
+
+      let deployerNoobBalance = Mina.getBalance(
+        deployerAccount,
+        zkApp.token.id
+      );
+
+      expect(deployerNoobBalance).toEqual(sendAmount);
+    });
 
     // ------------------------------------------------------------------------
     // sendNOOBIfCorrectTime to receiverAddress
