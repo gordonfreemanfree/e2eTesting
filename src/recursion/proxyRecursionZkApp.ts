@@ -6,7 +6,8 @@ import {
   method,
   PublicKey,
 } from 'snarkyjs';
-import { RecursionZkApp } from './recursionZkApp.js';
+import { RecursionZkApp, AddProof } from './recursionZkApp.js';
+
 
 export class ProxyRecursionZkApp extends SmartContract {
   @state(UInt64) onChainState = State<UInt64>();
@@ -22,5 +23,14 @@ export class ProxyRecursionZkApp extends SmartContract {
   ) {
     const recursionZkApp = new RecursionZkApp(RecursionZkAppAddress);
     recursionZkApp.increaseDummyState(amount);
+  }
+
+  @method callProofVerification(
+    proof: AddProof,
+    RecursionZkAppAddress: PublicKey
+  )
+  {
+    const recursionZkApp = new RecursionZkApp(RecursionZkAppAddress);
+    recursionZkApp.proofVerification(proof);
   }
 }
