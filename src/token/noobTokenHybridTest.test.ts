@@ -500,8 +500,8 @@ describe('Token-test', () => {
       let events = await zkApp.fetchEvents();
 
       if (isBerkeley) {
-        await fetchAccount({ publicKey: zkAppAddress });
-        await fetchAccount({ publicKey: deployerAccount });
+        await fetchAccount({ publicKey: zkAppAddress, tokenId });
+        await fetchAccount({ publicKey: deployerAccount, tokenId });
       }
       Mina.getAccount(zkAppAddress);
       Mina.getAccount(deployerAccount);
@@ -521,16 +521,15 @@ describe('Token-test', () => {
       if (isBerkeley) {
         await fetchAccount({
           publicKey: zkAppAddress,
-          tokenId: zkApp.token.id,
+          // tokenId: zkApp.token.id,
         });
       }
-      let newBalance = Mina.getAccount(zkAppAddress, tokenId).balance;
+      // let newBalance = Mina.getAccount(zkAppAddress, tokenId).balance;
+      let newBalance = Mina.getBalance(zkAppAddress, tokenId);
       let newTotalAmountInCirculation = zkApp.totalAmountInCirculation.get();
 
       // balance of account is
       console.log('newTotalAmountInCirculation', newTotalAmountInCirculation);
-      // const tokenAmount = newAccountInfo.balance;
-      // console.log('totalAmountInCirculation', tokenAmount.value.toJSON());
       console.log('events are', events);
 
       expect(newTotalAmountInCirculation).toEqual(mintAmount);
