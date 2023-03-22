@@ -20,7 +20,10 @@ import { NoobToken } from './noobToken';
 import fs from 'fs/promises';
 import { loopUntilAccountExists } from '../utils/utils';
 import { getFriendlyDateTime } from '../utils/utils';
-import { StateHash } from 'snarkyjs/dist/node/provable/transaction-leaves';
+import {
+  StateHash,
+  UInt32,
+} from 'snarkyjs/dist/node/provable/transaction-leaves';
 
 console.log('process.env.TEST_ON_BERKELEY', process.env.TEST_ON_BERKELEY);
 
@@ -497,7 +500,7 @@ describe('Token-test', () => {
       console.log('minting 7 tokens');
       let tokenId = zkApp.token.id;
 
-      let events = await zkApp.fetchEvents();
+      let events = await zkApp.fetchEvents(UInt32.from(0), UInt32.from(100));
 
       if (isBerkeley) {
         await fetchAccount({ publicKey: zkAppAddress, tokenId });
@@ -629,12 +632,12 @@ describe('Token-test', () => {
       console.log('txn with 1 mina sent, txn is', txn.toPretty());
 
       if (isBerkeley) {
-        await fetchAccount({
-          publicKey: zkAppAddress,
-          tokenId: tokenId,
-        });
+        await fetchAccount({ publicKey: zkAppAddress, tokenId });
+        await fetchAccount({ publicKey: deployerAccount, tokenId });
+        await fetchAccount({ publicKey: zkAppAddress });
       }
       Mina.getAccount(zkAppAddress, tokenId);
+      Mina.getAccount(zkAppAddress);
       printBalances();
 
       // mintWithMina 1 tokens
