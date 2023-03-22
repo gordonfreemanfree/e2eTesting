@@ -767,7 +767,7 @@ describe('Token-test', () => {
       await tx.prove();
       tx.sign([deployerKey]);
       await (await tx.send()).wait();
-    });
+    }, 10000000);
 
     it('checks again deployerAccount for NOOB - should be 1', async () => {
       if (isBerkeley) {
