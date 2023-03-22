@@ -15,6 +15,7 @@ const tokenSymbol = 'NOOB';
 export class NoobToken extends SmartContract {
   events = {
     'increase-totalAmountInCirculation-to': UInt64,
+    'tokens-sent-to': PublicKey,
   };
 
   @state(UInt64) totalAmountInCirculation = State<UInt64>();
@@ -73,6 +74,7 @@ export class NoobToken extends SmartContract {
       to: receiverAddress,
       amount: amount,
     });
+    this.emitEvent('tokens-sent-to', receiverAddress);
   }
 
   @method mintWithMina(receiverAddress: PublicKey, amount: UInt64) {
