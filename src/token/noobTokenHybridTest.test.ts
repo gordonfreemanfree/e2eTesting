@@ -490,7 +490,7 @@ describe('Token-test', () => {
 
     // ------------------------------------------------------------------------
     // mint 7 tokens to zkAppAccount
-    // status: working
+    // status:
     // confirmed: true
     it(`mint 7 tokens  - deployToBerkeley?: ${deployToBerkeley}`, async () => {
       printBalances();
@@ -549,8 +549,8 @@ describe('Token-test', () => {
         if (isBerkeley) {
           await fetchAccount({ publicKey: zkAppAddress });
         }
-        let accountInfo = Mina.getAccount(zkAppAddress);
-        console.log('nonce of deployerAccount is', accountInfo.nonce.toJSON());
+        Mina.getAccount(zkAppAddress);
+        // console.log('nonce of deployerAccount is', accountInfo.nonce.toJSON());
 
         const txn20 = await Mina.transaction(
           { sender: deployerAccount, fee: 0.1e9 },
@@ -570,17 +570,18 @@ describe('Token-test', () => {
             tokenId: tokenId,
           });
         }
+
         // let newNoobBalance = Mina.getAccount(zkAppAddress, tokenId).balance;
       }).rejects.toThrow();
     }, 1000000);
     // ------------------------------------------------------------------------
 
     // ------------------------------------------------------------------------
-    // mintWithMina 1 tokens
+    // mintWithMina 1 tokens, but balance is 1
     // status:
     // confirmed:
-    it(`mintWithMina 1 tokens  - deployToBerkeley?: ${deployToBerkeley}`, async () => {
-      console.log('mintWithMina 1 tokens');
+    it(`mintWithMina 1 tokens, but balance is 1  - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+      console.log('mintWithMina 1 tokens, but balance is 1');
       printBalances();
       let tokenId = zkApp.token.id;
 
@@ -653,7 +654,8 @@ describe('Token-test', () => {
           tokenId: tokenId,
         });
       }
-      let newNoobBalance = Mina.getAccount(zkAppAddress, tokenId).balance;
+      // let newNoobBalance = Mina.getAccount(zkAppAddress, tokenId).balance;
+      let newNoobBalance = Mina.getBalance(zkAppAddress, tokenId);
       printBalances();
       expect(newNoobBalance).toEqual(oldNoobBalance.add(mintWithMinaAmount));
     }, 1000000);
