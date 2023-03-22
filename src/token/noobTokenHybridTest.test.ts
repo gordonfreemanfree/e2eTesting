@@ -203,7 +203,7 @@ describe('Token-test', () => {
           ).div(1e9)} NOOB`
         );
       } catch (e) {
-        console.log('error printing balances', e);
+        console.log('error printing balances');
       }
     }
 
@@ -585,20 +585,30 @@ describe('Token-test', () => {
     // mintWithMina 1 tokens, but balance is 1
     // status:
     // confirmed:
+    // dependencies: mint 7 tokens /
     it(`mintWithMina 1 tokens, but balance is 1  - deployToBerkeley?: ${deployToBerkeley}`, async () => {
       console.log('mintWithMina 1 tokens, but balance is 1');
       printBalances();
       let tokenId = zkApp.token.id;
 
       if (isBerkeley) {
+        await fetchAccount({ publicKey: zkAppAddress, tokenId });
+        await fetchAccount({ publicKey: deployerAccount, tokenId });
         await fetchAccount({ publicKey: zkAppAddress });
       }
-      Mina.getAccount(zkAppAddress);
+      Mina.getAccount(zkAppAddress, tokenId);
 
-      let oldNoobBalance = Mina.getAccount(zkAppAddress, tokenId).balance;
+      let oldTotalAmountInCirculation = zkApp.totalAmountInCirculation.get();
+      console.log(
+        'oldTotalAmountInCirculation',
+        oldTotalAmountInCirculation.toJSON()
+      );
+      let oldNoobBalance = Mina.getBalance(zkAppAddress, tokenId);
+      console.log('oldNoobBalance is', oldNoobBalance.toJSON());
+
       let mintWithMinaAmount = UInt64.from(1e9);
 
-      // send 1 Mina to zkAppAddress
+      // send 1 Mina to zkAppAddress to fund account
       const txn = await Mina.transaction(
         { sender: deployerAccount, fee: 0.1e9 },
         () => {
@@ -627,18 +637,6 @@ describe('Token-test', () => {
       Mina.getAccount(zkAppAddress, tokenId);
       printBalances();
 
-      // sleep for 60 seconds
-      // console.log('sleeping for 60 seconds');
-      // await new Promise((resolve) => setTimeout(resolve, 60000));
-      // console.log('woke up from sleep', getFriendlyDateTime());
-
-      // await fetchAccount({
-      //   publicKey: zkAppAddress,
-      // });
-      // Mina.getAccount(zkAppAddress);
-      // Mina.getBalance(zkAppAddress);
-      // console.log('after fetchAccount and getAccount', getFriendlyDateTime());
-
       // mintWithMina 1 tokens
       const txn20 = await Mina.transaction(
         { sender: deployerAccount, fee: 0.1e9 },
@@ -654,15 +652,39 @@ describe('Token-test', () => {
       console.log('after sign', txn20.toPretty());
       await (await txn20.send()).wait();
 
+      // if (isBerkeley) {
+      //   await fetchAccount({
+      //     publicKey: zkAppAddress,
+      //     tokenId: tokenId,
+      //   });
+      // }
+
+      // let newNoobBalance = Mina.getBalance(zkAppAddress, tokenId);
+      // console.log('newNoobBalance is', newNoobBalance.toJSON());
+      // printBalances();
+      // expect(newNoobBalance).toEqual(oldNoobBalance.add(mintWithMinaAmount));
+
       if (isBerkeley) {
         await fetchAccount({
           publicKey: zkAppAddress,
-          tokenId: tokenId,
+          tokenId: zkApp.token.id,
+        });
+        await fetchAccount({
+          publicKey: zkAppAddress,
         });
       }
-      // let newNoobBalance = Mina.getAccount(zkAppAddress, tokenId).balance;
+      // let newBalance = Mina.getAccount(zkAppAddress, tokenId).balance;
       let newNoobBalance = Mina.getBalance(zkAppAddress, tokenId);
-      printBalances();
+      console.log('mintWithMina, newNoobBalance is', newNoobBalance.toJSON());
+
+      let newTotalAmountInCirculation = zkApp.totalAmountInCirculation.get();
+
+      // balance of account is
+      console.log('newTotalAmountInCirculation', newTotalAmountInCirculation);
+
+      expect(newTotalAmountInCirculation).toEqual(
+        oldTotalAmountInCirculation.add(mintWithMinaAmount)
+      );
       expect(newNoobBalance).toEqual(oldNoobBalance.add(mintWithMinaAmount));
     }, 1000000);
     // ------------------------------------------------------------------------
@@ -684,7 +706,7 @@ describe('Token-test', () => {
     //   const txn_send = await Mina.transaction(
     //     { sender: deployerAccount, fee: 0.1e9 },
     //     () => {
-    //       // AccountUpdate.fundNewAccount(deployerAccount);
+    //       AccountUpdate.fundNewAccount(deployerAccount);
     //       // AccountUpdate.createSigned(zkAppAddress);
     //       // zkApp.sendTokens(zkAppAddress, receiverAddress, sendAmount);
 
