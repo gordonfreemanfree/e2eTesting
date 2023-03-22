@@ -27,10 +27,11 @@ export class NoobToken extends SmartContract {
       ...Permissions.default(),
       editState: permissionToEdit,
       setTokenSymbol: permissionToEdit,
-      send: Permissions.none(),
-      receive: Permissions.none(),
-      access: Permissions.none(),
+      // send: Permissions.none(),
+      // receive: Permissions.none(),
+      // access: Permissions.none(),
       setZkappUri: permissionToEdit,
+      setTiming: permissionToEdit,
     });
   }
 
