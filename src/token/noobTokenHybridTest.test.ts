@@ -761,7 +761,7 @@ describe('Token-test', () => {
     it('waits a block', async () => {
       console.log('dummy tx');
       let tx = await Mina.transaction(
-        { sender: deployerAccount, memo: 'Dummy Transaction' },
+        { sender: deployerAccount, memo: 'Dummy Transaction', fee: 0.1e9 },
         () => {}
       );
       await tx.prove();
