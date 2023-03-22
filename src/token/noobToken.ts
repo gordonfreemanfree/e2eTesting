@@ -83,8 +83,8 @@ export class NoobToken extends SmartContract {
     let balance = this.account.balance.get();
     this.account.balance.assertEquals(balance);
 
-    // balance.assertGreaterThanOrEqual(amount);
-    balance.assertEquals(amount);
+    balance.assertGreaterThanOrEqual(amount);
+    // balance.assertEquals(amount);
     this.token.mint({
       address: receiverAddress,
       amount,
