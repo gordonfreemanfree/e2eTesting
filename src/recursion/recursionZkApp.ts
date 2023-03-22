@@ -9,6 +9,11 @@ import {
   SelfProof,
 } from 'snarkyjs';
 
+type ProofWithResult<T> = {
+  proof: SelfProof<Field>;
+  result: T;
+};
+
 export const Add = Experimental.ZkProgram({
   publicInput: Field,
 
