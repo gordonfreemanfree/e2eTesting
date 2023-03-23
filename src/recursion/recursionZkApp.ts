@@ -7,80 +7,137 @@ import {
   Experimental,
   Field,
   SelfProof,
+  verify,
+  isReady,
+  Struct,
+  Circuit,
+  Poseidon,
 } from 'snarkyjs';
+await isReady;
 
-type ProofWithResult<T> = {
-  proof: SelfProof<Field>;
-  result: T;
-};
+// these transitions are allowed
+let array1 = [
+  [Field(1), Field(1), Field(1)],
+  [Field(2), Field(2), Field(2)],
+];
+// let array2 = [
+//   [Field(2), Field(2), Field(2)],
+//   [Field(3), Field(3), Field(3)],
+// ];
+// let array3 = [
+//   [Field(3), Field(3), Field(3)],
+//   [Field(4), Field(4), Field(4)],
+// ];
 
-export const Add = Experimental.ZkProgram({
-  publicInput: Field,
+// class for pixels to prove in zk program
+class PixelChange extends Struct({
+  initial: Circuit.array(Field, 3),
+  latest: Circuit.array(Field, 3),
+}) {
+  static addOneToPixels(initial: Field[], latest: Field[]) {
+    // add 1 to each element of the array
+    // we check that initial array is true in the zk program
+    // initial.assertEqualsArray(array1);
+    let newPixelArray = initial.map((initial) => initial.add(Field(1)));
+    Poseidon.hash(newPixelArray).assertEquals(Poseidon.hash(latest));
+    return new PixelChange({ initial: initial, latest: newPixelArray });
+  }
+
+  // static createMerged(state1: PixelChange, state2: PixelChange) {
+  //   return new PixelChange({
+  //     initial: state1.initial,
+  //     latest: state2.latest,
+  //   });
+  // }
+
+  static assertEqualsArray(state1: Field[], state2: Field[]) {
+    Poseidon.hash(state1).assertEquals(Poseidon.hash(state2));
+  }
+
+  static assertEqualsPixelChanges(state1: PixelChange, state2: PixelChange) {
+    Poseidon.hash(state1.initial).assertEquals(Poseidon.hash(state2.initial));
+    Poseidon.hash(state1.latest).assertEquals(Poseidon.hash(state2.latest));
+  }
+}
+
+export const PixelChangeProof = Experimental.ZkProgram({
+  publicInput: PixelChange,
 
   methods: {
     init: {
-      privateInputs: [],
-
-      method(state: Field) {
-        state.assertEquals(Field(0));
+      privateInputs: [Circuit.array(Field, 3)],
+      method(state: PixelChange, initialRoot: Field[]) {
+        PixelChange.assertEqualsArray(initialRoot, state.initial);
       },
     },
 
-    addNumber: {
-      privateInputs: [SelfProof, Field],
+    oneStep: {
+      privateInputs: [Circuit.array(Field, 3), Circuit.array(Field, 3)],
 
-      method(
-        newState: Field,
-        earlierProof: SelfProof<Field>,
-        numberToAdd: Field
-      ) {
-        earlierProof.verify();
-        newState.assertEquals(earlierProof.publicInput.add(numberToAdd));
+      method(state: PixelChange, initialRoot: Field[], latestRoot: Field[]) {
+        const computedState = PixelChange.addOneToPixels(
+          initialRoot,
+          latestRoot
+        );
+        PixelChange.assertEqualsPixelChanges(computedState, state);
       },
     },
 
-    add: {
+    merge: {
       privateInputs: [SelfProof, SelfProof],
 
       method(
-        newState: Field,
-        earlierProof1: SelfProof<Field>,
-        earlierProof2: SelfProof<Field>
+        state: PixelChange,
+        pixelProof0: SelfProof<PixelChange>,
+        pixelProof1: SelfProof<PixelChange>
       ) {
-        earlierProof1.verify();
-        earlierProof2.verify();
-        newState.assertEquals(
-          earlierProof1.publicInput.add(earlierProof2.publicInput)
+        pixelProof0.verify();
+        pixelProof1.verify();
+
+        Poseidon.hash(pixelProof0.publicInput.initial).assertEquals(
+          Poseidon.hash(pixelProof1.publicInput.initial)
         );
+        // rollup2proof.publicInput.initial.assertEqualsArray(rollup1proof.publicInput.latest);
+        // rollup1proof.publicInput.initialRoot.assertEquals(newState.initialRoot);
+        // rollup2proof.publicInput.latestRoot.assertEquals(newState.latestRoot);
       },
     },
   },
 });
 
-export let AddProof_ = Experimental.ZkProgram.Proof(Add);
-export class AddProof extends AddProof_ {}
+console.log('compiling...');
 
-export class RecursionZkApp extends SmartContract {
-  @state(UInt64) dummyState = State<UInt64>();
+const { verificationKey } = await PixelChangeProof.compile();
 
-  @method init() {
-    super.init();
-    this.dummyState.set(UInt64.from(0));
-  }
+console.log('making proof 0');
 
-  @method increaseDummyState(amount: UInt64) {
-    let currentDummyState = this.dummyState.get();
-    this.dummyState.assertEquals(currentDummyState);
+let stateChange1 = PixelChange.addOneToPixels(array1[0], array1[1]);
+const proof0 = await PixelChangeProof.init(stateChange1, array1[0]);
 
-    this.dummyState.set(currentDummyState.add(amount));
-  }
+// const ok = await verify(proof0.toJSON(), verificationKey);
+// console.log('ok', ok);
 
-  @method proofVerification(proof: AddProof) {
-    proof.verify();
+console.log('making proof 1');
+let proof1 = await PixelChangeProof.oneStep(
+  stateChange1,
+  stateChange1.initial,
+  stateChange1.latest
+);
 
-    let currentDummyState = this.dummyState.get();
-    this.dummyState.assertEquals(currentDummyState);
+// const ok = await verify(proof1.toJSON(), verificationKey);
+// console.log('ok', ok);
+// let newPixelArray = new Pixels({ x: [Field(1), Field(1), Field(1)] }).add();
+// console.log('newPixelArray', newPixelArray.x.toString());
 
-    this.dummyState.set(UInt64.from(400));
-  }
-}
+// const proof1 = await Add.addNumber(Field(4), proof0, Field(4));
+
+console.log('making proof 2');
+let proof2 = await PixelChangeProof.merge(stateChange1, proof0, proof1);
+
+// const proof2 = await Add.add(Field(4), proof1, proof0);
+
+// console.log('verifying proof 2');
+// console.log('proof 2 data', proof2.publicInput.toString());
+
+// const ok = await verify(proof2.toJSON(), verificationKey);
+// console.log('ok', ok);
