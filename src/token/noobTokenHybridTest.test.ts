@@ -600,7 +600,7 @@ describe('Token-test', () => {
         await fetchAccount({ publicKey: zkAppAddress });
       }
       Mina.getAccount(zkAppAddress, tokenId);
-      Mina.getAccount(deployerAccount, tokenId);
+      // Mina.getAccount(deployerAccount, tokenId);
 
       let oldTotalAmountInCirculation = zkApp.totalAmountInCirculation.get();
       console.log(
