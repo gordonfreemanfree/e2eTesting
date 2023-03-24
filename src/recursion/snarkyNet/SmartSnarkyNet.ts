@@ -12,18 +12,19 @@ import {
   DeployArgs,
   Permissions,
   Poseidon,
+  SelfProof,
 } from 'snarkyjs';
 import { SnarkyLayer1, SnarkyLayer2 } from './snarkyLayer.js';
-import { InputImage } from './inputImage.js';
+import { InputImage } from './inputImageClass.js';
 import { SnarkyNet } from './snarkynet.js';
+import { NeuralNetProof } from './recursionProof.js';
 
 export class SmartSnarkyNet extends SmartContract {
-  // Field State to store the classification
+  // The layer states are used to fix the architecture of the network
+  // We use the classification to store the result of the prediction
   @state(Field) classification = State<Field>(); // stored state for classification
-  @state(Field) layer1Hash = State<Field>(); // stored state for classification
-  @state(Field) layer2Hash = State<Field>(); // stored state for classification
-
-  // model: SnarkyNet; // model object
+  @state(Field) layer1Hash = State<Field>(); // stored state for Layer1
+  @state(Field) layer2Hash = State<Field>(); // stored state for Layer2
 
   deploy(args: DeployArgs) {
     super.deploy(args);
@@ -43,39 +44,48 @@ export class SmartSnarkyNet extends SmartContract {
     this.classification.set(Field(0));
     this.layer1Hash.set(Poseidon.hash(layer1.toFields()));
     this.layer2Hash.set(Poseidon.hash(layer2.toFields()));
-    // TODO:
+    // TODO: make sure that the layers are fixed
     this.requireSignature();
   }
 
-  @method predict(
-    input: InputImage,
-    layer1: SnarkyLayer1,
-    layer2: SnarkyLayer2
-  ) {
+  @method predict(neuralNetProof: NeuralNetProof) {
     // create the model
-    let model = new SnarkyNet([layer1, layer2]);
+    // let model = new SnarkyNet([layer1, layer2]);
 
-    // check that the layers are correct
+    // generating the hash of layers that were used in the proof generation
+    let actualLayer1Hash = Poseidon.hash(
+      neuralNetProof.publicInput.layer1.toFields()
+    );
+    let actualLayer2Hash = Poseidon.hash(
+      neuralNetProof.publicInput.layer2.toFields()
+    );
+
+    // fetch layer1Hash from contract state
     let layerState = this.layer1Hash.get();
-    this.layer1Hash.assertEquals(layerState);
-    this.layer1Hash.assertEquals(Poseidon.hash(layer1.toFields()));
+    this.layer1Hash.assertEquals(layerState); // require that the layerState is correct
 
-    // check that the layers are correct
+    // fetch layers2Hash from contract state
     let layerState2 = this.layer2Hash.get();
     this.layer2Hash.assertEquals(layerState2);
-    this.layer2Hash.assertEquals(Poseidon.hash(layer2.toFields()));
+
+    // check that the onChain layer1Hash and layer2Hash are equal to the layer1Hash / layer2Hash used in the proof generation
+    this.layer1Hash.assertEquals(actualLayer1Hash);
+    this.layer2Hash.assertEquals(actualLayer2Hash);
 
     // run the model and obtain the predictions
-    let currentModel = model;
-    let predictionAndSteps = currentModel.predict(input);
-    let prediction = predictionAndSteps.result;
-    console.log('prediction: ', prediction);
+    // let currentModel = model;
+    // let predictionAndSteps = currentModel.predict(input);
+    // let prediction = predictionAndSteps.result;
+    // console.log('prediction: ', prediction);
     // console.log('prediction to string: ', prediction.toString());
 
     // find the max value and its index
     // TODO: make this a loop
     // there is a bug that prevents this from working in a loop
-    // looks complicated but it simply finds the max value and its index
+    // looks complicated but it simply finds the max value and its index in the prediction array
+    let prediction = neuralNetProof.publicInput.precomputedOutputLayer2;
+    // console.log('prediction: ', prediction.toString());
+
     let max01 = Field(0);
     let classification01 = Field(0);
 

@@ -3,7 +3,7 @@
 export { SnarkyNet };
 
 import { CircuitValue, Field, isReady } from 'snarkyjs';
-import { InputImage } from './inputImage.js';
+import { InputImage } from './inputImageClass.js';
 import { SnarkyLayer1, SnarkyLayer2 } from './snarkyLayer.js';
 import { SnarkyTensor } from './snarkyTensor.js';
 

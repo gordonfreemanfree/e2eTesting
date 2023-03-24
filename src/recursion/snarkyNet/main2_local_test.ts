@@ -1,10 +1,10 @@
 // use this file to test the accuracy of the network
 // It was needed to write local "test".
 
-import { SmartSnarkyNet } from './SmartSnarkyNet.js';
+import { SmartSnarkyNet } from './smartSnarkyNet.js';
 import { SnarkyLayer1, SnarkyLayer2 } from './snarkyLayer.js';
 import { num2Field_t1, num2Field_t2 } from './utils/scaledWeights2Int65.js';
-import { InputImage } from './inputImage.js';
+import { InputImage } from './inputImageClass.js';
 
 import { weights_l1_8x8 } from './assets/weights_l1_8x8.js';
 import { weights_l2_8x8 } from './assets/weights_l2_8x8.js';
