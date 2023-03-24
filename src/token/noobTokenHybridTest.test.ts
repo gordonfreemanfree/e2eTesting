@@ -18,8 +18,8 @@ import {
 import { NoobToken } from './noobToken';
 
 import fs from 'fs/promises';
-import { loopUntilAccountExists } from '../utils/utils';
-import { getFriendlyDateTime } from '../utils/utils';
+import { loopUntilAccountExists } from './utils/utils';
+import { getFriendlyDateTime } from './utils/utils';
 import {
   StateHash,
   UInt32,
@@ -646,7 +646,8 @@ describe('Token-test', () => {
       const txn20 = await Mina.transaction(
         { sender: deployerAccount, fee: 0.1e9 },
         () => {
-          zkApp.mintWithMina(zkAppAddress, mintWithMinaAmount);
+          Mina.getBalance(zkAppAddress),
+            zkApp.mintWithMina(zkAppAddress, mintWithMinaAmount);
         }
       );
 

@@ -16,8 +16,8 @@ import {
 import { NoobToken } from '../token/noobToken.js';
 
 import fs from 'fs/promises';
-import { loopUntilAccountExists } from '../utils/utils.js';
-import { getFriendlyDateTime } from '../utils/utils.js';
+import { loopUntilAccountExists } from '../token/utils/utils.js';
+import { getFriendlyDateTime } from '../token/utils/utils.js';
 
 console.log('process.env.TEST_ON_BERKELEY', process.env.TEST_ON_BERKELEY);
 
@@ -101,8 +101,10 @@ async function beforeAll(deployToBerkeley: boolean = blockchainSwitch) {
   } else {
     const Local = Mina.LocalBlockchain({ proofsEnabled });
     Mina.setActiveInstance(Local);
-    ({ privateKey: deployerKey, publicKey: deployerAccount } =
-      Local.testAccounts[0]);
+    ({
+      privateKey: deployerKey,
+      publicKey: deployerAccount,
+    } = Local.testAccounts[0]);
     // ({
     //   privateKey: senderKey,
     //   publicKey: senderAccount,

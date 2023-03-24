@@ -10,8 +10,8 @@ import {
   Field,
 } from 'snarkyjs';
 import fs from 'fs/promises';
-import { loopUntilAccountExists } from '../utils/utils';
-import { getFriendlyDateTime } from '../utils/utils';
+import { loopUntilAccountExists } from '../token/utils/utils';
+import { getFriendlyDateTime } from '../token/utils/utils';
 // import { ProxyRecursionZkApp } from './proxyRecursionZkApp.js';
 // import { RecursionZkApp } from './recursionZkApp.js';
 // import { Add } from './recursionZkApp.js';
