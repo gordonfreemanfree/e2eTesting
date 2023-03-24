@@ -51,6 +51,7 @@ export class SmartSnarkyNet extends SmartContract {
   @method predict(neuralNetProof: NeuralNetProof) {
     // create the model
     // let model = new SnarkyNet([layer1, layer2]);
+    neuralNetProof.verify();
 
     // generating the hash of layers that were used in the proof generation
     let actualLayer1Hash = Poseidon.hash(

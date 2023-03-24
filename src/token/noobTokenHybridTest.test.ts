@@ -14,6 +14,7 @@ import {
   VerificationKey,
   Field,
   Poseidon,
+  Bool,
 } from 'snarkyjs';
 import { NoobToken } from './noobToken';
 
@@ -953,6 +954,80 @@ describe('Token-test', () => {
         expect(newDeployerNoobBalance).toEqual(
           oldDeployerNoobBalance.add(amount)
         );
+      }).rejects.toThrow();
+    }, 10000000);
+
+    // ------------------------------------------------------------------------
+    // setPaused to true
+    // status:
+    // confirmed:
+    // dependencies:
+    it(`setPaused to true - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+      if (isBerkeley) {
+        await fetchAccount({
+          publicKey: zkAppAddress,
+          tokenId: zkApp.token.id,
+        });
+        await fetchAccount({
+          publicKey: deployerAccount,
+          tokenId: zkApp.token.id,
+        });
+        await fetchAccount({
+          publicKey: zkAppAddress,
+        });
+      }
+
+      let txn = await Mina.transaction(
+        { sender: deployerAccount, fee: 0.1e9 },
+        () => {
+          AccountUpdate.createSigned(deployerAccount);
+          zkApp.pause(new Bool(true));
+        }
+      );
+      await txn.prove();
+      txn.sign([deployerKey, zkAppPrivateKey]);
+      await (await txn.send()).wait();
+
+      if (isBerkeley) {
+        await fetchAccount({
+          publicKey: zkAppAddress,
+          tokenId: zkApp.token.id,
+        });
+        await fetchAccount({
+          publicKey: deployerAccount,
+          tokenId: zkApp.token.id,
+        });
+        await fetchAccount({
+          publicKey: zkAppAddress,
+        });
+      }
+      let currentIsPaused = zkApp.isPaused.get();
+      console.log('currentIsPaused is', currentIsPaused);
+
+      expect(currentIsPaused).toEqual(UInt64.from(1));
+    }, 10000000);
+
+    // ------------------------------------------------------------------------
+    // mint while isPaused is true
+    // status: working
+    // confirmed: true
+    // dependencies: setPaused
+    it(`Try to mint while isPaused is true - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+      expect(async () => {
+        if (isBerkeley) {
+          await fetchAccount({ publicKey: zkAppAddress });
+        }
+        Mina.getAccount(zkAppAddress);
+
+        const txn = await Mina.transaction(
+          { sender: deployerAccount, fee: 0.1e9 },
+          () => {
+            zkApp.mint(zkAppAddress, UInt64.from(1));
+          }
+        );
+        await txn.prove();
+        txn.sign([deployerKey, zkAppPrivateKey]);
+        await (await txn.send()).wait();
       }).rejects.toThrow();
     }, 10000000);
 

@@ -9,6 +9,8 @@ import {
   PublicKey,
   Signature,
   Field,
+  Circuit,
+  Bool,
 } from 'snarkyjs';
 const tokenSymbol = 'NOOB';
 
@@ -16,10 +18,13 @@ export class NoobToken extends SmartContract {
   events = {
     'increase-totalAmountInCirculation-to': UInt64,
     'tokens-sent-to': PublicKey,
+    'tokens-minted-to': PublicKey,
+    'is-Paused': Bool,
   };
 
   @state(UInt64) totalAmountInCirculation = State<UInt64>();
   @state(UInt64) dummy = State<UInt64>();
+  @state(UInt64) isPaused = State<Bool>();
 
   deploy(args: DeployArgs) {
     super.deploy(args);
@@ -36,12 +41,25 @@ export class NoobToken extends SmartContract {
     });
   }
 
+  // init is a method that initializes the contract.
   @method init() {
     super.init();
     this.account.tokenSymbol.set(tokenSymbol);
     this.totalAmountInCirculation.set(UInt64.from(0));
     this.dummy.set(UInt64.from(0));
     this.account.zkappUri.set('www.zkapp.com');
+    this.isPaused.set(new Bool(false));
+  }
+
+  // method to allow the contract owner to pause the contract
+  @method pause(isPaused: Bool) {
+    let currentIsPaused = this.isPaused.get();
+    this.isPaused.assertEquals(currentIsPaused);
+
+    this.isPaused.set(isPaused);
+    // this makes sure that the function can only be called by the contract owner
+    this.requireSignature();
+    this.emitEvent('is-Paused', isPaused);
   }
 
   @method mint(
@@ -49,19 +67,27 @@ export class NoobToken extends SmartContract {
     amount: UInt64
     // adminSignature: Signature
   ) {
+    // check if the contract is paused
+    let currentisPaused = this.isPaused.get();
+    this.isPaused.assertEquals(currentisPaused);
+    currentisPaused.assertEquals(new Bool(false));
+
     let totalAmountInCirculation = this.totalAmountInCirculation.get();
     this.totalAmountInCirculation.assertEquals(totalAmountInCirculation);
     let newTotalAmountInCirculation = totalAmountInCirculation.add(amount);
-    this.emitEvent(
-      'increase-totalAmountInCirculation-to',
-      newTotalAmountInCirculation
-    );
 
     this.token.mint({
       address: receiverAddress,
       amount,
     });
     this.totalAmountInCirculation.set(newTotalAmountInCirculation);
+
+    // emit events
+    this.emitEvent('tokens-minted-to', receiverAddress);
+    this.emitEvent(
+      'increase-totalAmountInCirculation-to',
+      newTotalAmountInCirculation
+    );
   }
 
   @method sendTokens(
@@ -77,6 +103,10 @@ export class NoobToken extends SmartContract {
     this.emitEvent('tokens-sent-to', receiverAddress);
   }
 
+  // mintWithMina is a method that mints tokens with Mina. It takes a receiverAddress and amount as parameters.
+  // It adds the amount to the totalAmountInCirculation and mints the amount to the receiverAddress.
+  // The amount is converted to a UInt64 before being added to totalAmountInCirculation.
+
   @method mintWithMina(receiverAddress: PublicKey, amount: UInt64) {
     let totalAmountInCirculation = this.totalAmountInCirculation.get();
     this.totalAmountInCirculation.assertEquals(totalAmountInCirculation);
@@ -91,17 +121,30 @@ export class NoobToken extends SmartContract {
     });
     let newTotalAmountInCirculation = totalAmountInCirculation.add(amount);
     this.totalAmountInCirculation.set(newTotalAmountInCirculation);
+
+    // emitting events
+    this.emitEvent('tokens-minted-to', receiverAddress);
+    this.emitEvent('increase-totalAmountInCirculation-to', amount);
   }
 
-  // dummy method to test the timestamp. endDate is used to test the assertBetween method
-  // dependecy: need to have minted at least 1 NOOB token before calling this method
+  // This function checks that the current timestamp is between the start and end dates and sends NOOB if correct time
+  // if the current timestamp is not between the start and end dates, the function will fail
+
+  // endDate is used as input to the method to make sure testing is possible. In production, endDate should probably be a constant.
+  // dependecy: need to have minted at least 1 NOOB token to zkAppAddress before calling this method
+  // this function is used to send NOOB tokens to a specified address if the current timestamp is between the start and end dates
+  // parameters:
+  // - receiverAddress: the address to which the NOOB tokens will be sent
+  // - amount: the amount of NOOB tokens to be sent
+  // - endDate: the end date
+
   @method sendNOOBIfCorrectTime(
     receiverAddress: PublicKey,
     amount: UInt64,
     endDate: UInt64
   ) {
     // defining the start date
-    let startDate = UInt64.from(1672531200000); // UInt64.from(Date.UTC(2023, 0, 1)) = 1.Jan.2023
+    let startDate = UInt64.from(1672531200000); // UInt64.from(Date.UTC(2023, 0, 1)) => 1.Jan.2023
 
     //  checking that the current timestamp is between the start and end dates
     this.network.timestamp.assertBetween(startDate, endDate);
@@ -112,6 +155,9 @@ export class NoobToken extends SmartContract {
       to: receiverAddress,
       amount: amount,
     });
+
+    // emitting events
+    this.emitEvent('tokens-sent-to', receiverAddress);
   }
 
   //   @method increaseVesting(
@@ -119,28 +165,4 @@ export class NoobToken extends SmartContract {
   //     amount: UInt64,
   //     lockupPeriod: UInt64
   //   ) { }
-
-  // This method should work again with snarkyjs 0.9.2
-  // @method sendTokenIfCorrectTime(
-  //   senderAddress: PublicKey,
-  //   receiverAddress: PublicKey,
-  //   amount: UInt64
-  // ) {
-  //   // getting the current timestamp
-  //   let currentTimestamp = this.network.timestamp.get();
-  //   this.network.timestamp.assertEquals(currentTimestamp);
-
-  //   // defining the start and end dates
-  //   let startDate = UInt64.from(Date.UTC(2023, 17, 3));
-  //   let endDate = UInt64.from(Date.UTC(2023, 17, 4));
-
-  //   // checking that the current timestamp is between the start and end dates
-  //   this.network.timestamp.assertBetween(startDate, endDate);
-
-  //   this.token.send({
-  //     from: senderAddress,
-  //     to: receiverAddress,
-  //     amount,
-  //   });
-  // }
 }
