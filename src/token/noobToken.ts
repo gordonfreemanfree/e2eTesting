@@ -11,10 +11,58 @@ import {
   Field,
   Circuit,
   Bool,
+  Reducer,
+  Struct,
+  isReady,
+  Experimental,
+  MerkleTree,
+  Poseidon,
+  PrivateKey,
+  Provable,
+  MerkleMap,
 } from 'snarkyjs';
+
+await isReady;
 const tokenSymbol = 'NOOB';
+const INCREMENT = Field(1);
+// const TREE = new MerkleTree(100);
+
+// export class TreeState extends Struct({
+//   tree1: MerkleTree,
+//   currentLeafIndex: Field,
+// }) {
+//   constructor() {
+//     super({ tree1, currentLeafIndex });
+//     this.tree1 = tree1;
+//     this.currentLeafIndex = currentLeafIndex;
+//   }
+// }
+
+export class ActionsReturn extends Struct({
+  list: Circuit.array(PublicKey, 32),
+}) {
+  constructor(list: PublicKey[]) {
+    super({ list });
+  }
+  push(action: PublicKey) {
+    this.list.push(action);
+  }
+}
+
+// export class ActionsType extends Struct({
+//   publicKey: PublicKey,
+//   amount: Field,
+// }) {
+//   constructor(publicKey: PublicKey, amount: Field) {
+//     super({ publicKey, amount });
+//     this.amount = amount;
+//     this.publicKey = publicKey;
+//   }
+// }
 
 export class NoobToken extends SmartContract {
+  reducer = Reducer({ actionType: PublicKey });
+
   events = {
     'increase-totalAmountInCirculation-to': UInt64,
     'tokens-sent-to': PublicKey,
@@ -25,30 +73,74 @@ export class NoobToken extends SmartContract {
   @state(UInt64) totalAmountInCirculation = State<UInt64>();
   @state(UInt64) dummy = State<UInt64>();
   @state(UInt64) isPaused = State<Bool>();
+  // used for actions
+  @state(Field) actionsHash = State<Field>();
+  @state(Field) actionCounter = State<Field>();
+  @state(Field) whiteListMerkleTreeRoot = State<Field>();
 
-  deploy(args: DeployArgs) {
-    super.deploy(args);
-    const permissionToEdit = Permissions.proofOrSignature();
-    this.account.permissions.set({
-      ...Permissions.default(),
-      editState: permissionToEdit,
-      setTokenSymbol: permissionToEdit,
-      // send: Permissions.none(),
-      // receive: Permissions.none(),
-      // access: Permissions.none(),
-      setZkappUri: permissionToEdit,
-      setTiming: permissionToEdit,
-    });
-  }
+  // deploy(args: DeployArgs) {
+  //   super.deploy(args);
+  //   const permissionToEdit = Permissions.proofOrSignature();
+  //   this.account.permissions.set({
+  //     ...Permissions.default(),
+  //     editState: permissionToEdit,
+  //     setTokenSymbol: permissionToEdit,
+  //     // send: Permissions.none(),
+  //     // receive: Permissions.none(),
+  //     // access: Permissions.proof(),
+  //     setZkappUri: permissionToEdit,
+  //     setTiming: permissionToEdit,
+  //   });
+  // }
 
   // init is a method that initializes the contract.
-  @method init() {
+  init() {
     super.init();
     this.account.tokenSymbol.set(tokenSymbol);
     this.totalAmountInCirculation.set(UInt64.from(0));
     this.dummy.set(UInt64.from(0));
     this.account.zkappUri.set('www.zkapp.com');
     this.isPaused.set(new Bool(false));
+    this.actionsHash.set(Reducer.initialActionsHash);
+    this.actionCounter.set(Field(0));
+    this.account.permissions.set({
+      ...Permissions.default(),
+      access: Permissions.proof(),
+      setVerificationKey: Permissions.impossible(),
+    });
+  }
+
+  @method incrementCounter(key: PublicKey) {
+    this.reducer.dispatch(key);
+  }
+
+  @method rollUpActions() {
+    let actionsHash = this.actionsHash.get();
+    this.actionsHash.assertEquals(actionsHash);
+    let currentActionCounter = this.actionCounter.get();
+    this.actionCounter.assertEquals(currentActionCounter);
+    let pendingActions = this.reducer.getActions({
+      fromActionHash: actionsHash,
+    });
+
+    let dummyInitial = new ActionsReturn([]);
+    let { state: newState, actionsHash: newActionsHash } = this.reducer.reduce(
+      pendingActions,
+      ActionsReturn,
+      // function that says how to apply an action
+      (state: ActionsReturn, _action: PublicKey) => {
+        Circuit.log('actions is', _action);
+        Circuit.log('state is', state);
+        state.push(_action);
+        return state;
+      },
+      { state: dummyInitial, actionsHash: actionsHash },
+      { maxTransactionsWithActions: 10 }
+    );
+    actionsHash = newActionsHash;
+    this.actionsHash.set(actionsHash);
+    Circuit.log('newState is', newState);
+    // this.actionCounter.set(newState);
   }
 
   // method to allow the contract owner to pause the contract
