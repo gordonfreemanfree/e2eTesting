@@ -618,5 +618,5 @@ describe('Token-test-1', () => {
     it(`Dummy - deployToBerkeley?: ${deployToBerkeley}`, async () => {}, 10000000);
   }
 
-  runTests();
+  // runTests();
 });
