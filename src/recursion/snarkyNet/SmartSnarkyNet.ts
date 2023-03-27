@@ -20,6 +20,11 @@ import { SnarkyNet } from './snarkynet.js';
 import { NeuralNetProof } from './recursionProof.js';
 
 export class SmartSnarkyNet extends SmartContract {
+  events = {
+    'set-layer1': Field,
+    'set-layer2': Field,
+    'set-classification': Field,
+  };
   // The layer states are used to fix the architecture of the network
   // We use the classification to store the result of the prediction
   @state(Field) classification = State<Field>(); // stored state for classification
@@ -45,6 +50,8 @@ export class SmartSnarkyNet extends SmartContract {
     this.layer1Hash.set(Poseidon.hash(layer1.toFields()));
     this.layer2Hash.set(Poseidon.hash(layer2.toFields()));
     // TODO: make sure that the layers are fixed
+    this.emitEvent('set-layer1', Poseidon.hash(layer1.toFields()));
+    this.emitEvent('set-layer2', Poseidon.hash(layer2.toFields()));
   }
 
   @method predict(neuralNetProof: NeuralNetProof) {
@@ -227,5 +234,6 @@ export class SmartSnarkyNet extends SmartContract {
     let classification = this.classification.get();
     this.classification.assertEquals(classification);
     this.classification.set(classification89);
+    this.emitEvent('set-classification', classification89);
   }
 }

@@ -9,6 +9,8 @@ import {
   fetchAccount,
   Field,
   Poseidon,
+  verify,
+  Permissions,
 } from 'snarkyjs';
 import fs from 'fs/promises';
 import { loopUntilAccountExists } from '../token/utils/utils';
@@ -22,7 +24,11 @@ import {
 } from './snarkyNet/utils/preprocess';
 import { weights_l1_8x8 } from './snarkyNet/assets/weights_l1_8x8';
 import { weights_l2_8x8 } from './snarkyNet/assets/weights_l2_8x8';
-import { NeuralNet } from './snarkyNet/recursionProof';
+import { Architecture, NeuralNet } from './snarkyNet/recursionProof';
+import { InputImage } from './snarkyNet/inputImageClass';
+import { image_0_label_7_8x8 } from './snarkyNet/assets/image_0_label_7_8x8';
+import { SnarkyNet } from './snarkyNet/snarkynet';
+import { image_1_label_2_8x8 } from './snarkyNet/assets/image_1_label_2_8x8';
 // import { Add } from './SmartSnarkyNet.js';
 
 console.log('process.env.TEST_ON_BERKELEY', process.env.TEST_ON_BERKELEY);
@@ -48,7 +54,7 @@ describe('proxy-recursion-test', () => {
       receiverKey: PrivateKey,
       receiverAddress: PublicKey;
     let addZkAppVerificationKey: string | undefined;
-    let neuralNetVerificationKey: string | undefined;
+    let neuralNetVerificationKey: string;
 
     let proxyZkAppVerificationKey: { data: string; hash: string } | undefined;
     let smartSnarkyZkAppVerificationKey:
@@ -384,6 +390,156 @@ describe('proxy-recursion-test', () => {
 
     //   expect(currentDummyState).toEqual(UInt64.from(400));
     // }, 10000000);
+
+    it(`proving that input image was indeed a picture of a 2 - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+      let snarkyLayer1s = new SnarkyLayer1(
+        preprocessWeights(weights_l1_8x8),
+        'relu'
+      );
+
+      let snarkyLayer2s = new SnarkyLayer2(
+        preprocessWeights(weights_l2_8x8),
+        'softmax'
+      );
+
+      let inputImage = new InputImage(preprocessImage(image_1_label_2_8x8));
+
+      let model = new SnarkyNet([snarkyLayer1s, snarkyLayer2s]);
+
+      let predictionAndSteps = model.predict(inputImage);
+
+      console.log('predictionAndSteps', predictionAndSteps);
+
+      // const { verificationKey } = await NeuralNet.compile();
+
+      // console.log('verificationKey', verificationKey);
+
+      const architecture = new Architecture({
+        layer1: snarkyLayer1s,
+        layer2: snarkyLayer2s,
+        precomputedOutputLayer1: predictionAndSteps.intermediateResults[0],
+        precomputedOutputLayer2: predictionAndSteps.intermediateResults[1],
+      });
+
+      const proofLayer1 = await NeuralNet.layer1(architecture, inputImage);
+      console.log('proofLayer1', proofLayer1);
+
+      const proofLayer2 = await NeuralNet.layer2(architecture, proofLayer1);
+      console.log('proofLayer2', proofLayer2);
+
+      const isValidLocal = await verify(proofLayer2, neuralNetVerificationKey);
+      console.log('isValidLocal', isValidLocal);
+
+      const txn = await Mina.transaction(
+        { sender: deployerAccount, fee: 0.1e9 },
+        () => {
+          proxyZkApp.callPredict(proofLayer2, smartSnarkyNetAddress);
+        }
+      );
+      await txn.prove();
+      txn.sign([deployerKey, smartSnarkyNetPrivateKey]);
+      await (await txn.send()).wait();
+
+      if (isBerkeley) {
+        await fetchAccount({ publicKey: smartSnarkyNetAddress });
+      }
+      let currentClassification = smartSnarkyNetZkApp.classification.get();
+
+      expect(currentClassification).toEqual(Field(2));
+    }, 10000000);
+
+    it(`proving that input image was indeed a picture of a 7 - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+      let snarkyLayer1s = new SnarkyLayer1(
+        preprocessWeights(weights_l1_8x8),
+        'relu'
+      );
+
+      let snarkyLayer2s = new SnarkyLayer2(
+        preprocessWeights(weights_l2_8x8),
+        'softmax'
+      );
+
+      let inputImage = new InputImage(preprocessImage(image_0_label_7_8x8));
+
+      let model = new SnarkyNet([snarkyLayer1s, snarkyLayer2s]);
+
+      let predictionAndSteps = model.predict(inputImage);
+
+      console.log('predictionAndSteps', predictionAndSteps);
+
+      // const { verificationKey } = await NeuralNet.compile();
+
+      // console.log('verificationKey', verificationKey);
+
+      const architecture = new Architecture({
+        layer1: snarkyLayer1s,
+        layer2: snarkyLayer2s,
+        precomputedOutputLayer1: predictionAndSteps.intermediateResults[0],
+        precomputedOutputLayer2: predictionAndSteps.intermediateResults[1],
+      });
+
+      const proofLayer1 = await NeuralNet.layer1(architecture, inputImage);
+      console.log('proofLayer1', proofLayer1);
+
+      const proofLayer2 = await NeuralNet.layer2(architecture, proofLayer1);
+      console.log('proofLayer2', proofLayer2);
+
+      const isValidLocal = await verify(proofLayer2, neuralNetVerificationKey);
+      console.log('isValidLocal', isValidLocal);
+
+      const txn = await Mina.transaction(
+        { sender: deployerAccount, fee: 0.1e9 },
+        () => {
+          proxyZkApp.callPredict(proofLayer2, smartSnarkyNetAddress);
+        }
+      );
+      await txn.prove();
+      txn.sign([deployerKey, smartSnarkyNetPrivateKey]);
+      await (await txn.send()).wait();
+
+      if (isBerkeley) {
+        await fetchAccount({ publicKey: smartSnarkyNetAddress });
+      }
+      let currentClassification = smartSnarkyNetZkApp.classification.get();
+
+      expect(currentClassification).toEqual(Field(7));
+    }, 10000000);
+
+    it(`changing smartSnarkyNet Permission to impossible to fix architecture  - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+      if (isBerkeley) {
+        await fetchAccount({ publicKey: smartSnarkyNetAddress });
+      }
+
+      // change permissions for setVerificationKey to impossible
+      let txn_permission = await Mina.transaction(
+        { sender: deployerAccount, fee: 0.1e9 },
+        () => {
+          let permissionsUpdate = AccountUpdate.createSigned(
+            smartSnarkyNetAddress
+          );
+          permissionsUpdate.account.permissions.set({
+            ...Permissions.default(),
+            setVerificationKey: Permissions.impossible(),
+          });
+        }
+      );
+
+      await txn_permission.prove();
+      txn_permission.sign([deployerKey, smartSnarkyNetPrivateKey]);
+      await (await txn_permission.send()).wait();
+
+      if (isBerkeley) {
+        await fetchAccount({ publicKey: smartSnarkyNetAddress });
+      }
+
+      let currentPermissionSetVerificationKey = Mina.getAccount(
+        smartSnarkyNetAddress
+      ).permissions.setVerificationKey;
+
+      expect(currentPermissionSetVerificationKey).toEqual(
+        Permissions.impossible()
+      );
+    }, 10000000);
 
     it(`Dummy test - deployToBerkeley?: ${deployToBerkeley}`, async () => {
       expect(true).toEqual(true);
