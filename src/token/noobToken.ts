@@ -14,51 +14,11 @@ import {
   Reducer,
   Struct,
   isReady,
-  Experimental,
-  MerkleTree,
-  Poseidon,
-  PrivateKey,
-  Provable,
-  MerkleMap,
 } from 'snarkyjs';
 
 await isReady;
 const tokenSymbol = 'NOOB';
-const INCREMENT = Field(1);
-// const TREE = new MerkleTree(100);
-
-// export class TreeState extends Struct({
-//   tree1: MerkleTree,
-//   currentLeafIndex: Field,
-// }) {
-//   constructor() {
-//     super({ tree1, currentLeafIndex });
-//     this.tree1 = tree1;
-//     this.currentLeafIndex = currentLeafIndex;
-//   }
-// }
-
-// export class ActionsReturn extends Struct({
-//   list: Circuit.array(PublicKey, 32),
-// }) {
-//   constructor(list: PublicKey[]) {
-//     super({ list });
-//   }
-//   push(action: PublicKey) {
-//     this.list.push(action);
-//   }
-// }
-
-// export class ActionsType extends Struct({
-//   publicKey: PublicKey,
-//   amount: Field,
-// }) {
-//   constructor(publicKey: PublicKey, amount: Field) {
-//     super({ publicKey, amount });
-//     this.amount = amount;
-//     this.publicKey = publicKey;
-//   }
-// }
+// const INCREMENT = Field(1);
 
 export class NoobToken extends SmartContract {
   // reducer = Reducer({ actionType: Field });
@@ -77,21 +37,7 @@ export class NoobToken extends SmartContract {
   @state(Field) actionsHash = State<Field>();
   @state(Field) actionCounter = State<Field>();
   @state(Field) whiteListMerkleTreeRoot = State<Field>();
-
-  // deploy(args: DeployArgs) {
-  //   super.deploy(args);
-  //   const permissionToEdit = Permissions.proofOrSignature();
-  //   this.account.permissions.set({
-  //     ...Permissions.default(),
-  //     editState: permissionToEdit,
-  //     setTokenSymbol: permissionToEdit,
-  //     // send: Permissions.none(),
-  //     // receive: Permissions.none(),
-  //     // access: Permissions.proof(),
-  //     setZkappUri: permissionToEdit,
-  //     setTiming: permissionToEdit,
-  //   });
-  // }
+  @state(UInt64) startDate = State<UInt64>();
 
   // init is a method that initializes the contract.
   init() {
@@ -107,6 +53,7 @@ export class NoobToken extends SmartContract {
       ...Permissions.default(),
       access: Permissions.proofOrSignature(),
       setVerificationKey: Permissions.impossible(),
+      editState: Permissions.proofOrSignature(),
     });
   }
 
@@ -154,11 +101,7 @@ export class NoobToken extends SmartContract {
     this.emitEvent('is-Paused', isPaused);
   }
 
-  @method mint(
-    receiverAddress: PublicKey,
-    amount: UInt64
-    // adminSignature: Signature
-  ) {
+  @method mint(receiverAddress: PublicKey, amount: UInt64) {
     // check if the contract is paused
     let currentisPaused = this.isPaused.get();
     this.isPaused.assertEquals(currentisPaused);
@@ -235,11 +178,12 @@ export class NoobToken extends SmartContract {
     amount: UInt64,
     endDate: UInt64
   ) {
-    // defining the start date
-    let startDate = UInt64.from(1672531200000); // UInt64.from(Date.UTC(2023, 0, 1)) => 1.Jan.2023
+    // getting the start date
+    let currentStartDate = this.startDate.get(); // UInt64.from(Date.UTC(2023, 0, 1)) => 1.Jan.2023
+    this.startDate.assertEquals(currentStartDate);
 
     //  checking that the current timestamp is between the start and end dates
-    this.network.timestamp.assertBetween(startDate, endDate);
+    this.network.timestamp.assertBetween(currentStartDate, endDate);
 
     // sending NOOB if correct time
     this.token.send({
@@ -251,10 +195,4 @@ export class NoobToken extends SmartContract {
     // emitting events
     this.emitEvent('tokens-sent-to', receiverAddress);
   }
-
-  //   @method increaseVesting(
-  //     senderAddress: PublicKey,
-  //     amount: UInt64,
-  //     lockupPeriod: UInt64
-  //   ) { }
 }

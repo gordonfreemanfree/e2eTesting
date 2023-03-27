@@ -1,4 +1,4 @@
-import { NoobToken } from './noobToken.js';
+import { NoobToken } from '../noobToken.js';
 import {
   AccountUpdate,
   isReady,
