@@ -8,348 +8,386 @@ import {
   UInt64,
   fetchAccount,
   Field,
+  Poseidon,
 } from 'snarkyjs';
 import fs from 'fs/promises';
 import { loopUntilAccountExists } from '../token/utils/utils';
 import { getFriendlyDateTime } from '../token/utils/utils';
-// import { ProxyRecursionZkApp } from './proxyRecursionZkApp.js';
-// import { RecursionZkApp } from './recursionZkApp.js';
-// import { Add } from './recursionZkApp.js';
+import { ProxyRecursionZkApp } from './proxyRecursionZkApp.js';
+import { SmartSnarkyNet } from './snarkyNet/smartSnarkyNet';
+import { SnarkyLayer1, SnarkyLayer2 } from './snarkyNet/snarkyLayer';
+import {
+  preprocessImage,
+  preprocessWeights,
+} from './snarkyNet/utils/preprocess';
+import { weights_l1_8x8 } from './snarkyNet/assets/weights_l1_8x8';
+import { weights_l2_8x8 } from './snarkyNet/assets/weights_l2_8x8';
+import { NeuralNet } from './snarkyNet/recursionProof';
+// import { Add } from './SmartSnarkyNet.js';
 
-// console.log('process.env.TEST_ON_BERKELEY', process.env.TEST_ON_BERKELEY);
+console.log('process.env.TEST_ON_BERKELEY', process.env.TEST_ON_BERKELEY);
 
-// const isBerkeley = process.env.TEST_ON_BERKELEY == 'true' ? true : false;
-// // const isBerkeley = true;
-// console.log('isBerkeley:', isBerkeley);
-// let proofsEnabled = true;
+const isBerkeley = process.env.TEST_ON_BERKELEY == 'true' ? true : false;
+// const isBerkeley = true;
+console.log('isBerkeley:', isBerkeley);
+let proofsEnabled = true;
 
-// describe('proxy-recursion-test', () => {
-//   async function runTests(deployToBerkeley: boolean = isBerkeley) {
-//     let Blockchain;
-//     let deployerAccount: PublicKey,
-//       deployerKey: PrivateKey,
-//       //   senderAccount: PublicKey,
-//       //   senderKey: PrivateKey,
-//       proxyZkAppAddress: PublicKey,
-//       proxyZkAppPrivateKey: PrivateKey,
-//       proxyZkApp: ProxyRecursionZkApp,
-//       recursionZkAppPrivateKey: PrivateKey,
-//       recursionZkAppAddress: PublicKey,
-//       recursionZkApp: RecursionZkApp,
-//       receiverKey: PrivateKey,
-//       receiverAddress: PublicKey;
-//     let addZkAppVerificationKey: string | undefined;
+describe('proxy-recursion-test', () => {
+  async function runTests(deployToBerkeley: boolean = isBerkeley) {
+    let Blockchain;
+    let deployerAccount: PublicKey,
+      deployerKey: PrivateKey,
+      //   senderAccount: PublicKey,
+      //   senderKey: PrivateKey,
+      proxyZkAppAddress: PublicKey,
+      proxyZkAppPrivateKey: PrivateKey,
+      proxyZkApp: ProxyRecursionZkApp,
+      smartSnarkyNetPrivateKey: PrivateKey,
+      smartSnarkyNetAddress: PublicKey,
+      smartSnarkyNetZkApp: SmartSnarkyNet,
+      receiverKey: PrivateKey,
+      receiverAddress: PublicKey;
+    let addZkAppVerificationKey: string | undefined;
+    let neuralNetVerificationKey: string | undefined;
 
-//     let proxyZkAppVerificationKey: { data: string; hash: string } | undefined;
-//     let recursionZkAppVerificationKey:
-//       | { data: string; hash: string }
-//       | undefined;
-//     // beforeAll(async () => {
-//     //   await isReady;
+    let proxyZkAppVerificationKey: { data: string; hash: string } | undefined;
+    let smartSnarkyZkAppVerificationKey:
+      | { data: string; hash: string }
+      | undefined;
+    beforeAll(async () => {
+      await isReady;
 
-//     //   // choosing which Blockchain to use
-//     //   console.log('choosing blockchain');
-//     //   Blockchain = deployToBerkeley
-//     //     ? Mina.Network('https://proxy.berkeley.minaexplorer.com/graphql')
-//     //     : Mina.LocalBlockchain({ proofsEnabled });
+      // choosing which Blockchain to use
+      console.log('choosing blockchain');
+      Blockchain = deployToBerkeley
+        ? Mina.Network('https://proxy.berkeley.minaexplorer.com/graphql')
+        : Mina.LocalBlockchain({ proofsEnabled });
 
-//     //   Mina.setActiveInstance(Blockchain);
+      Mina.setActiveInstance(Blockchain);
 
-//     //   try {
-//     //     console.log('compiling Add...');
+      try {
+        console.log('compiling SmartContracts...');
 
-//     //     ({ verificationKey: addZkAppVerificationKey } = await Add.compile());
-//     //     console.log('compiling Proxy...');
+        ({
+          verificationKey: neuralNetVerificationKey,
+        } = await NeuralNet.compile());
+        console.log('compiling SmartSnarkyNet...');
+        ({
+          verificationKey: smartSnarkyZkAppVerificationKey,
+        } = await SmartSnarkyNet.compile());
+        ({
+          verificationKey: proxyZkAppVerificationKey,
+        } = await ProxyRecursionZkApp.compile());
+        console.log('compiling RecursionZkapp...');
+        // ({
+        //   verificationKey: smartSnarkyZkAppVerificationKey,
+        // } = await SmartSnarkyNet.compile());
+      } catch (e) {
+        console.log('error compiling one of the zkapps', e);
+      }
 
-//     //     ({
-//     //       verificationKey: proxyZkAppVerificationKey,
-//     //     } = await ProxyRecursionZkApp.compile());
-//     //     console.log('compiling RecursionZkapp...');
-//     //     ({
-//     //       verificationKey: recursionZkAppVerificationKey,
-//     //     } = await RecursionZkApp.compile());
-//     //   } catch (e) {
-//     //     console.log('error compiling one of the zkapps', e);
-//     //   }
+      // choosing deployer account
+      if (deployToBerkeley) {
+        type Config = {
+          deployAliases: Record<string, { url: string; keyPath: string }>;
+        };
+        let configJson: Config = JSON.parse(
+          await fs.readFile('config.json', 'utf8')
+        );
+        // berkeley key hardcoded here
+        let config = configJson.deployAliases['berkeley'];
+        let key: { privateKey: string } = JSON.parse(
+          await fs.readFile(config.keyPath, 'utf8')
+        );
+        deployerKey = PrivateKey.fromBase58(key.privateKey);
+        deployerAccount = deployerKey.toPublicKey();
 
-//     //   // choosing deployer account
-//     //   if (deployToBerkeley) {
-//     //     type Config = {
-//     //       deployAliases: Record<string, { url: string; keyPath: string }>;
-//     //     };
-//     //     let configJson: Config = JSON.parse(
-//     //       await fs.readFile('config.json', 'utf8')
-//     //     );
-//     //     // berkeley key hardcoded here
-//     //     let config = configJson.deployAliases['berkeley'];
-//     //     let key: { privateKey: string } = JSON.parse(
-//     //       await fs.readFile(config.keyPath, 'utf8')
-//     //     );
-//     //     deployerKey = PrivateKey.fromBase58(key.privateKey);
-//     //     deployerAccount = deployerKey.toPublicKey();
+        proxyZkAppPrivateKey = PrivateKey.random();
+        proxyZkAppAddress = proxyZkAppPrivateKey.toPublicKey();
 
-//     //     proxyZkAppPrivateKey = PrivateKey.random();
-//     //     proxyZkAppAddress = proxyZkAppPrivateKey.toPublicKey();
+        smartSnarkyNetPrivateKey = PrivateKey.random();
+        smartSnarkyNetAddress = smartSnarkyNetPrivateKey.toPublicKey();
 
-//     //     recursionZkAppPrivateKey = PrivateKey.random();
-//     //     recursionZkAppAddress = recursionZkAppPrivateKey.toPublicKey();
+        receiverKey = PrivateKey.random();
+        receiverAddress = receiverKey.toPublicKey();
 
-//     //     receiverKey = PrivateKey.random();
-//     //     receiverAddress = receiverKey.toPublicKey();
+        proxyZkApp = new ProxyRecursionZkApp(proxyZkAppAddress);
+        smartSnarkyNetZkApp = new SmartSnarkyNet(smartSnarkyNetAddress);
+      } else {
+        const Local = Mina.LocalBlockchain({ proofsEnabled });
+        Mina.setActiveInstance(Local);
+        ({
+          privateKey: deployerKey,
+          publicKey: deployerAccount,
+        } = Local.testAccounts[0]);
 
-//     //     proxyZkApp = new ProxyRecursionZkApp(proxyZkAppAddress);
-//     //     recursionZkApp = new RecursionZkApp(recursionZkAppAddress);
-//     //   } else {
-//     //     const Local = Mina.LocalBlockchain({ proofsEnabled });
-//     //     Mina.setActiveInstance(Local);
-//     //     ({
-//     //       privateKey: deployerKey,
-//     //       publicKey: deployerAccount,
-//     //     } = Local.testAccounts[0]);
+        proxyZkAppPrivateKey = PrivateKey.random();
+        proxyZkAppAddress = proxyZkAppPrivateKey.toPublicKey();
 
-//     //     proxyZkAppPrivateKey = PrivateKey.random();
-//     //     proxyZkAppAddress = proxyZkAppPrivateKey.toPublicKey();
+        smartSnarkyNetPrivateKey = PrivateKey.random();
+        smartSnarkyNetAddress = smartSnarkyNetPrivateKey.toPublicKey();
 
-//     //     recursionZkAppPrivateKey = PrivateKey.random();
-//     //     recursionZkAppAddress = recursionZkAppPrivateKey.toPublicKey();
+        receiverKey = PrivateKey.random();
+        receiverAddress = receiverKey.toPublicKey();
 
-//     //     receiverKey = PrivateKey.random();
-//     //     receiverAddress = receiverKey.toPublicKey();
+        proxyZkApp = new ProxyRecursionZkApp(proxyZkAppAddress);
+        smartSnarkyNetZkApp = new SmartSnarkyNet(smartSnarkyNetAddress);
+      }
+    }, 1000000);
 
-//     //     proxyZkApp = new ProxyRecursionZkApp(proxyZkAppAddress);
-//     //     recursionZkApp = new RecursionZkApp(recursionZkAppAddress);
-//     //   }
-//     // }, 1000000);
+    afterAll(() => {
+      setInterval(shutdown, 0);
+    });
 
-//     afterAll(() => {
-//       setInterval(shutdown, 0);
-//     });
+    async function localDeploy() {
+      console.log('localDeploy...');
 
-//     async function localDeploy() {
-//       console.log('localDeploy...');
+      let txn;
 
-//       let txn;
+      if (
+        proxyZkAppVerificationKey !== undefined &&
+        smartSnarkyZkAppVerificationKey !== undefined
+      ) {
+        txn = await Mina.transaction(deployerAccount, () => {
+          AccountUpdate.fundNewAccount(deployerAccount);
+          AccountUpdate.fundNewAccount(deployerAccount);
 
-//       if (
-//         proxyZkAppVerificationKey !== undefined &&
-//         recursionZkAppVerificationKey !== undefined
-//       ) {
-//         txn = await Mina.transaction(deployerAccount, () => {
-//           AccountUpdate.fundNewAccount(deployerAccount);
-//           AccountUpdate.fundNewAccount(deployerAccount);
+          smartSnarkyNetZkApp.deploy({
+            verificationKey: smartSnarkyZkAppVerificationKey,
+            zkappKey: smartSnarkyNetPrivateKey,
+          });
+          proxyZkApp.deploy({
+            verificationKey: proxyZkAppVerificationKey,
+            zkappKey: proxyZkAppPrivateKey,
+          });
+        });
+      } else {
+        console.log('zkAppVerificationKey is not defined');
+      }
+      if (txn === undefined) {
+        console.log('txn is not defined');
+      } else {
+        await txn.prove();
+        await (
+          await txn
+            .sign([deployerKey, smartSnarkyNetPrivateKey, proxyZkAppPrivateKey])
+            .send()
+        ).wait();
+        console.log('deployed proxyZkApp local', proxyZkAppAddress.toBase58());
+        console.log(
+          'deployed recursionZkApp local',
+          smartSnarkyNetAddress.toBase58()
+        );
+      }
+    }
 
-//           recursionZkApp.deploy({
-//             verificationKey: recursionZkAppVerificationKey,
-//             zkappKey: recursionZkAppPrivateKey,
-//           });
-//           proxyZkApp.deploy({
-//             verificationKey: proxyZkAppVerificationKey,
-//             zkappKey: proxyZkAppPrivateKey,
-//           });
-//         });
-//       } else {
-//         console.log('zkAppVerificationKey is not defined');
-//       }
-//       if (txn === undefined) {
-//         console.log('txn is not defined');
-//       } else {
-//         await txn.prove();
-//         await (
-//           await txn
-//             .sign([deployerKey, recursionZkAppPrivateKey, proxyZkAppPrivateKey])
-//             .send()
-//         ).wait();
-//         console.log('deployed proxyZkApp local', proxyZkAppAddress.toBase58());
-//         console.log(
-//           'deployed recursionZkApp local',
-//           recursionZkAppAddress.toBase58()
-//         );
-//       }
-//     }
+    async function berkeleyDeploy() {
+      console.log('deploy on Berkeley...');
 
-//     async function berkeleyDeploy() {
-//       console.log('deploy on Berkeley...');
+      let txn;
 
-//       let txn;
+      if (smartSnarkyZkAppVerificationKey !== undefined) {
+        txn = await Mina.transaction(
+          { sender: deployerAccount, fee: 0.1e9 },
+          () => {
+            AccountUpdate.fundNewAccount(deployerAccount, 2);
 
-//       if (recursionZkAppVerificationKey !== undefined) {
-//         txn = await Mina.transaction(
-//           { sender: deployerAccount, fee: 0.1e9 },
-//           () => {
-//             AccountUpdate.fundNewAccount(deployerAccount, 2);
+            smartSnarkyNetZkApp.deploy({
+              verificationKey: smartSnarkyZkAppVerificationKey,
+              zkappKey: smartSnarkyNetPrivateKey,
+            });
+            proxyZkApp.deploy({
+              verificationKey: proxyZkAppVerificationKey,
+              zkappKey: proxyZkAppPrivateKey,
+            });
+          }
+        );
+      } else {
+        console.log('zkAppVerificationKey is not defined');
+      }
+      if (txn === undefined) {
+        console.log('txn is not defined');
+      } else {
+        await txn.prove();
+        txn.sign([deployerKey, smartSnarkyNetPrivateKey]);
+        let response = await txn.send();
+        console.log('response from recursion deploy is', response);
+      }
+    }
 
-//             recursionZkApp.deploy({
-//               verificationKey: recursionZkAppVerificationKey,
-//               zkappKey: recursionZkAppPrivateKey,
-//             });
-//             proxyZkApp.deploy({
-//               verificationKey: proxyZkAppVerificationKey,
-//               zkappKey: proxyZkAppPrivateKey,
-//             });
-//           }
-//         );
-//       } else {
-//         console.log('zkAppVerificationKey is not defined');
-//       }
-//       if (txn === undefined) {
-//         console.log('txn is not defined');
-//       } else {
-//         await txn.prove();
-//         txn.sign([deployerKey, recursionZkAppPrivateKey]);
-//         let response = await txn.send();
-//         console.log('response from recursion deploy is', response);
-//       }
-//     }
+    async function printBalances() {
+      //   try {
+      //     console.log(
+      //       `deployerAccount balance: ${deployerAccount.toBase58()} ${Mina.getBalance(
+      //         deployerAccount
+      //       ).div(1e9)} MINA`
+      //     );
+      //     console.log(
+      //       // `zkApp balance: ${Mina.getBalance(zkAppAddress).div(1e9)} MINA`
+      //       `zkApp balance: ${zkAppAddress.toBase58()} ${Mina.getBalance(
+      //         zkAppAddress
+      //       ).div(1e9)} MINA`
+      //     );
+      //     console.log(
+      //       // `zkApp balance: ${Mina.getBalance(zkAppAddress).div(1e9)} MINA`
+      //       `zkApp balance of NOOB token: ${zkAppAddress.toBase58()} ${Mina.getBalance(
+      //         zkAppAddress,
+      //         zkApp.token.id
+      //       ).div(1e9)} NOOB`
+      //     );
+      //     console.log(
+      //       // `zkApp balance: ${Mina.getBalance(zkAppAddress).div(1e9)} MINA`
+      //       `receiver balance of Noob token: ${receiverAddress.toBase58()} ${Mina.getBalance(
+      //         receiverAddress,
+      //         zkApp.token.id
+      //       ).div(1e9)} NOOB`
+      //     );
+      //   } catch (e) {
+      //     console.log('error printing balances', e);
+      //   }
+    }
 
-//     async function printBalances() {
-//       //   try {
-//       //     console.log(
-//       //       `deployerAccount balance: ${deployerAccount.toBase58()} ${Mina.getBalance(
-//       //         deployerAccount
-//       //       ).div(1e9)} MINA`
-//       //     );
-//       //     console.log(
-//       //       // `zkApp balance: ${Mina.getBalance(zkAppAddress).div(1e9)} MINA`
-//       //       `zkApp balance: ${zkAppAddress.toBase58()} ${Mina.getBalance(
-//       //         zkAppAddress
-//       //       ).div(1e9)} MINA`
-//       //     );
-//       //     console.log(
-//       //       // `zkApp balance: ${Mina.getBalance(zkAppAddress).div(1e9)} MINA`
-//       //       `zkApp balance of NOOB token: ${zkAppAddress.toBase58()} ${Mina.getBalance(
-//       //         zkAppAddress,
-//       //         zkApp.token.id
-//       //       ).div(1e9)} NOOB`
-//       //     );
-//       //     console.log(
-//       //       // `zkApp balance: ${Mina.getBalance(zkAppAddress).div(1e9)} MINA`
-//       //       `receiver balance of Noob token: ${receiverAddress.toBase58()} ${Mina.getBalance(
-//       //         receiverAddress,
-//       //         zkApp.token.id
-//       //       ).div(1e9)} NOOB`
-//       //     );
-//       //   } catch (e) {
-//       //     console.log('error printing balances', e);
-//       //   }
-//     }
+    it(`deploy zkApps and check verificationKey - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+      deployToBerkeley ? await berkeleyDeploy() : await localDeploy();
 
-//     // it(`deploy zkApps - deployToBerkeley?: ${deployToBerkeley}`, async () => {
-//     //   deployToBerkeley ? await berkeleyDeploy() : await localDeploy();
+      if (isBerkeley) {
+        // wait for the account to exist
+        await loopUntilAccountExists({
+          account: smartSnarkyNetAddress,
+          eachTimeNotExist: () =>
+            console.log(
+              'waiting for smartSnarkyNetZkApp account to be deployed...',
+              getFriendlyDateTime()
+            ),
+          isZkAppAccount: true,
+        });
 
-//     //   if (isBerkeley) {
-//     //     // wait for the account to exist
-//     //     await loopUntilAccountExists({
-//     //       account: recursionZkAppAddress,
-//     //       eachTimeNotExist: () =>
-//     //         console.log(
-//     //           'waiting for recursionZkApp account to be deployed...',
-//     //           getFriendlyDateTime()
-//     //         ),
-//     //       isZkAppAccount: true,
-//     //     });
+        await loopUntilAccountExists({
+          account: proxyZkAppAddress,
+          eachTimeNotExist: () =>
+            console.log(
+              'waiting for proxyZkApp account to be deployed...',
+              getFriendlyDateTime()
+            ),
+          isZkAppAccount: true,
+        });
+      }
 
-//     //     await loopUntilAccountExists({
-//     //       account: proxyZkAppAddress,
-//     //       eachTimeNotExist: () =>
-//     //         console.log(
-//     //           'waiting for proxyZkApp account to be deployed...',
-//     //           getFriendlyDateTime()
-//     //         ),
-//     //       isZkAppAccount: true,
-//     //     });
-//     //   }
+      // const currentOnChainState = proxyZkApp.onChainState.get();
+      // console.log('currentOnChainState', currentOnChainState.toString());
 
-//     //   const currentOnChainState = proxyZkApp.onChainState.get();
-//     //   console.log('currentOnChainState', currentOnChainState.toString());
+      if (isBerkeley) {
+        await fetchAccount({
+          publicKey: smartSnarkyNetAddress,
+        });
+        await fetchAccount({
+          publicKey: proxyZkAppAddress,
+        });
+      }
+      let actualSmartSnarkyVerificationKey = Mina.getAccount(
+        smartSnarkyNetAddress
+      ).zkapp?.verificationKey?.hash;
+      let actualProxyVerificationKey = Mina.getAccount(proxyZkAppAddress).zkapp
+        ?.verificationKey?.hash;
 
-//     //   let actualProxyVerificationKeyHash = Mina.getAccount(proxyZkAppAddress)
-//     //     .zkapp?.verificationKey?.hash;
-//     //   console.log('actualProxyVerificationKey', actualProxyVerificationKeyHash);
-//     //   let actualRecursionVerificationKeyHash = Mina.getAccount(
-//     //     recursionZkAppAddress
-//     //   ).zkapp?.verificationKey?.hash;
-//     //   console.log(
-//     //     'actualRecursionVerificationKey',
-//     //     actualRecursionVerificationKeyHash
-//     //   );
+      expect(actualProxyVerificationKey?.toString()).toEqual(
+        proxyZkAppVerificationKey?.hash
+      );
+      expect(actualSmartSnarkyVerificationKey?.toString()).toEqual(
+        smartSnarkyZkAppVerificationKey?.hash
+      );
+    }, 100000000);
 
-//     //   expect(actualProxyVerificationKeyHash?.toString()).toEqual(
-//     //     proxyZkAppVerificationKey?.hash
-//     //   );
-//     //   expect(actualRecursionVerificationKeyHash?.toString()).toEqual(
-//     //     recursionZkAppVerificationKey?.hash
-//     //   );
-//     // }, 100000000);
+    it(`init the layer hashes to fix architecture - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+      // let amount = UInt64.from(100);
+      if (isBerkeley) {
+        await fetchAccount({
+          publicKey: smartSnarkyNetAddress,
+        });
+        await fetchAccount({
+          publicKey: proxyZkAppAddress,
+        });
+      }
 
-//     // it(`update State through proxy - deployToBerkeley?: ${deployToBerkeley}`, async () => {
-//     //   let amount = UInt64.from(100);
+      let snarkyLayer1s = new SnarkyLayer1(
+        preprocessWeights(weights_l1_8x8),
+        'relu'
+      );
 
-//     // it(`update State through proxy - deployToBerkeley?: ${deployToBerkeley}`, async () => {
-//     //   let amount = UInt64.from(100);
+      let snarkyLayer2s = new SnarkyLayer2(
+        preprocessWeights(weights_l2_8x8),
+        'softmax'
+      );
 
-//     //   const txn = await Mina.transaction(
-//     //     { sender: deployerAccount, fee: 0.1e9 },
-//     //     () => {
-//     //       proxyZkApp.callRecursionDummyState(amount, recursionZkAppAddress);
-//     //     }
-//     //   );
-//     //   await txn.prove();
-//     //   txn.sign([deployerKey, recursionZkAppPrivateKey]);
-//     //   await (await txn.send()).wait();
+      let snarkyLayer1sHash = Poseidon.hash(snarkyLayer1s.toFields());
+      let snarkyLayer2sHash = Poseidon.hash(snarkyLayer2s.toFields());
 
-//     //   if (isBerkeley) {
-//     //     let fetch = await fetchAccount({ publicKey: recursionZkAppAddress });
-//     //     console.log('fetch', fetch);
-//     //   }
-//     //   Mina.getAccount(recursionZkAppAddress);
+      const txn = await Mina.transaction(
+        { sender: deployerAccount, fee: 0.1e9 },
+        () => {
+          smartSnarkyNetZkApp.initState(snarkyLayer1s, snarkyLayer2s);
+        }
+      );
+      await txn.prove();
+      txn.sign([deployerKey, smartSnarkyNetPrivateKey]);
+      await (await txn.send()).wait();
 
-//     //   let currentDummyState = recursionZkApp.dummyState.get();
-//     //   console.log('currentDummyState', currentDummyState.toString());
+      if (isBerkeley) {
+        await fetchAccount({ publicKey: smartSnarkyNetAddress });
+      }
+      Mina.getAccount(smartSnarkyNetAddress);
 
-//     //   expect(currentDummyState).toEqual(amount);
-//     // }, 10000000);
+      let currentLayer1Hash = smartSnarkyNetZkApp.layer1Hash.get();
+      let currentLayer2Hash = smartSnarkyNetZkApp.layer2Hash.get();
 
-//     // it(`Send if the network time is correct - deployToBerkeley?: ${deployToBerkeley}`, async () => {
-//     //   console.log('compiling...');
+      // let currentDummyState = recursionZkApp.dummyState.get();
+      // console.log('currentDummyState', currentDummyState.toString());
 
-//     //   const { verificationKey } = await Add.compile();
+      expect(currentLayer1Hash).toEqual(snarkyLayer1sHash);
+      expect(currentLayer2Hash).toEqual(snarkyLayer2sHash);
+    }, 10000000);
 
-//     //   const proof0 = await Add.init(Field(0));
+    // it(`Send if the network time is correct - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    //   console.log('compiling...');
 
-//     //   console.log('making proof 1');
+    //   const { verificationKey } = await Add.compile();
 
-//     //   const proof1 = await Add.addNumber(Field(4), proof0, Field(4));
+    //   const proof0 = await Add.init(Field(0));
 
-//     //   console.log('making proof 2');
+    //   console.log('making proof 1');
 
-//     //   const proof2 = await Add.add(Field(4), proof1, proof0);
+    //   const proof1 = await Add.addNumber(Field(4), proof0, Field(4));
 
-//     //   const txn = await Mina.transaction(
-//     //     { sender: deployerAccount, fee: 0.1e9 },
-//     //     () => {
-//     //       recursionZkApp.proofVerification(proof2);
-//     //     }
-//     //   );
-//     //   await txn.prove();
-//     //   txn.sign([deployerKey, recursionZkAppPrivateKey]);
-//     //   await (await txn.send()).wait();
+    //   console.log('making proof 2');
 
-//     // const txn = await Mina.transaction(
-//     //   { sender: deployerAccount, fee: 0.1e9 },
-//     //   () => {
-//     //     recursionZkApp.proofVerification(proof2);
-//     //   }
-//     // );
-//     // await txn.prove();
-//     // txn.sign([deployerKey, recursionZkAppPrivateKey]);
-//     // await (await txn.send()).wait();
+    //   const proof2 = await Add.add(Field(4), proof1, proof0);
 
-//     //   expect(currentDummyState).toEqual(UInt64.from(400));
-//     // }, 10000000);
+    //   const txn = await Mina.transaction(
+    //     { sender: deployerAccount, fee: 0.1e9 },
+    //     () => {
+    //       recursionZkApp.proofVerification(proof2);
+    //     }
+    //   );
+    //   await txn.prove();
+    //   txn.sign([deployerKey, recursionZkAppPrivateKey]);
+    //   await (await txn.send()).wait();
 
-//     it(`Dummy test - deployToBerkeley?: ${deployToBerkeley}`, async () => {
-//       expect(true).toEqual(true);
-//     }, 10000000);
-//   }
-//   runTests();
-// });
+    //   const txn = await Mina.transaction(
+    //     { sender: deployerAccount, fee: 0.1e9 },
+    //     () => {
+    //       recursionZkApp.proofVerification(proof2);
+    //     }
+    //   );
+    //   await txn.prove();
+    //   txn.sign([deployerKey, recursionZkAppPrivateKey]);
+    //   await (await txn.send()).wait();
+
+    //   expect(currentDummyState).toEqual(UInt64.from(400));
+    // }, 10000000);
+
+    it(`Dummy test - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+      expect(true).toEqual(true);
+    }, 10000000);
+  }
+  runTests();
+});

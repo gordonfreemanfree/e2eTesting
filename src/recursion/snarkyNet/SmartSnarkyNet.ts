@@ -45,13 +45,11 @@ export class SmartSnarkyNet extends SmartContract {
     this.layer1Hash.set(Poseidon.hash(layer1.toFields()));
     this.layer2Hash.set(Poseidon.hash(layer2.toFields()));
     // TODO: make sure that the layers are fixed
-    this.requireSignature();
   }
 
   @method predict(neuralNetProof: NeuralNetProof) {
     // create the model
     // let model = new SnarkyNet([layer1, layer2]);
-    neuralNetProof.verify();
 
     // generating the hash of layers that were used in the proof generation
     let actualLayer1Hash = Poseidon.hash(

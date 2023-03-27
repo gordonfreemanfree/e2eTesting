@@ -114,34 +114,34 @@ export class NoobToken extends SmartContract {
     this.reducer.dispatch(key);
   }
 
-  @method rollUpActions() {
-    let actionsHash = this.actionsHash.get();
-    this.actionsHash.assertEquals(actionsHash);
-    let currentActionCounter = this.actionCounter.get();
-    this.actionCounter.assertEquals(currentActionCounter);
-    let pendingActions = this.reducer.getActions({
-      fromActionHash: actionsHash,
-    });
+  // @method rollUpActions() {
+  //   let actionsHash = this.actionsHash.get();
+  //   this.actionsHash.assertEquals(actionsHash);
+  //   let currentActionCounter = this.actionCounter.get();
+  //   this.actionCounter.assertEquals(currentActionCounter);
+  //   let pendingActions = this.reducer.getActions({
+  //     fromActionHash: actionsHash,
+  //   });
 
-    let dummyInitial = new ActionsReturn([]);
-    let { state: newState, actionsHash: newActionsHash } = this.reducer.reduce(
-      pendingActions,
-      ActionsReturn,
-      // function that says how to apply an action
-      (state: ActionsReturn, _action: PublicKey) => {
-        Circuit.log('actions is', _action);
-        Circuit.log('state is', state);
-        state.push(_action);
-        return state;
-      },
-      { state: dummyInitial, actionsHash: actionsHash },
-      { maxTransactionsWithActions: 10 }
-    );
-    actionsHash = newActionsHash;
-    this.actionsHash.set(actionsHash);
-    Circuit.log('newState is', newState);
-    // this.actionCounter.set(newState);
-  }
+  //   let dummyInitial = new ActionsReturn([]);
+  //   let { state: newState, actionsHash: newActionsHash } = this.reducer.reduce(
+  //     pendingActions,
+  //     ActionsReturn,
+  //     // function that says how to apply an action
+  //     (state: ActionsReturn, _action: PublicKey) => {
+  //       Circuit.log('actions is', _action);
+  //       Circuit.log('state is', state);
+  //       state.push(_action);
+  //       return state;
+  //     },
+  //     { state: dummyInitial, actionsHash: actionsHash },
+  //     { maxTransactionsWithActions: 10 }
+  //   );
+  //   actionsHash = newActionsHash;
+  //   this.actionsHash.set(actionsHash);
+  //   Circuit.log('newState is', newState);
+  //   // this.actionCounter.set(newState);
+  // }
 
   // method to allow the contract owner to pause the contract
   @method pause(isPaused: Bool) {

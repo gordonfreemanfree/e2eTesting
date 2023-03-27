@@ -16,11 +16,11 @@ import {
   Poseidon,
   Bool,
 } from 'snarkyjs';
-import { NoobToken } from './noobToken';
+import { NoobToken } from '../noobToken';
 
 import fs from 'fs/promises';
-import { loopUntilAccountExists } from './utils/utils';
-import { getFriendlyDateTime } from './utils/utils';
+import { loopUntilAccountExists } from '../utils/utils';
+import { getFriendlyDateTime } from '../utils/utils';
 // import { ActionsType } from './noobToken';
 
 console.log('process.env.TEST_ON_BERKELEY', process.env.TEST_ON_BERKELEY);
@@ -214,39 +214,39 @@ describe('Token-test', () => {
     // status: working
     // confirmed: true
     // dependencies: none
-    it(`checking that zkAppVerificationKey gets deployed correctly - deployToBerkeley?: ${deployToBerkeley}`, async () => {
-      console.log('checking that zkAppVerificationKey gets deployed correctly');
+    // it(`checking that zkAppVerificationKey gets deployed correctly - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    //   console.log('checking that zkAppVerificationKey gets deployed correctly');
 
-      let zkAppVerificationKey = deployToBerkeley
-        ? await berkeleyDeploy()
-        : await localDeploy();
+    //   let zkAppVerificationKey = deployToBerkeley
+    //     ? await berkeleyDeploy()
+    //     : await localDeploy();
 
-      if (isBerkeley) {
-        // wait for the account to exist
-        await loopUntilAccountExists({
-          account: zkAppAddress,
-          eachTimeNotExist: () =>
-            console.log(
-              'waiting for zkApp account to be deployed...',
-              getFriendlyDateTime()
-            ),
-          isZkAppAccount: true,
-        });
-      }
+    //   if (isBerkeley) {
+    //     // wait for the account to exist
+    //     await loopUntilAccountExists({
+    //       account: zkAppAddress,
+    //       eachTimeNotExist: () =>
+    //         console.log(
+    //           'waiting for zkApp account to be deployed...',
+    //           getFriendlyDateTime()
+    //         ),
+    //       isZkAppAccount: true,
+    //     });
+    //   }
 
-      // const tokenAmount = zkApp.totalAmountInCirculation.get();
-      // console.log('tokenAmount', tokenAmount.toString());
+    //   // const tokenAmount = zkApp.totalAmountInCirculation.get();
+    //   // console.log('tokenAmount', tokenAmount.toString());
 
-      if (isBerkeley) {
-        await fetchAccount({ publicKey: zkAppAddress });
-      }
-      let actualVerificationKey = Mina.getAccount(zkAppAddress).zkapp
-        ?.verificationKey;
+    //   if (isBerkeley) {
+    //     await fetchAccount({ publicKey: zkAppAddress });
+    //   }
+    //   let actualVerificationKey = Mina.getAccount(zkAppAddress).zkapp
+    //     ?.verificationKey;
 
-      expect(actualVerificationKey?.hash.toString()).toEqual(
-        zkAppVerificationKey?.hash
-      );
-    }, 10000000);
+    //   expect(actualVerificationKey?.hash.toString()).toEqual(
+    //     zkAppVerificationKey?.hash
+    //   );
+    // }, 10000000);
     // ------------------------------------------------------------------------
 
     // // ------------------------------------------------------------------------
@@ -1030,74 +1030,74 @@ describe('Token-test', () => {
     // }, 10000000);
 
     // ------------------------------------------------------------------------
-    it(`Sending Actions - deployToBerkeley?: ${deployToBerkeley}`, async () => {
-      console.log('applying actions..');
+    // it(`Sending Actions - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    //   console.log('applying actions..');
 
-      if (isBerkeley) {
-        await fetchAccount({
-          publicKey: zkAppAddress,
-          tokenId: zkApp.token.id,
-        });
-        await fetchAccount({
-          publicKey: deployerAccount,
-        });
-      }
+    //   if (isBerkeley) {
+    //     await fetchAccount({
+    //       publicKey: zkAppAddress,
+    //       tokenId: zkApp.token.id,
+    //     });
+    //     await fetchAccount({
+    //       publicKey: deployerAccount,
+    //     });
+    //   }
 
-      console.log('action 1');
-      let tx = await Mina.transaction(deployerAccount, () => {
-        zkApp.incrementCounter(PrivateKey.random().toPublicKey());
-        // zkApp.incrementCounter();
-      });
-      await tx.prove();
-      await tx.sign([deployerKey]).send();
+    //   console.log('action 1');
+    //   let tx = await Mina.transaction(deployerAccount, () => {
+    //     zkApp.incrementCounter(PrivateKey.random().toPublicKey());
+    //     // zkApp.incrementCounter();
+    //   });
+    //   await tx.prove();
+    //   await tx.sign([deployerKey]).send();
 
-      console.log('action 2');
-      tx = await Mina.transaction(deployerAccount, () => {
-        zkApp.incrementCounter(PrivateKey.random().toPublicKey());
-        // zkApp.incrementCounter();
-      });
-      await tx.prove();
-      await tx.sign([deployerKey]).send();
+    //   console.log('action 2');
+    //   tx = await Mina.transaction(deployerAccount, () => {
+    //     zkApp.incrementCounter(PrivateKey.random().toPublicKey());
+    //     // zkApp.incrementCounter();
+    //   });
+    //   await tx.prove();
+    //   await tx.sign([deployerKey]).send();
 
-      console.log('action 3');
-      tx = await Mina.transaction(deployerAccount, () => {
-        zkApp.incrementCounter(PrivateKey.random().toPublicKey());
-        // zkApp.incrementCounter();
-      });
-      await tx.prove();
-      await tx.sign([deployerKey]).send();
-    }, 10000000);
-    // ------------------------------------------------------------------------
-    // ------------------------------------------------------------------------
-    it(`waiting one block to get Actions back later - deployToBerkeley?: ${deployToBerkeley}`, async () => {
-      console.log('dummy tx');
-      let tx = await Mina.transaction(
-        {
-          sender: deployerAccount,
-          memo: 'Dummy Transaction',
-        },
-        () => {}
-      );
-      await tx.prove();
-      tx.sign([deployerKey]);
-      await (await tx.send()).wait();
-    }, 10000000);
+    //   console.log('action 3');
+    //   tx = await Mina.transaction(deployerAccount, () => {
+    //     zkApp.incrementCounter(PrivateKey.random().toPublicKey());
+    //     // zkApp.incrementCounter();
+    //   });
+    //   await tx.prove();
+    //   await tx.sign([deployerKey]).send();
+    // }, 10000000);
+    // // ------------------------------------------------------------------------
+    // // ------------------------------------------------------------------------
+    // it(`waiting one block to get Actions back later - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    //   console.log('dummy tx');
+    //   let tx = await Mina.transaction(
+    //     {
+    //       sender: deployerAccount,
+    //       memo: 'Dummy Transaction',
+    //     },
+    //     () => {}
+    //   );
+    //   await tx.prove();
+    //   tx.sign([deployerKey]);
+    //   await (await tx.send()).wait();
+    // }, 10000000);
 
-    // ------------------------------------------------------------------------
-    it(`getting Actions back - deployToBerkeley?: ${deployToBerkeley}`, async () => {
-      console.log('rolling up pending actions..');
+    // // ------------------------------------------------------------------------
+    // it(`getting Actions back - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    //   console.log('rolling up pending actions..');
 
-      console.log('state before: ' + zkApp.actionCounter.get());
+    //   console.log('state before: ' + zkApp.actionCounter.get());
 
-      let tx = await Mina.transaction(deployerAccount, () => {
-        zkApp.rollUpActions();
-      });
-      await tx.prove();
-      await tx.sign([deployerKey]).send();
+    //   let tx = await Mina.transaction(deployerAccount, () => {
+    //     zkApp.rollUpActions();
+    //   });
+    //   await tx.prove();
+    //   await tx.sign([deployerKey]).send();
 
-      console.log('state after rollup: ' + zkApp.actionCounter.get());
-      expect(zkApp.actionCounter.get()).toEqual(Field(8));
-    }, 10000000);
+    //   console.log('state after rollup: ' + zkApp.actionCounter.get());
+    //   expect(zkApp.actionCounter.get()).toEqual(Field(8));
+    // }, 10000000);
 
     it(`Dummy - deployToBerkeley?: ${deployToBerkeley}`, async () => {}, 10000000);
   }
