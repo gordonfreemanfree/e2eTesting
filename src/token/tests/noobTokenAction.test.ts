@@ -272,7 +272,7 @@ describe('Token-test-actions', () => {
         }
       );
       await tx.prove();
-      await tx.sign([deployerKey]).send();
+      await (await tx.sign([deployerKey]).send()).wait();
 
       console.log('action 2');
       tx = await Mina.transaction(
@@ -283,7 +283,7 @@ describe('Token-test-actions', () => {
         }
       );
       await tx.prove();
-      await tx.sign([deployerKey]).send();
+      await (await tx.sign([deployerKey]).send()).wait();
 
       console.log('action 3');
       tx = await Mina.transaction(
@@ -294,7 +294,7 @@ describe('Token-test-actions', () => {
         }
       );
       await tx.prove();
-      await tx.sign([deployerKey]).send();
+      await (await tx.sign([deployerKey]).send()).wait();
     }, 10000000);
     // // ------------------------------------------------------------------------
     // // ------------------------------------------------------------------------
@@ -327,7 +327,7 @@ describe('Token-test-actions', () => {
         }
       );
       await tx.prove();
-      await tx.sign([deployerKey]).send();
+      await (await tx.sign([deployerKey]).send()).wait();
 
       if (isBerkeley) {
         await fetchAccount({
