@@ -1,6 +1,5 @@
 # Mina zkApp: E2etesting
 
-This template uses TypeScript.
 The Repo consists of two zkApps - noobToken and smartSnarkyNet
 
 ## SmartSnarkyNet
@@ -39,6 +38,9 @@ npm run build
 ```
 
 ## How to run tests
+
+There is a process variable that is used to switch between local and berkeley tests.
+`setEnvVars.js`
 
 ```sh
 npm run test
