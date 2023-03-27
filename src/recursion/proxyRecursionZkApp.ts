@@ -5,6 +5,7 @@ import {
   state,
   method,
   PublicKey,
+  Permissions,
 } from 'snarkyjs';
 import { SmartSnarkyNet } from './snarkyNet/smartSnarkyNet';
 import { NeuralNetProof } from './snarkyNet/recursionProof';
@@ -13,21 +14,17 @@ import { NeuralNetProof } from './snarkyNet/recursionProof';
 export class ProxyRecursionZkApp extends SmartContract {
   @state(UInt64) onChainState = State<UInt64>();
 
-  @method init() {
+  init() {
     super.init();
     this.onChainState.set(UInt64.from(0));
+    this.account.permissions.set({
+      ...Permissions.default(),
+      setVerificationKey: Permissions.signature(),
+    });
   }
 
-  @method callPredict(proof: NeuralNetProof, RecursionZkAppAddress: PublicKey) {
-    const recursionZkApp = new SmartSnarkyNet(RecursionZkAppAddress);
-    recursionZkApp.predict(proof);
+  @method callPredict(proof: NeuralNetProof, smartSnarkyNetAddress: PublicKey) {
+    const smartSnarkyNet = new SmartSnarkyNet(smartSnarkyNetAddress);
+    smartSnarkyNet.predict(proof);
   }
-
-  // @method callProofVerification(
-  //   proof: AddProof,
-  //   RecursionZkAppAddress: PublicKey
-  // ) {
-  //   const recursionZkApp = new RecursionZkApp(RecursionZkAppAddress);
-  //   recursionZkApp.proofVerification(proof);
-  // }
 }

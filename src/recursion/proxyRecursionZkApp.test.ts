@@ -305,6 +305,7 @@ describe('proxy-recursion-test', () => {
     }, 100000000);
 
     it(`init the layer hashes to fix architecture - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+      console.log('init the layer hashes to fix architecture...');
       // let amount = UInt64.from(100);
       if (isBerkeley) {
         await fetchAccount({
@@ -353,45 +354,8 @@ describe('proxy-recursion-test', () => {
       expect(currentLayer2Hash).toEqual(snarkyLayer2sHash);
     }, 10000000);
 
-    // it(`Send if the network time is correct - deployToBerkeley?: ${deployToBerkeley}`, async () => {
-    //   console.log('compiling...');
-
-    //   const { verificationKey } = await Add.compile();
-
-    //   const proof0 = await Add.init(Field(0));
-
-    //   console.log('making proof 1');
-
-    //   const proof1 = await Add.addNumber(Field(4), proof0, Field(4));
-
-    //   console.log('making proof 2');
-
-    //   const proof2 = await Add.add(Field(4), proof1, proof0);
-
-    //   const txn = await Mina.transaction(
-    //     { sender: deployerAccount, fee: 0.1e9 },
-    //     () => {
-    //       recursionZkApp.proofVerification(proof2);
-    //     }
-    //   );
-    //   await txn.prove();
-    //   txn.sign([deployerKey, recursionZkAppPrivateKey]);
-    //   await (await txn.send()).wait();
-
-    //   const txn = await Mina.transaction(
-    //     { sender: deployerAccount, fee: 0.1e9 },
-    //     () => {
-    //       recursionZkApp.proofVerification(proof2);
-    //     }
-    //   );
-    //   await txn.prove();
-    //   txn.sign([deployerKey, recursionZkAppPrivateKey]);
-    //   await (await txn.send()).wait();
-
-    //   expect(currentDummyState).toEqual(UInt64.from(400));
-    // }, 10000000);
-
     it(`proving that input image was indeed a picture of a 2 - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+      console.log('proving that input image was indeed a picture of a 2...');
       let snarkyLayer1s = new SnarkyLayer1(
         preprocessWeights(weights_l1_8x8),
         'relu'
@@ -443,12 +407,14 @@ describe('proxy-recursion-test', () => {
       if (isBerkeley) {
         await fetchAccount({ publicKey: smartSnarkyNetAddress });
       }
-      let currentClassification = smartSnarkyNetZkApp.classification.get();
+      // let currentClassification = smartSnarkyNetZkApp.classification.get();
+      const currentClassification = smartSnarkyNetZkApp.classification.get();
 
       expect(currentClassification).toEqual(Field(2));
     }, 10000000);
 
     it(`proving that input image was indeed a picture of a 7 - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+      console.log('proving that input image was indeed a picture of a 7...');
       let snarkyLayer1s = new SnarkyLayer1(
         preprocessWeights(weights_l1_8x8),
         'relu'
@@ -506,6 +472,9 @@ describe('proxy-recursion-test', () => {
     }, 10000000);
 
     it(`changing smartSnarkyNet Permission to impossible to fix architecture  - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+      console.log(
+        'changing smartSnarkyNet Permission to impossible to fix architecture...'
+      );
       if (isBerkeley) {
         await fetchAccount({ publicKey: smartSnarkyNetAddress });
       }

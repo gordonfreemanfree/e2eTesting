@@ -1,5 +1,4 @@
-// Description: Smart Contract utilizing SnarkyNet and SnarkyLayers for an implmenetation of a Deep Neural Network
-// for the MNIST Handwritten Digits Dataset: http://yann.lecun.com/exdb/mnist/
+// Description:
 
 import {
   UInt64,
@@ -15,8 +14,6 @@ import {
   SelfProof,
 } from 'snarkyjs';
 import { SnarkyLayer1, SnarkyLayer2 } from './snarkyLayer.js';
-import { InputImage } from './inputImageClass.js';
-import { SnarkyNet } from './snarkynet.js';
 import { NeuralNetProof } from './recursionProof.js';
 
 export class SmartSnarkyNet extends SmartContract {
@@ -43,21 +40,18 @@ export class SmartSnarkyNet extends SmartContract {
   }
 
   // TODO: make this a real init method
+  // TODO: make sure that the layers are fixed
   @method initState(layer1: SnarkyLayer1, layer2: SnarkyLayer2) {
     super.init();
     // Initialize contract state
     this.classification.set(Field(0));
     this.layer1Hash.set(Poseidon.hash(layer1.toFields()));
     this.layer2Hash.set(Poseidon.hash(layer2.toFields()));
-    // TODO: make sure that the layers are fixed
     this.emitEvent('set-layer1', Poseidon.hash(layer1.toFields()));
     this.emitEvent('set-layer2', Poseidon.hash(layer2.toFields()));
   }
 
   @method predict(neuralNetProof: NeuralNetProof) {
-    // create the model
-    // let model = new SnarkyNet([layer1, layer2]);
-
     // generating the hash of layers that were used in the proof generation
     let actualLayer1Hash = Poseidon.hash(
       neuralNetProof.publicInput.layer1.toFields()
@@ -78,23 +72,16 @@ export class SmartSnarkyNet extends SmartContract {
     this.layer1Hash.assertEquals(actualLayer1Hash);
     this.layer2Hash.assertEquals(actualLayer2Hash);
 
-    // run the model and obtain the predictions
-    // let currentModel = model;
-    // let predictionAndSteps = currentModel.predict(input);
-    // let prediction = predictionAndSteps.result;
-    // console.log('prediction: ', prediction);
-    // console.log('prediction to string: ', prediction.toString());
-
-    // find the max value and its index
-    // TODO: make this a loop
-    // there is a bug that prevents this from working in a loop
-    // looks complicated but it simply finds the max value and its index in the prediction array
+    //obtain the predictions
     let prediction = neuralNetProof.publicInput.precomputedOutputLayer2;
-    // console.log('prediction: ', prediction.toString());
 
     let max01 = Field(0);
     let classification01 = Field(0);
 
+    // looks weird but the following code is equivalent is just finding the max value of the prediction array
+    // and returning the index of the max value
+    // TODO: make this function easier to read
+    // TODO: make this function more efficient
     [max01, classification01] = Circuit.if(
       prediction[0].greaterThan(prediction[1]),
       (() => {
