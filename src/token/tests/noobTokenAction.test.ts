@@ -264,7 +264,7 @@ describe('Token-test-actions', () => {
 
       console.log('action 1');
       let tx = await Mina.transaction(
-        { sender: deployerAccount, fee: 0.1e9 },
+        { sender: deployerAccount, fee: 0.2e9 },
 
         () => {
           zkApp.incrementCounter(Field(1));
@@ -276,7 +276,7 @@ describe('Token-test-actions', () => {
 
       console.log('action 2');
       tx = await Mina.transaction(
-        { sender: deployerAccount, fee: 0.1e9 },
+        { sender: deployerAccount, fee: 0.2e9 },
         () => {
           zkApp.incrementCounter(Field(1));
           // zkApp.incrementCounter();
@@ -287,7 +287,7 @@ describe('Token-test-actions', () => {
 
       console.log('action 3');
       tx = await Mina.transaction(
-        { sender: deployerAccount, fee: 0.1e9 },
+        { sender: deployerAccount, fee: 0.2e9 },
         () => {
           zkApp.incrementCounter(Field(1));
           // zkApp.incrementCounter();
@@ -304,7 +304,7 @@ describe('Token-test-actions', () => {
         {
           sender: deployerAccount,
           memo: 'Dummy Transaction',
-          fee: 0.1e9,
+          fee: 0.2e9,
         },
 
         () => {}
@@ -321,7 +321,7 @@ describe('Token-test-actions', () => {
       console.log('state before: ' + zkApp.actionCounter.get());
 
       let tx = await Mina.transaction(
-        { sender: deployerAccount, fee: 0.1e9 },
+        { sender: deployerAccount, fee: 0.2e9 },
         () => {
           zkApp.rollUpActions();
         }
