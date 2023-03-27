@@ -21,7 +21,7 @@ const tokenSymbol = 'NOOB';
 // const INCREMENT = Field(1);
 
 export class NoobToken extends SmartContract {
-  // reducer = Reducer({ actionType: Field });
+  reducer = Reducer({ actionType: Field });
 
   events = {
     'increase-totalAmountInCirculation-to': UInt64,
@@ -36,7 +36,7 @@ export class NoobToken extends SmartContract {
   // used for actions
   @state(Field) actionsHash = State<Field>();
   @state(Field) actionCounter = State<Field>();
-  @state(Field) whiteListMerkleTreeRoot = State<Field>();
+  // @state(Field) whiteListMerkleTreeRoot = State<Field>();
   @state(UInt64) startDate = State<UInt64>();
 
   // init is a method that initializes the contract.
@@ -57,38 +57,34 @@ export class NoobToken extends SmartContract {
     });
   }
 
-  // @method incrementCounter(key: Field) {
-  //   this.reducer.dispatch(key);
-  // }
+  // dummy method to test the reducer
+  @method incrementCounter(key: Field) {
+    this.reducer.dispatch(key);
+  }
 
-  // @method rollUpActions() {
-  //   let actionsHash = this.actionsHash.get();
-  //   this.actionsHash.assertEquals(actionsHash);
-  //   let currentActionCounter = this.actionCounter.get();
-  //   this.actionCounter.assertEquals(currentActionCounter);
-  //   let pendingActions = this.reducer.getActions({
-  //     fromActionHash: actionsHash,
-  //   });
+  // dummy method to test the reducer
+  @method rollUpActions() {
+    let actionsHash = this.actionsHash.get();
+    this.actionsHash.assertEquals(actionsHash);
+    let currentActionCounter = this.actionCounter.get();
+    this.actionCounter.assertEquals(currentActionCounter);
+    let pendingActions = this.reducer.getActions({
+      fromActionHash: actionsHash,
+    });
 
-  //   // let dummyInitial = new ActionsReturn([]);
-  //   let { state: newState, actionsHash: newActionsHash } = this.reducer.reduce(
-  //     pendingActions,
-  //     Field,
-  //     // function that says how to apply an action
-  //     (state: Field, _action: Field) => {
-  //       Circuit.log('actions is', _action);
-  //       Circuit.log('state is', state);
-  //       state.add(_action);
-  //       return state;
-  //     },
-  //     { state: currentActionCounter, actionsHash: actionsHash },
-  //     { maxTransactionsWithActions: 10 }
-  //   );
-  //   actionsHash = newActionsHash;
-  //   this.actionsHash.set(actionsHash);
-  //   Circuit.log('newState is', newState);
-  //   // this.actionCounter.set(newState);
-  // }
+    let { state: newState, actionsHash: newActionsHash } = this.reducer.reduce(
+      pendingActions,
+      Field,
+      (state: Field, _action: Field) => {
+        return state.add(_action);
+      },
+      { state: currentActionCounter, actionsHash: actionsHash }
+      // { maxTransactionsWithActions: 10 }
+    );
+    this.actionsHash.set(newActionsHash);
+    Circuit.log('newState is', newState);
+    this.actionCounter.set(newState);
+  }
 
   // method to allow the contract owner to pause the contract
   @method pause(isPaused: Bool) {
@@ -138,10 +134,11 @@ export class NoobToken extends SmartContract {
     this.emitEvent('tokens-sent-to', receiverAddress);
   }
 
-  // mintWithMina is a method that mints tokens with Mina. It takes a receiverAddress and amount as parameters.
-  // It adds the amount to the totalAmountInCirculation and mints the amount to the receiverAddress.
-  // The amount is converted to a UInt64 before being added to totalAmountInCirculation.
+  // mintWithMina is a method that mints tokens if the Mina balance is greater than the amount requested.
+  // It takes a receiverAddress and amount as parameters.
 
+  // WARNING: This method is only for testing purposes and should not be used in production.
+  // it does not move Mina to new location.
   @method mintWithMina(receiverAddress: PublicKey, amount: UInt64) {
     let totalAmountInCirculation = this.totalAmountInCirculation.get();
     this.totalAmountInCirculation.assertEquals(totalAmountInCirculation);

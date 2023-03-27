@@ -1,3 +1,6 @@
+// This file contains the NeuralNet ZkProgram.
+// This is the main file that is used to generate the proof.
+
 import {
   Circuit,
   Experimental,
@@ -55,7 +58,6 @@ const NeuralNet = Experimental.ZkProgram({
         let newResult = outputLayer2[0];
 
         // using this to check that the output of layer2 is correct
-        // But this is not a correct proof.
         Poseidon.hash(newResult).assertEquals(
           Poseidon.hash(architecture.precomputedOutputLayer2)
         );
@@ -64,7 +66,5 @@ const NeuralNet = Experimental.ZkProgram({
   },
 });
 
-// export let NeuralNetProof_ = Experimental.ZkProgram.Proof(NeuralNet);
-// export class NeuralNetProof extends NeuralNetProof_ { }
 export class NeuralNetProof extends Experimental.ZkProgram.Proof(NeuralNet) {}
 export { Architecture, NeuralNet };

@@ -1,3 +1,5 @@
+// This file is used to generate an InputImage class that is used to store the image matrix and use in the circuit.
+
 export { InputImage };
 
 import { Field, CircuitValue, arrayProp, Struct, Circuit } from 'snarkyjs';

@@ -1,4 +1,6 @@
 // Description: SnarkyNet class to run the model
+// SnarkyNet is defined to represent the Deep Neural Network model.
+// We use the output of the model to use as input for the NeuralNet ZkProgram
 
 export { SnarkyNet };
 

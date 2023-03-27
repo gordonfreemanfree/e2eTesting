@@ -1,8 +1,5 @@
 // Description: SnarkyTensor allows for the methods utilized for manipulating tensors
 
-// TODO: float to Field conversion is currently dependend on the Math library
-// therefore it cannot be considered a pure snarkyJS implementation and so it is not secure.
-
 export { SnarkyTensor };
 
 import {
@@ -24,8 +21,6 @@ class SnarkyTensor extends CircuitValue {
 
   constructor(power: Field = Field(10000000)) {
     // Multiplier for representing decimals
-    // this.scale_factor = Math.pow(10, power);
-    // this.scale_factor = power;
     super();
     this.scale_factor_Field = power;
   }
@@ -41,10 +36,10 @@ class SnarkyTensor extends CircuitValue {
     let m2_t = this.transpose(m2);
     // let m2_t = m2;
     for (let i = 0; i < m1.length; i++) {
-      console.log('in the for loop', i);
+      // console.log('in the for loop', i);
       let m_array = Array();
       for (let j = 0; j < m2_t.length; j++) {
-        console.log('in the for loop', j);
+        // console.log('in the for loop', j);
         m_array[j] = this.dot_product_t1(m1[i], m2_t[j]);
       }
       y[i] = m_array;
