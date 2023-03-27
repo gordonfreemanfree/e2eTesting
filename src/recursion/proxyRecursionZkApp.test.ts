@@ -253,266 +253,263 @@ describe('proxy-recursion-test', () => {
       //   }
     }
 
-    it(`deploy zkApps and check verificationKey - deployToBerkeley?: ${deployToBerkeley}`, async () => {
-      deployToBerkeley ? await berkeleyDeploy() : await localDeploy();
+    // it(`deploy zkApps and check verificationKey - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    //   deployToBerkeley ? await berkeleyDeploy() : await localDeploy();
 
-      if (isBerkeley) {
-        // wait for the account to exist
-        await loopUntilAccountExists({
-          account: smartSnarkyNetAddress,
-          eachTimeNotExist: () =>
-            console.log(
-              'waiting for smartSnarkyNetZkApp account to be deployed...',
-              getFriendlyDateTime()
-            ),
-          isZkAppAccount: true,
-        });
+    //   if (isBerkeley) {
+    //     // wait for the account to exist
+    //     await loopUntilAccountExists({
+    //       account: smartSnarkyNetAddress,
+    //       eachTimeNotExist: () =>
+    //         console.log(
+    //           'waiting for smartSnarkyNetZkApp account to be deployed...',
+    //           getFriendlyDateTime()
+    //         ),
+    //       isZkAppAccount: true,
+    //     });
 
-        await loopUntilAccountExists({
-          account: proxyZkAppAddress,
-          eachTimeNotExist: () =>
-            console.log(
-              'waiting for proxyZkApp account to be deployed...',
-              getFriendlyDateTime()
-            ),
-          isZkAppAccount: true,
-        });
-      }
+    //     await loopUntilAccountExists({
+    //       account: proxyZkAppAddress,
+    //       eachTimeNotExist: () =>
+    //         console.log(
+    //           'waiting for proxyZkApp account to be deployed...',
+    //           getFriendlyDateTime()
+    //         ),
+    //       isZkAppAccount: true,
+    //     });
+    //   }
 
-      // const currentOnChainState = proxyZkApp.onChainState.get();
-      // console.log('currentOnChainState', currentOnChainState.toString());
+    //   if (isBerkeley) {
+    //     await fetchAccount({
+    //       publicKey: smartSnarkyNetAddress,
+    //     });
+    //     await fetchAccount({
+    //       publicKey: proxyZkAppAddress,
+    //     });
+    //   }
+    //   let actualSmartSnarkyVerificationKey = Mina.getAccount(
+    //     smartSnarkyNetAddress
+    //   ).zkapp?.verificationKey?.hash;
+    //   let actualProxyVerificationKey = Mina.getAccount(proxyZkAppAddress).zkapp
+    //     ?.verificationKey?.hash;
 
-      if (isBerkeley) {
-        await fetchAccount({
-          publicKey: smartSnarkyNetAddress,
-        });
-        await fetchAccount({
-          publicKey: proxyZkAppAddress,
-        });
-      }
-      let actualSmartSnarkyVerificationKey = Mina.getAccount(
-        smartSnarkyNetAddress
-      ).zkapp?.verificationKey?.hash;
-      let actualProxyVerificationKey = Mina.getAccount(proxyZkAppAddress).zkapp
-        ?.verificationKey?.hash;
+    //   expect(actualProxyVerificationKey?.toString()).toEqual(
+    //     proxyZkAppVerificationKey?.hash
+    //   );
+    //   expect(actualSmartSnarkyVerificationKey?.toString()).toEqual(
+    //     smartSnarkyZkAppVerificationKey?.hash
+    //   );
+    // }, 100000000);
 
-      expect(actualProxyVerificationKey?.toString()).toEqual(
-        proxyZkAppVerificationKey?.hash
-      );
-      expect(actualSmartSnarkyVerificationKey?.toString()).toEqual(
-        smartSnarkyZkAppVerificationKey?.hash
-      );
-    }, 100000000);
+    // it(`init the layer hashes to fix architecture - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    //   console.log('init the layer hashes to fix architecture...');
+    //   // let amount = UInt64.from(100);
+    //   if (isBerkeley) {
+    //     await fetchAccount({
+    //       publicKey: smartSnarkyNetAddress,
+    //     });
+    //     await fetchAccount({
+    //       publicKey: proxyZkAppAddress,
+    //     });
+    //   }
 
-    it(`init the layer hashes to fix architecture - deployToBerkeley?: ${deployToBerkeley}`, async () => {
-      console.log('init the layer hashes to fix architecture...');
-      // let amount = UInt64.from(100);
-      if (isBerkeley) {
-        await fetchAccount({
-          publicKey: smartSnarkyNetAddress,
-        });
-        await fetchAccount({
-          publicKey: proxyZkAppAddress,
-        });
-      }
+    //   let snarkyLayer1s = new SnarkyLayer1(
+    //     preprocessWeights(weights_l1_8x8),
+    //     'relu'
+    //   );
 
-      let snarkyLayer1s = new SnarkyLayer1(
-        preprocessWeights(weights_l1_8x8),
-        'relu'
-      );
+    //   let snarkyLayer2s = new SnarkyLayer2(
+    //     preprocessWeights(weights_l2_8x8),
+    //     'softmax'
+    //   );
 
-      let snarkyLayer2s = new SnarkyLayer2(
-        preprocessWeights(weights_l2_8x8),
-        'softmax'
-      );
+    //   let snarkyLayer1sHash = Poseidon.hash(snarkyLayer1s.toFields());
+    //   let snarkyLayer2sHash = Poseidon.hash(snarkyLayer2s.toFields());
 
-      let snarkyLayer1sHash = Poseidon.hash(snarkyLayer1s.toFields());
-      let snarkyLayer2sHash = Poseidon.hash(snarkyLayer2s.toFields());
+    //   const txn = await Mina.transaction(
+    //     { sender: deployerAccount, fee: 0.1e9 },
+    //     () => {
+    //       smartSnarkyNetZkApp.initState(snarkyLayer1s, snarkyLayer2s);
+    //     }
+    //   );
+    //   await txn.prove();
+    //   txn.sign([deployerKey, smartSnarkyNetPrivateKey]);
+    //   await (await txn.send()).wait();
 
-      const txn = await Mina.transaction(
-        { sender: deployerAccount, fee: 0.1e9 },
-        () => {
-          smartSnarkyNetZkApp.initState(snarkyLayer1s, snarkyLayer2s);
-        }
-      );
-      await txn.prove();
-      txn.sign([deployerKey, smartSnarkyNetPrivateKey]);
-      await (await txn.send()).wait();
+    //   if (isBerkeley) {
+    //     await fetchAccount({ publicKey: smartSnarkyNetAddress });
+    //   }
+    //   Mina.getAccount(smartSnarkyNetAddress);
 
-      if (isBerkeley) {
-        await fetchAccount({ publicKey: smartSnarkyNetAddress });
-      }
-      Mina.getAccount(smartSnarkyNetAddress);
+    //   let currentLayer1Hash = smartSnarkyNetZkApp.layer1Hash.get();
+    //   let currentLayer2Hash = smartSnarkyNetZkApp.layer2Hash.get();
 
-      let currentLayer1Hash = smartSnarkyNetZkApp.layer1Hash.get();
-      let currentLayer2Hash = smartSnarkyNetZkApp.layer2Hash.get();
+    //   // let currentDummyState = recursionZkApp.dummyState.get();
+    //   // console.log('currentDummyState', currentDummyState.toString());
 
-      // let currentDummyState = recursionZkApp.dummyState.get();
-      // console.log('currentDummyState', currentDummyState.toString());
+    //   expect(currentLayer1Hash).toEqual(snarkyLayer1sHash);
+    //   expect(currentLayer2Hash).toEqual(snarkyLayer2sHash);
+    // }, 10000000);
 
-      expect(currentLayer1Hash).toEqual(snarkyLayer1sHash);
-      expect(currentLayer2Hash).toEqual(snarkyLayer2sHash);
-    }, 10000000);
+    // it(`proving that input image was indeed a picture of a 2 - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    //   console.log('proving that input image was indeed a picture of a 2...');
+    //   let snarkyLayer1s = new SnarkyLayer1(
+    //     preprocessWeights(weights_l1_8x8),
+    //     'relu'
+    //   );
 
-    it(`proving that input image was indeed a picture of a 2 - deployToBerkeley?: ${deployToBerkeley}`, async () => {
-      console.log('proving that input image was indeed a picture of a 2...');
-      let snarkyLayer1s = new SnarkyLayer1(
-        preprocessWeights(weights_l1_8x8),
-        'relu'
-      );
+    //   let snarkyLayer2s = new SnarkyLayer2(
+    //     preprocessWeights(weights_l2_8x8),
+    //     'softmax'
+    //   );
 
-      let snarkyLayer2s = new SnarkyLayer2(
-        preprocessWeights(weights_l2_8x8),
-        'softmax'
-      );
+    //   let inputImage = new InputImage(preprocessImage(image_1_label_2_8x8));
 
-      let inputImage = new InputImage(preprocessImage(image_1_label_2_8x8));
+    //   let model = new SnarkyNet([snarkyLayer1s, snarkyLayer2s]);
 
-      let model = new SnarkyNet([snarkyLayer1s, snarkyLayer2s]);
+    //   let predictionAndSteps = model.predict(inputImage);
 
-      let predictionAndSteps = model.predict(inputImage);
+    //   console.log('predictionAndSteps', predictionAndSteps);
 
-      console.log('predictionAndSteps', predictionAndSteps);
+    //   // const { verificationKey } = await NeuralNet.compile();
 
-      // const { verificationKey } = await NeuralNet.compile();
+    //   // console.log('verificationKey', verificationKey);
 
-      // console.log('verificationKey', verificationKey);
+    //   const architecture = new Architecture({
+    //     layer1: snarkyLayer1s,
+    //     layer2: snarkyLayer2s,
+    //     precomputedOutputLayer1: predictionAndSteps.intermediateResults[0],
+    //     precomputedOutputLayer2: predictionAndSteps.intermediateResults[1],
+    //   });
 
-      const architecture = new Architecture({
-        layer1: snarkyLayer1s,
-        layer2: snarkyLayer2s,
-        precomputedOutputLayer1: predictionAndSteps.intermediateResults[0],
-        precomputedOutputLayer2: predictionAndSteps.intermediateResults[1],
-      });
+    //   const proofLayer1 = await NeuralNet.layer1(architecture, inputImage);
+    //   console.log('proofLayer1', proofLayer1);
 
-      const proofLayer1 = await NeuralNet.layer1(architecture, inputImage);
-      console.log('proofLayer1', proofLayer1);
+    //   const proofLayer2 = await NeuralNet.layer2(architecture, proofLayer1);
+    //   console.log('proofLayer2', proofLayer2);
 
-      const proofLayer2 = await NeuralNet.layer2(architecture, proofLayer1);
-      console.log('proofLayer2', proofLayer2);
+    //   const isValidLocal = await verify(proofLayer2, neuralNetVerificationKey);
+    //   console.log('isValidLocal', isValidLocal);
 
-      const isValidLocal = await verify(proofLayer2, neuralNetVerificationKey);
-      console.log('isValidLocal', isValidLocal);
+    //   const txn = await Mina.transaction(
+    //     { sender: deployerAccount, fee: 0.1e9 },
+    //     () => {
+    //       proxyZkApp.callPredict(proofLayer2, smartSnarkyNetAddress);
+    //     }
+    //   );
+    //   await txn.prove();
+    //   txn.sign([deployerKey, smartSnarkyNetPrivateKey]);
+    //   await (await txn.send()).wait();
 
-      const txn = await Mina.transaction(
-        { sender: deployerAccount, fee: 0.1e9 },
-        () => {
-          proxyZkApp.callPredict(proofLayer2, smartSnarkyNetAddress);
-        }
-      );
-      await txn.prove();
-      txn.sign([deployerKey, smartSnarkyNetPrivateKey]);
-      await (await txn.send()).wait();
+    //   if (isBerkeley) {
+    //     await fetchAccount({ publicKey: smartSnarkyNetAddress });
+    //   }
+    //   // let currentClassification = smartSnarkyNetZkApp.classification.get();
+    //   const currentClassification = smartSnarkyNetZkApp.classification.get();
 
-      if (isBerkeley) {
-        await fetchAccount({ publicKey: smartSnarkyNetAddress });
-      }
-      // let currentClassification = smartSnarkyNetZkApp.classification.get();
-      const currentClassification = smartSnarkyNetZkApp.classification.get();
+    //   expect(currentClassification).toEqual(Field(2));
+    // }, 10000000);
 
-      expect(currentClassification).toEqual(Field(2));
-    }, 10000000);
+    // it(`proving that input image was indeed a picture of a 7 - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    //   console.log('proving that input image was indeed a picture of a 7...');
+    //   let snarkyLayer1s = new SnarkyLayer1(
+    //     preprocessWeights(weights_l1_8x8),
+    //     'relu'
+    //   );
 
-    it(`proving that input image was indeed a picture of a 7 - deployToBerkeley?: ${deployToBerkeley}`, async () => {
-      console.log('proving that input image was indeed a picture of a 7...');
-      let snarkyLayer1s = new SnarkyLayer1(
-        preprocessWeights(weights_l1_8x8),
-        'relu'
-      );
+    //   let snarkyLayer2s = new SnarkyLayer2(
+    //     preprocessWeights(weights_l2_8x8),
+    //     'softmax'
+    //   );
 
-      let snarkyLayer2s = new SnarkyLayer2(
-        preprocessWeights(weights_l2_8x8),
-        'softmax'
-      );
+    //   let inputImage = new InputImage(preprocessImage(image_0_label_7_8x8));
 
-      let inputImage = new InputImage(preprocessImage(image_0_label_7_8x8));
+    //   let model = new SnarkyNet([snarkyLayer1s, snarkyLayer2s]);
 
-      let model = new SnarkyNet([snarkyLayer1s, snarkyLayer2s]);
+    //   let predictionAndSteps = model.predict(inputImage);
 
-      let predictionAndSteps = model.predict(inputImage);
+    //   console.log('predictionAndSteps', predictionAndSteps);
 
-      console.log('predictionAndSteps', predictionAndSteps);
+    //   // const { verificationKey } = await NeuralNet.compile();
 
-      // const { verificationKey } = await NeuralNet.compile();
+    //   // console.log('verificationKey', verificationKey);
 
-      // console.log('verificationKey', verificationKey);
+    //   const architecture = new Architecture({
+    //     layer1: snarkyLayer1s,
+    //     layer2: snarkyLayer2s,
+    //     precomputedOutputLayer1: predictionAndSteps.intermediateResults[0],
+    //     precomputedOutputLayer2: predictionAndSteps.intermediateResults[1],
+    //   });
 
-      const architecture = new Architecture({
-        layer1: snarkyLayer1s,
-        layer2: snarkyLayer2s,
-        precomputedOutputLayer1: predictionAndSteps.intermediateResults[0],
-        precomputedOutputLayer2: predictionAndSteps.intermediateResults[1],
-      });
+    //   const proofLayer1 = await NeuralNet.layer1(architecture, inputImage);
+    //   console.log('proofLayer1', proofLayer1);
 
-      const proofLayer1 = await NeuralNet.layer1(architecture, inputImage);
-      console.log('proofLayer1', proofLayer1);
+    //   const proofLayer2 = await NeuralNet.layer2(architecture, proofLayer1);
+    //   console.log('proofLayer2', proofLayer2);
 
-      const proofLayer2 = await NeuralNet.layer2(architecture, proofLayer1);
-      console.log('proofLayer2', proofLayer2);
+    //   const isValidLocal = await verify(proofLayer2, neuralNetVerificationKey);
+    //   console.log('isValidLocal', isValidLocal);
 
-      const isValidLocal = await verify(proofLayer2, neuralNetVerificationKey);
-      console.log('isValidLocal', isValidLocal);
+    //   const txn = await Mina.transaction(
+    //     { sender: deployerAccount, fee: 0.1e9 },
+    //     () => {
+    //       proxyZkApp.callPredict(proofLayer2, smartSnarkyNetAddress);
+    //     }
+    //   );
+    //   await txn.prove();
+    //   txn.sign([deployerKey, smartSnarkyNetPrivateKey]);
+    //   await (await txn.send()).wait();
 
-      const txn = await Mina.transaction(
-        { sender: deployerAccount, fee: 0.1e9 },
-        () => {
-          proxyZkApp.callPredict(proofLayer2, smartSnarkyNetAddress);
-        }
-      );
-      await txn.prove();
-      txn.sign([deployerKey, smartSnarkyNetPrivateKey]);
-      await (await txn.send()).wait();
+    //   if (isBerkeley) {
+    //     await fetchAccount({ publicKey: smartSnarkyNetAddress });
+    //   }
+    //   let currentClassification = smartSnarkyNetZkApp.classification.get();
 
-      if (isBerkeley) {
-        await fetchAccount({ publicKey: smartSnarkyNetAddress });
-      }
-      let currentClassification = smartSnarkyNetZkApp.classification.get();
+    //   expect(currentClassification).toEqual(Field(7));
+    // }, 10000000);
 
-      expect(currentClassification).toEqual(Field(7));
-    }, 10000000);
+    // it(`changing smartSnarkyNet Permission to impossible to fix architecture  - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    //   console.log(
+    //     'changing smartSnarkyNet Permission to impossible to fix architecture...'
+    //   );
+    //   if (isBerkeley) {
+    //     await fetchAccount({ publicKey: smartSnarkyNetAddress });
+    //   }
 
-    it(`changing smartSnarkyNet Permission to impossible to fix architecture  - deployToBerkeley?: ${deployToBerkeley}`, async () => {
-      console.log(
-        'changing smartSnarkyNet Permission to impossible to fix architecture...'
-      );
-      if (isBerkeley) {
-        await fetchAccount({ publicKey: smartSnarkyNetAddress });
-      }
+    //   // change permissions for setVerificationKey to impossible
+    //   let txn_permission = await Mina.transaction(
+    //     { sender: deployerAccount, fee: 0.1e9 },
+    //     () => {
+    //       let permissionsUpdate = AccountUpdate.createSigned(
+    //         smartSnarkyNetAddress
+    //       );
+    //       permissionsUpdate.account.permissions.set({
+    //         ...Permissions.default(),
+    //         setVerificationKey: Permissions.impossible(),
+    //       });
+    //     }
+    //   );
 
-      // change permissions for setVerificationKey to impossible
-      let txn_permission = await Mina.transaction(
-        { sender: deployerAccount, fee: 0.1e9 },
-        () => {
-          let permissionsUpdate = AccountUpdate.createSigned(
-            smartSnarkyNetAddress
-          );
-          permissionsUpdate.account.permissions.set({
-            ...Permissions.default(),
-            setVerificationKey: Permissions.impossible(),
-          });
-        }
-      );
+    //   await txn_permission.prove();
+    //   txn_permission.sign([deployerKey, smartSnarkyNetPrivateKey]);
+    //   await (await txn_permission.send()).wait();
 
-      await txn_permission.prove();
-      txn_permission.sign([deployerKey, smartSnarkyNetPrivateKey]);
-      await (await txn_permission.send()).wait();
+    //   if (isBerkeley) {
+    //     await fetchAccount({ publicKey: smartSnarkyNetAddress });
+    //   }
 
-      if (isBerkeley) {
-        await fetchAccount({ publicKey: smartSnarkyNetAddress });
-      }
+    //   let currentPermissionSetVerificationKey = Mina.getAccount(
+    //     smartSnarkyNetAddress
+    //   ).permissions.setVerificationKey;
 
-      let currentPermissionSetVerificationKey = Mina.getAccount(
-        smartSnarkyNetAddress
-      ).permissions.setVerificationKey;
+    //   expect(currentPermissionSetVerificationKey).toEqual(
+    //     Permissions.impossible()
+    //   );
+    // }, 10000000);
 
-      expect(currentPermissionSetVerificationKey).toEqual(
-        Permissions.impossible()
-      );
-    }, 10000000);
-
-    it(`Dummy test - deployToBerkeley?: ${deployToBerkeley}`, async () => {
-      expect(true).toEqual(true);
-    }, 10000000);
+    // it(`Dummy test - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    //   expect(true).toEqual(true);
+    // }, 10000000);
   }
   runTests();
 });

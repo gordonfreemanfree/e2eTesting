@@ -38,16 +38,16 @@ const INCREMENT = Field(1);
 //   }
 // }
 
-export class ActionsReturn extends Struct({
-  list: Circuit.array(PublicKey, 32),
-}) {
-  constructor(list: PublicKey[]) {
-    super({ list });
-  }
-  push(action: PublicKey) {
-    this.list.push(action);
-  }
-}
+// export class ActionsReturn extends Struct({
+//   list: Circuit.array(PublicKey, 32),
+// }) {
+//   constructor(list: PublicKey[]) {
+//     super({ list });
+//   }
+//   push(action: PublicKey) {
+//     this.list.push(action);
+//   }
+// }
 
 // export class ActionsType extends Struct({
 //   publicKey: PublicKey,
@@ -61,7 +61,7 @@ export class ActionsReturn extends Struct({
 // }
 
 export class NoobToken extends SmartContract {
-  reducer = Reducer({ actionType: PublicKey });
+  // reducer = Reducer({ actionType: Field });
 
   events = {
     'increase-totalAmountInCirculation-to': UInt64,
@@ -105,14 +105,14 @@ export class NoobToken extends SmartContract {
     this.actionCounter.set(Field(0));
     this.account.permissions.set({
       ...Permissions.default(),
-      access: Permissions.proof(),
+      access: Permissions.proofOrSignature(),
       setVerificationKey: Permissions.impossible(),
     });
   }
 
-  @method incrementCounter(key: PublicKey) {
-    this.reducer.dispatch(key);
-  }
+  // @method incrementCounter(key: Field) {
+  //   this.reducer.dispatch(key);
+  // }
 
   // @method rollUpActions() {
   //   let actionsHash = this.actionsHash.get();
@@ -123,18 +123,18 @@ export class NoobToken extends SmartContract {
   //     fromActionHash: actionsHash,
   //   });
 
-  //   let dummyInitial = new ActionsReturn([]);
+  //   // let dummyInitial = new ActionsReturn([]);
   //   let { state: newState, actionsHash: newActionsHash } = this.reducer.reduce(
   //     pendingActions,
-  //     ActionsReturn,
+  //     Field,
   //     // function that says how to apply an action
-  //     (state: ActionsReturn, _action: PublicKey) => {
+  //     (state: Field, _action: Field) => {
   //       Circuit.log('actions is', _action);
   //       Circuit.log('state is', state);
-  //       state.push(_action);
+  //       state.add(_action);
   //       return state;
   //     },
-  //     { state: dummyInitial, actionsHash: actionsHash },
+  //     { state: currentActionCounter, actionsHash: actionsHash },
   //     { maxTransactionsWithActions: 10 }
   //   );
   //   actionsHash = newActionsHash;
