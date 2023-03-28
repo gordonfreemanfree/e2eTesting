@@ -240,9 +240,7 @@ describe('Token-test-permission', () => {
       let actualVerificationKey = Mina.getAccount(zkAppAddress).zkapp
         ?.verificationKey;
 
-      expect(actualVerificationKey?.hash.toString()).toEqual(
-        zkAppVerificationKey?.hash
-      );
+      expect(actualVerificationKey?.hash).toEqual(zkAppVerificationKey?.hash);
     }, 10000000);
     // ------------------------------------------------------------------------
 
