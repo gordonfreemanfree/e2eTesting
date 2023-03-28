@@ -56,9 +56,9 @@ describe('proxy-recursion-test', () => {
     let addZkAppVerificationKey: string | undefined;
     let neuralNetVerificationKey: string;
 
-    let proxyZkAppVerificationKey: { data: string; hash: string } | undefined;
+    let proxyZkAppVerificationKey: { data: string; hash: Field } | undefined;
     let smartSnarkyZkAppVerificationKey:
-      | { data: string; hash: string }
+      | { data: string; hash: Field }
       | undefined;
     beforeAll(async () => {
       await isReady;

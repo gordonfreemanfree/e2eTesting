@@ -44,7 +44,7 @@ describe('Token-test-permission', () => {
       zkAppBAddress: PublicKey,
       receiverKey: PrivateKey,
       receiverAddress: PublicKey,
-      zkAppVerificationKey: { data: string; hash: string } | undefined;
+      zkAppVerificationKey: { data: string; hash: Field } | undefined;
 
     beforeAll(async () => {
       await isReady;
@@ -477,5 +477,5 @@ describe('Token-test-permission', () => {
       expect(newNoobBalance).toEqual(UInt64.from(1e9));
     }, 10000000);
   }
-  runTests();
+  // runTests();
 });

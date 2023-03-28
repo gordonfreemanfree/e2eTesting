@@ -44,7 +44,7 @@ describe('token-test-preconditions', () => {
       zkAppBAddress: PublicKey,
       receiverKey: PrivateKey,
       receiverAddress: PublicKey,
-      zkAppVerificationKey: { data: string; hash: string } | undefined;
+      zkAppVerificationKey: { data: string; hash: Field } | undefined;
 
     beforeAll(async () => {
       await isReady;
@@ -240,9 +240,7 @@ describe('token-test-preconditions', () => {
       let actualVerificationKey = Mina.getAccount(zkAppAddress).zkapp
         ?.verificationKey;
 
-      expect(actualVerificationKey?.hash.toString()).toEqual(
-        zkAppVerificationKey?.hash
-      );
+      expect(actualVerificationKey?.hash).toEqual(zkAppVerificationKey?.hash);
     }, 10000000);
     // ------------------------------------------------------------------------
 
