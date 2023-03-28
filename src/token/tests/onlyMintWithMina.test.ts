@@ -273,35 +273,47 @@ describe('Token-test-permission', () => {
       //   console.log('oldNoobBalance is', oldNoobBalance.toJSON());
 
       // send 2 Mina to zkAppAddress to fund account
-      let tx = await Mina.transaction(deployerAccount, () => {
-        zkApp.deposit(UInt64.from(1e9));
-      });
+      let tx = await Mina.transaction(
+        {
+          sender: deployerAccount,
+          fee: 0.2e9,
+        },
+        () => {
+          zkApp.deposit(UInt64.from(1e9));
+        }
+      );
       await tx.prove();
       await (await tx.sign([deployerKey]).send()).wait();
 
+      if (isBerkeley) {
+        await fetchAccount({ publicKey: deployerAccount });
+        await fetchAccount({ publicKey: zkAppAddress });
+      }
+
       Mina.getAccount(zkAppAddress);
       Mina.getAccount(deployerAccount);
+      let newBalance = Mina.getBalance(zkAppAddress);
       printBalances();
-      // console.log('txn with 1 mina sent, txn is', txn.toPretty());
+      expect(newBalance).toEqual(UInt64.from(1e9));
     }, 1000000);
 
     // ------------------------------------------------------------------------
 
-    it(`waiting one block to get txn confirmation - deployToBerkeley?: ${deployToBerkeley}`, async () => {
-      console.log('dummy tx');
-      let tx = await Mina.transaction(
-        {
-          sender: deployerAccount,
-          memo: 'Dummy Transaction',
-          fee: 0.2e9,
-        },
+    // it(`waiting one block to get txn confirmation - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    //   console.log('dummy tx');
+    //   let tx = await Mina.transaction(
+    //     {
+    //       sender: deployerAccount,
+    //       memo: 'Dummy Transaction',
+    //       fee: 0.2e9,
+    //     },
 
-        () => {}
-      );
-      await tx.prove();
-      tx.sign([deployerKey]);
-      await (await tx.send()).wait();
-    }, 10000000);
+    //     () => {}
+    //   );
+    //   await tx.prove();
+    //   tx.sign([deployerKey]);
+    //   await (await tx.send()).wait();
+    // }, 10000000);
     // ------------------------------------------------------------------------
 
     it(`try to mint now that the balance is 1 - deployToBerkeley?: ${deployToBerkeley}`, async () => {

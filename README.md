@@ -60,15 +60,6 @@ NoobToken is a very basic token contract that is build to test specific scenario
 
 ### Implementation
 
-We are using a few tricks here.
-
-1. InputImage is scaled to 8x8 grayscale. In order to get rid off Floats we simply multiply each pixel by a factor. This needs to be done in order to use the pixels as Fields. (factor is 10^3)
-2. The weights of the NN are trained with a custom constraint function so that weights will be constraint to positive values. Again we simply multiply the Floats with a factor to be able to use them as Fields. (factor is 10^3)
-3. During the matrix multiplication we have to do a kind of normalization because we ran into overflows. Our cheap trick is that we simply devide by another factor.
-4. For every Layer we generate a seperate proof. In our case we used a 2 Layer NN. The first proof is generated in a zkProgram called NeuralNet. We then verify the first proof during the second proof generation and also make sure that the output of proof 1 is used as input for proof 2. Lastley we send the second proof through the proxy to the smartSnarkyNet. In there the validity of the proof is checked. It is also checked that the layers used for proof generation are the ones stored as hashes in the smartSnarkyNet. Finally the predict method finds the highest value in the output of proof2 and sets its classification state to the index of the highest value which represents the classification. (This step should probably also be done in the zkProgram).
-   `So what's the point of using a zkProgram here?`
-   We can use this method to generate larger proofs and bypass circuit limitations.
-
 ### Limitations
 
 1. We weren't able to do sufficient accuracy tests after the whole scaling and normalization steps. In our very limited tests (20) we found one false classification.
