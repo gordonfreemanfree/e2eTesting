@@ -138,7 +138,7 @@ export class NoobToken extends SmartContract {
   // It takes a receiverAddress and amount as parameters.
 
   // WARNING: This method is only for testing purposes and should not be used in production.
-  // it does not move Mina to new location.
+  // it does not move Mina to a new location.
   @method mintWithMina(receiverAddress: PublicKey, amount: UInt64) {
     let totalAmountInCirculation = this.totalAmountInCirculation.get();
     this.totalAmountInCirculation.assertEquals(totalAmountInCirculation);
@@ -161,11 +161,6 @@ export class NoobToken extends SmartContract {
 
   // This function checks that the current timestamp is between the start and end dates and sends NOOB if correct time
   // if the current timestamp is not between the start and end dates, the function will fail
-
-  // endDate is used as input to the method to make sure testing is possible. In production, endDate should probably be a constant.
-  // dependecy: need to have minted at least 1 NOOB token to zkAppAddress before calling this method
-  // this function is used to send NOOB tokens to a specified address if the current timestamp is between the start and end dates
-  // parameters:
   // - receiverAddress: the address to which the NOOB tokens will be sent
   // - amount: the amount of NOOB tokens to be sent
   // - endDate: the end date
