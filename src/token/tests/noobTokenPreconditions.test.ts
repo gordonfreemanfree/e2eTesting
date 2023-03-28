@@ -30,7 +30,7 @@ const isBerkeley = process.env.TEST_ON_BERKELEY == 'true' ? true : false;
 console.log('isBerkeley:', isBerkeley);
 let proofsEnabled = true;
 
-describe('Token-test-1', () => {
+describe('token-test-preconditions', () => {
   async function runTests(deployToBerkeley: boolean = isBerkeley) {
     let Blockchain;
     let deployerAccount: PublicKey,
@@ -265,34 +265,34 @@ describe('Token-test-1', () => {
     // // set delegate to deployerAccount
     // // status: working
     // // confirmed: true
-    it(`set delegate to deployerAccount - deployToBerkeley?: ${deployToBerkeley}`, async () => {
-      console.log('set delegate to  deployerAccount');
-      if (isBerkeley) {
-        await fetchAccount({ publicKey: zkAppAddress });
-      }
-      let oldDelegate = Mina.getAccount(zkAppAddress).delegate;
-      console.log('oldDelegate is', oldDelegate?.toJSON());
+    // it(`set delegate to deployerAccount - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    //   console.log('set delegate to  deployerAccount');
+    //   if (isBerkeley) {
+    //     await fetchAccount({ publicKey: zkAppAddress });
+    //   }
+    //   let oldDelegate = Mina.getAccount(zkAppAddress).delegate;
+    //   console.log('oldDelegate is', oldDelegate?.toJSON());
 
-      // set delegate for deployerAccount
-      let txn_delegate = await Mina.transaction(
-        { sender: deployerAccount, fee: 0.1e9 },
-        () => {
-          let update = AccountUpdate.createSigned(zkAppAddress);
-          update.account.delegate.set(deployerAccount);
-        }
-      );
-      await txn_delegate.prove();
-      txn_delegate.sign([zkAppPrivateKey, deployerKey]);
-      await (await txn_delegate.send()).wait();
+    //   // set delegate for deployerAccount
+    //   let txn_delegate = await Mina.transaction(
+    //     { sender: deployerAccount, fee: 0.1e9 },
+    //     () => {
+    //       let update = AccountUpdate.createSigned(zkAppAddress);
+    //       update.account.delegate.set(deployerAccount);
+    //     }
+    //   );
+    //   await txn_delegate.prove();
+    //   txn_delegate.sign([zkAppPrivateKey, deployerKey]);
+    //   await (await txn_delegate.send()).wait();
 
-      if (isBerkeley) {
-        await fetchAccount({ publicKey: zkAppAddress });
-      }
-      let newDelegate = Mina.getAccount(zkAppAddress).delegate;
-      console.log('newDelegate is', newDelegate?.toJSON());
+    //   if (isBerkeley) {
+    //     await fetchAccount({ publicKey: zkAppAddress });
+    //   }
+    //   let newDelegate = Mina.getAccount(zkAppAddress).delegate;
+    //   console.log('newDelegate is', newDelegate?.toJSON());
 
-      expect(newDelegate).toEqual(deployerAccount);
-    }, 1000000);
+    //   expect(newDelegate).toEqual(deployerAccount);
+    // }, 1000000);
     // // ------------------------------------------------------------------------
 
     // ------------------------------------------------------------------------

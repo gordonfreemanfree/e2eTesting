@@ -604,7 +604,6 @@ describe('Token-test-permission', () => {
       const txn = await Mina.transaction(
         { sender: deployerAccount, fee: 0.1e9 },
         () => {
-          //   AccountUpdate.fundNewAccount(deployerAccount);
           let deployerAccountUpdate = AccountUpdate.createSigned(
             deployerAccount
           );
@@ -618,7 +617,7 @@ describe('Token-test-permission', () => {
       txn.sign([deployerKey, zkAppPrivateKey]);
       await (await txn.send()).wait();
 
-      console.log('txn with 1 mina sent, txn is', txn.toPretty());
+      // console.log('txn with 1 mina sent, txn is', txn.toPretty());
 
       if (isBerkeley) {
         await fetchAccount({ publicKey: zkAppAddress, tokenId });
@@ -639,24 +638,10 @@ describe('Token-test-permission', () => {
         }
       );
 
-      // console.log('txn20 before proof is', txn20.toPretty());
       await txn20.prove();
-      // console.log('after prove', txn20.toPretty());
-      txn20.sign([deployerKey, zkAppPrivateKey]);
-      // console.log('after sign', txn20.toPretty());
+      // txn20.sign([deployerKey, zkAppPrivateKey]);
+      txn20.sign([deployerKey]);
       await (await txn20.send()).wait();
-
-      // if (isBerkeley) {
-      //   await fetchAccount({
-      //     publicKey: zkAppAddress,
-      //     tokenId: tokenId,
-      //   });
-      // }
-
-      // let newNoobBalance = Mina.getBalance(zkAppAddress, tokenId);
-      // console.log('newNoobBalance is', newNoobBalance.toJSON());
-      // printBalances();
-      // expect(newNoobBalance).toEqual(oldNoobBalance.add(mintWithMinaAmount));
 
       if (isBerkeley) {
         await fetchAccount({
@@ -667,7 +652,6 @@ describe('Token-test-permission', () => {
           publicKey: zkAppAddress,
         });
       }
-      // let newBalance = Mina.getAccount(zkAppAddress, tokenId).balance;
       let newNoobBalance = Mina.getBalance(zkAppAddress, tokenId);
       console.log('mintWithMina, newNoobBalance is', newNoobBalance.toJSON());
 

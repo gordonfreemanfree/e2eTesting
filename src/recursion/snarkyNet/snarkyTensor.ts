@@ -30,7 +30,7 @@ class SnarkyTensor extends CircuitValue {
   //                m2 - Rank 2 Tensor of type Field
   // Output:        y - Dot product Rank 2 Tensor of type Field
   dot_product_t2(m1: Array<Field>[], m2: Array<Field>[]): Array<Field>[] {
-    console.log('in the dot product');
+    // console.log('in the dot product');
     // Perform a dot product on the two rank 2 tensors
     let y = Array();
     let m2_t = this.transpose(m2);

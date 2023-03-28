@@ -39,8 +39,9 @@ npm run build
 
 ## How to run tests
 
-There is a process variable that is used to switch between local and berkeley tests.
-`setEnvVars.js`
+1. There is a process variable that is used to switch between local and berkeley tests.
+   `setEnvVars.js`
+2. In total we have four test files to be able to run test faster.
 
 ```sh
 npm run test
