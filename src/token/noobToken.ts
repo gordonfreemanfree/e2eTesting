@@ -14,6 +14,7 @@ import {
   Reducer,
   Struct,
   isReady,
+  AccountUpdate,
 } from 'snarkyjs';
 
 await isReady;
@@ -54,7 +55,13 @@ export class NoobToken extends SmartContract {
       access: Permissions.proofOrSignature(),
       setVerificationKey: Permissions.impossible(),
       editState: Permissions.proofOrSignature(),
+      receive: Permissions.none(),
     });
+  }
+
+  @method deposit(amount: UInt64) {
+    let senderUpdate = AccountUpdate.createSigned(this.sender);
+    senderUpdate.send({ to: this, amount });
   }
 
   // dummy method to test the reducer
@@ -143,9 +150,10 @@ export class NoobToken extends SmartContract {
     let totalAmountInCirculation = this.totalAmountInCirculation.get();
     this.totalAmountInCirculation.assertEquals(totalAmountInCirculation);
     let balance = this.account.balance.get();
+    Circuit.log('balance in zkApp is', balance);
     this.account.balance.assertEquals(balance);
 
-    balance.assertGreaterThanOrEqual(amount, 'balance is not enough');
+    balance.assertGreaterThanOrEqual(amount);
     // balance.assertEquals(amount);
     this.token.mint({
       address: receiverAddress,

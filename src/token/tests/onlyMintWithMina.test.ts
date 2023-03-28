@@ -257,46 +257,37 @@ describe('Token-test-permission', () => {
       let tokenId = zkApp.token.id;
 
       if (isBerkeley) {
-        await fetchAccount({ publicKey: zkAppAddress, tokenId });
-        await fetchAccount({ publicKey: deployerAccount, tokenId });
+        await fetchAccount({ publicKey: deployerAccount });
         await fetchAccount({ publicKey: zkAppAddress });
       }
-      Mina.getAccount(zkAppAddress, tokenId);
+      Mina.getAccount(zkAppAddress);
+      Mina.getAccount(deployerAccount);
       // Mina.getAccount(deployerAccount, tokenId);
 
-      let oldTotalAmountInCirculation = zkApp.totalAmountInCirculation.get();
-      console.log(
-        'oldTotalAmountInCirculation',
-        oldTotalAmountInCirculation.toJSON()
-      );
-      let oldNoobBalance = Mina.getBalance(zkAppAddress, tokenId);
-      console.log('oldNoobBalance is', oldNoobBalance.toJSON());
+      //   let oldTotalAmountInCirculation = zkApp.totalAmountInCirculation.get();
+      //   console.log(
+      //     'oldTotalAmountInCirculation',
+      //     oldTotalAmountInCirculation.toJSON()
+      //   );
+      //   let oldNoobBalance = Mina.getBalance(zkAppAddress, tokenId);
+      //   console.log('oldNoobBalance is', oldNoobBalance.toJSON());
 
-      let mintWithMinaAmount = UInt64.from(1e9);
+      // send 2 Mina to zkAppAddress to fund account
+      let tx = await Mina.transaction(deployerAccount, () => {
+        zkApp.deposit(UInt64.from(1e9));
+      });
+      await tx.prove();
+      await (await tx.sign([deployerKey]).send()).wait();
 
-      // send 1 Mina to zkAppAddress to fund account
-      const txn = await Mina.transaction(
-        { sender: deployerAccount, fee: 0.1e9 },
-        () => {
-          let deployerAccountUpdate = AccountUpdate.createSigned(
-            deployerAccount
-          );
-          deployerAccountUpdate.send({
-            to: zkAppAddress,
-            amount: UInt64.from(1e9),
-          });
-        }
-      );
-      await txn.prove();
-      txn.sign([deployerKey, zkAppPrivateKey]);
-      await (await txn.send()).wait();
-
+      Mina.getAccount(zkAppAddress);
+      Mina.getAccount(deployerAccount);
+      printBalances();
       // console.log('txn with 1 mina sent, txn is', txn.toPretty());
     }, 1000000);
 
     // ------------------------------------------------------------------------
 
-    it(`waiting one block to get Actions back later - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    it(`waiting one block to get txn confirmation - deployToBerkeley?: ${deployToBerkeley}`, async () => {
       console.log('dummy tx');
       let tx = await Mina.transaction(
         {
@@ -322,7 +313,6 @@ describe('Token-test-permission', () => {
         await fetchAccount({ publicKey: deployerAccount });
         await fetchAccount({ publicKey: zkAppAddress });
       }
-      Mina.getAccount(zkAppAddress, tokenId);
       Mina.getAccount(zkAppAddress);
       Mina.getAccount(deployerAccount);
       printBalances();
@@ -331,14 +321,15 @@ describe('Token-test-permission', () => {
       const txn20 = await Mina.transaction(
         { sender: deployerAccount, fee: 0.1e9 },
         () => {
-          Mina.getBalance(zkAppAddress),
-            zkApp.mintWithMina(zkAppAddress, mintWithMinaAmount);
+          //   Mina.getBalance(zkAppAddress),
+          AccountUpdate.fundNewAccount(deployerAccount);
+          zkApp.mintWithMina(zkAppAddress, mintWithMinaAmount);
         }
       );
 
       await txn20.prove();
-      // txn20.sign([deployerKey, zkAppPrivateKey]);
-      txn20.sign([deployerKey]);
+      txn20.sign([deployerKey, zkAppPrivateKey]);
+      //   txn20.sign([deployerKey]);
       await (await txn20.send()).wait();
 
       if (isBerkeley) {
