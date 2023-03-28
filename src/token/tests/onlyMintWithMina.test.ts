@@ -299,21 +299,21 @@ describe('Token-test-permission', () => {
 
     // ------------------------------------------------------------------------
 
-    // it(`waiting one block to get txn confirmation - deployToBerkeley?: ${deployToBerkeley}`, async () => {
-    //   console.log('dummy tx');
-    //   let tx = await Mina.transaction(
-    //     {
-    //       sender: deployerAccount,
-    //       memo: 'Dummy Transaction',
-    //       fee: 0.2e9,
-    //     },
+    it(`waiting one block to get txn confirmation - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+      console.log('dummy tx');
+      let tx = await Mina.transaction(
+        {
+          sender: deployerAccount,
+          memo: 'Dummy Transaction',
+          fee: 0.2e9,
+        },
 
-    //     () => {}
-    //   );
-    //   await tx.prove();
-    //   tx.sign([deployerKey]);
-    //   await (await tx.send()).wait();
-    // }, 10000000);
+        () => {}
+      );
+      await tx.prove();
+      tx.sign([deployerKey]);
+      await (await tx.send()).wait();
+    }, 10000000);
     // ------------------------------------------------------------------------
 
     it(`try to mint now that the balance is 1 - deployToBerkeley?: ${deployToBerkeley}`, async () => {
@@ -333,8 +333,8 @@ describe('Token-test-permission', () => {
       const txn20 = await Mina.transaction(
         { sender: deployerAccount, fee: 0.1e9 },
         () => {
-          //   Mina.getBalance(zkAppAddress),
-          AccountUpdate.fundNewAccount(deployerAccount);
+          Mina.getBalance(zkAppAddress),
+            AccountUpdate.fundNewAccount(deployerAccount);
           zkApp.mintWithMina(zkAppAddress, mintWithMinaAmount);
         }
       );
