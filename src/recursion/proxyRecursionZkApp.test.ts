@@ -287,16 +287,16 @@ describe('proxy-recursion-test', () => {
           publicKey: proxyZkAppAddress,
         });
       }
-      let actualSmartSnarkyVerificationKey = Mina.getAccount(
+      let actualSmartSnarkyVerificationKeyHash = Mina.getAccount(
         smartSnarkyNetAddress
       ).zkapp?.verificationKey?.hash;
-      let actualProxyVerificationKey = Mina.getAccount(proxyZkAppAddress).zkapp
-        ?.verificationKey?.hash;
+      let actualProxyVerificationKeyHash = Mina.getAccount(proxyZkAppAddress)
+        .zkapp?.verificationKey?.hash;
 
-      expect(actualProxyVerificationKey?.toString()).toEqual(
+      expect(actualProxyVerificationKeyHash).toEqual(
         proxyZkAppVerificationKey?.hash
       );
-      expect(actualSmartSnarkyVerificationKey?.toString()).toEqual(
+      expect(actualSmartSnarkyVerificationKeyHash).toEqual(
         smartSnarkyZkAppVerificationKey?.hash
       );
     }, 100000000);
@@ -511,5 +511,5 @@ describe('proxy-recursion-test', () => {
       expect(true).toEqual(true);
     }, 10000000);
   }
-  // runTests();
+  runTests();
 });
