@@ -3,16 +3,16 @@
 // SnarkyLayers are defined to represent the Dense Neural Network layers combined in
 // SnarkyNet for prediction.
 
-export { SnarkyLayer1, SnarkyLayer2 };
+export { SnarkyLayer1_8x8, SnarkyLayer2_10x10 };
 
 import { Field, UInt64, matrixProp } from 'snarkyjs';
 
-import { SnarkyTensor } from './snarkyTensor.js';
+import { SnarkyTensor } from '../snarkyTensor.js';
 
 // await isReady;
 // create a layer
-class SnarkyLayer1 extends SnarkyTensor {
-  @matrixProp(Field, 64, 10) weights: Array<Field>[]; // weights
+class SnarkyLayer1_8x8 extends SnarkyTensor {
+  @matrixProp(Field, 100, 10) weights: Array<Field>[]; // weights
   activation: Function; // activation function
   alpha: Field; // alpha value for leaky relu / it is scaled by 1000
   decimal: number; // multiplier for decimals
@@ -36,7 +36,7 @@ class SnarkyLayer1 extends SnarkyTensor {
   }
 
   call(input: Array<Field>[]): Array<Field>[] {
-    // console.log('in the call function');
+    console.log('in the call function');
     // Equivalent: output = activation( dot( input, weight ) )
     return this.activation_t2(this.dot_product_t2(input, this.weights));
   }
@@ -63,7 +63,7 @@ class SnarkyLayer1 extends SnarkyTensor {
 
   // Activation
   activation_t2(x: Array<Field>[]): Array<Field>[] {
-    // console.log('in the activation_t2 function');
+    console.log('in the activation_t2 function');
     // Applying activation functions for a rank 2 tensor
     let result = Array();
     x.forEach((value, index) => (result[index] = this.relu_t1(value)));
@@ -88,30 +88,30 @@ class SnarkyLayer1 extends SnarkyTensor {
 
   softmax_t1(x: Array<Field>): Array<UInt64> {
     // Softmax Implementation for an Array
-    // console.log('in the softmax_t1 function');
-    // console.log('x before exp part is', x.toString());
+    console.log('in the softmax_t1 function');
+    console.log('x before exp part is', x.toString());
     let sum = UInt64.zero;
     let result = Array<UInt64>();
     // Equivalent: result = x / ( x1 + .. + xn )
-    // console.log('x before exp part is', x.toString());
+    console.log('x before exp part is', x.toString());
     // preventing overflow
     let reduced_x = Array<UInt64>();
     x.forEach(
       (value, i) =>
         (reduced_x[i] = UInt64.from(value).div(UInt64.from(1000000)))
     );
-    // console.log('x after overflow prevention is', reduced_x.toString());
+    console.log('x after overflow prevention is', reduced_x.toString());
     reduced_x.forEach((value) => console.log(this.exp(value).toString()));
-    // console.log('x after exp is', reduced_x.toString());
+    console.log('x after exp is', reduced_x.toString());
 
     // result returned as percentage
     reduced_x.forEach((value) => (sum = sum.add(this.exp(value))));
-    // console.log('sum is', sum.toString());
+    console.log('sum is', sum.toString());
     reduced_x.forEach((value, i) => {
       let quotientAndRemainder = this.exp(value).divMod(sum);
       result[i] = quotientAndRemainder.rest;
     });
-    // console.log('result is', result.toString());
+    console.log('result is', result.toString());
 
     return result;
   }
@@ -186,7 +186,7 @@ class SnarkyLayer1 extends SnarkyTensor {
   // }
 }
 
-class SnarkyLayer2 extends SnarkyTensor {
+class SnarkyLayer2_10x10 extends SnarkyTensor {
   @matrixProp(Field, 10, 10) weights: Array<Field>[]; // weights
   activation: Function; // activation function
   alpha: Field; // alpha value for leaky relu / it is scaled by 1000
@@ -211,7 +211,7 @@ class SnarkyLayer2 extends SnarkyTensor {
   }
 
   call(input: Array<Field>[]): Array<Field>[] {
-    // console.log('in the call function');
+    console.log('in the call function');
     // Equivalent: output = activation( dot( input, weight ) )
     return this.activation_t2(this.dot_product_t2(input, this.weights));
   }
@@ -235,7 +235,7 @@ class SnarkyLayer2 extends SnarkyTensor {
 
   // Activation
   activation_t2(x: Array<Field>[]): Array<Field>[] {
-    // console.log('in the activation_t2 function');
+    console.log('in the activation_t2 function');
     // Applying activation functions for a rank 2 tensor
     let result = Array();
     // x.forEach((value, index) => (result[index] = this.activation(value)));

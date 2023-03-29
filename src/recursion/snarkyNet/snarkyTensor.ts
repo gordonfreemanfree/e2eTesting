@@ -10,13 +10,13 @@ import {
   isReady,
   UInt64,
   CircuitValue,
+  Struct,
 } from 'snarkyjs';
 
 await isReady;
 
 class SnarkyTensor extends CircuitValue {
   // multiplier for decimal conversion for number to Field conversions
-  // scale_factor: number;
   scale_factor_Field: Field;
 
   constructor(power: Field = Field(10000000)) {
@@ -24,6 +24,13 @@ class SnarkyTensor extends CircuitValue {
     super();
     this.scale_factor_Field = power;
   }
+  // class SnarkyTensor extends Struct({
+  //   scale_factor_Field: Field,
+  // }) {
+  //   constructor(scale_factor_Field: Field) {
+  //     super({ scale_factor_Field });
+  //     this.scale_factor_Field = scale_factor_Field;
+  //   }
 
   // Description:   Perform a dot product for two rank 2 tensors of type Field
   // Input:         m1 - Rank 2 Tensor of type Field

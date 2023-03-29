@@ -59,6 +59,7 @@ export class NoobToken extends SmartContract {
     });
   }
 
+  // everyone can call this method
   @method deposit(amount: UInt64) {
     let senderUpdate = AccountUpdate.createSigned(this.sender);
     senderUpdate.send({ to: this, amount });
