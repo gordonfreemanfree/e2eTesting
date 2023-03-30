@@ -44,18 +44,22 @@ export class SmartSnarkyNet extends SmartContract {
     this.classification.set(Field(0));
     this.layer1Hash.set(Poseidon.hash(snarkyLayer1s.toFields()));
     this.layer2Hash.set(Poseidon.hash(snarkyLayer2s.toFields()));
+    this.account.zkappUri.set('www.neuralNetSnarky.com');
+    this.account.permissions.set({
+      ...Permissions.default(),
+      editState: Permissions.proofOrSignature(),
+      access: Permissions.proofOrSignature(),
+      setZkappUri: Permissions.proof(),
+      setVerificationKey: Permissions.proof(),
+      setTokenSymbol: Permissions.impossible(),
+    });
   }
 
-  // TODO: make sure that the layers are fixed
-  // @method initState(layer1: SnarkyLayer1, layer2: SnarkyLayer2) {
-  //   super.init();
-  //   // Initialize contract state
-  //   this.classification.set(Field(0));
-  //   this.layer1Hash.set(Poseidon.hash(layer1.toFields()));
-  //   this.layer2Hash.set(Poseidon.hash(layer2.toFields()));
-  //   this.emitEvent('set-layer1', Poseidon.hash(layer1.toFields()));
-  //   this.emitEvent('set-layer2', Poseidon.hash(layer2.toFields()));
-  // }
+  @method setLayerHashes(layer1DummyHash: Field, layer2DummyHash: Field) {
+    this.layer1Hash.set(layer1DummyHash);
+    this.layer2Hash.set(layer2DummyHash);
+    this.requireSignature();
+  }
 
   @method predict(neuralNetProof: NeuralNetProof) {
     // generating the hash of layers that were used in the proof generation
@@ -81,152 +85,26 @@ export class SmartSnarkyNet extends SmartContract {
     //obtain the predictions
     let prediction = neuralNetProof.publicInput.precomputedOutputLayer2;
 
-    let max01 = Field(0);
-    let classification01 = Field(0);
+    // let max01 = Field(0);
+    // let classification01 = Field(0);
 
-    // looks weird but the following code is equivalent is just finding the max value of the prediction array
+    // finding the max value of the prediction array
     // and returning the index of the max value
-    // TODO: make this function easier to read
-    // TODO: make this function more efficient
-    [max01, classification01] = Circuit.if(
-      prediction[0].greaterThan(prediction[1]),
-      (() => {
-        // TRUE
-        return [prediction[0], Field(0)];
-      })(),
-      (() => {
-        // FALSE
-        classification01 = Field(1);
-        return [prediction[1], Field(1)];
-      })()
-    );
+    let max = Field(0);
+    let classificationTest = Field(0);
+    for (let i = 0; i < prediction.length; i++) {
+      [max, classificationTest] = Circuit.if(
+        max.greaterThan(prediction[i]),
+        [max, classificationTest],
+        [prediction[i], Field(i)]
+      );
+    }
 
-    let max12 = Field(0);
-    let classification12 = Field(0);
-    [max12, classification12] = Circuit.if(
-      max01.greaterThan(prediction[2]),
-      (() => {
-        // TRUE
-        return [max01, classification01];
-      })(),
-      (() => {
-        // FALSE
-        return [prediction[2], Field(2)];
-      })()
-    );
-
-    let max23 = Field(0);
-    let classification23 = Field(0);
-    [max23, classification23] = Circuit.if(
-      max12.greaterThan(prediction[3]),
-      (() => {
-        // TRUE
-        return [max12, classification12];
-      })(),
-      (() => {
-        // FALSE
-        return [prediction[3], Field(3)];
-      })()
-    );
-
-    let max34 = Field(0);
-    let classification34 = Field(0);
-    [max34, classification34] = Circuit.if(
-      max23.greaterThan(prediction[4]),
-      (() => {
-        // TRUE
-        return [max23, classification23];
-      })(),
-      (() => {
-        // FALSE
-        return [prediction[4], Field(4)];
-      })()
-    );
-
-    let max45 = Field(0);
-    let classification45 = Field(0);
-    [max45, classification45] = Circuit.if(
-      max34.greaterThan(prediction[5]),
-      (() => {
-        // TRUE
-
-        return [max34, classification34];
-      })(),
-      (() => {
-        // FALSE
-
-        return [prediction[5], Field(5)];
-      })()
-    );
-
-    let max56 = Field(0);
-    let classification56 = Field(0);
-
-    [max56, classification56] = Circuit.if(
-      max45.greaterThan(prediction[6]),
-      (() => {
-        // TRUE
-
-        return [max45, classification45];
-      })(),
-      (() => {
-        // FALSE
-
-        return [prediction[6], Field(6)];
-      })()
-    );
-
-    let max67 = Field(0);
-    let classification67 = Field(0);
-    [max67, classification67] = Circuit.if(
-      max56.greaterThan(prediction[7]),
-      (() => {
-        // TRUE
-
-        return [max56, classification56];
-      })(),
-      (() => {
-        // FALSE
-
-        return [prediction[7], Field(7)];
-      })()
-    );
-
-    let max78 = Field(0);
-    let classification78 = Field(0);
-    [max78, classification78] = Circuit.if(
-      max67.greaterThan(prediction[8]),
-      (() => {
-        // TRUE
-
-        return [max67, classification67];
-      })(),
-      (() => {
-        // FALSE
-
-        return [prediction[8], Field(8)];
-      })()
-    );
-
-    let max89 = Field(0);
-    let classification89 = Field(0);
-    [max89, classification89] = Circuit.if(
-      max78.greaterThan(prediction[9]),
-      (() => {
-        // TRUE
-
-        return [max78, classification78];
-      })(),
-      (() => {
-        // FALSE
-
-        return [prediction[9], Field(9)];
-      })()
-    );
     // ---------------------------- set the classification ----------------------------
     let classification = this.classification.get();
     this.classification.assertEquals(classification);
-    this.classification.set(classification89);
-    this.emitEvent('set-classification', classification89);
+    // this.classification.set(classification89);
+    this.classification.set(classificationTest);
+    this.emitEvent('set-classification', classificationTest);
   }
 }

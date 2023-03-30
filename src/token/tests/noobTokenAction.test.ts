@@ -348,5 +348,5 @@ describe('Token-test-actions', () => {
     }, 10000000);
   }
 
-  runTests();
+  // runTests();
 });

@@ -112,20 +112,20 @@ async function main() {
 
   // setting the layer hashes
   // ----------------------------------------------------
-  const txnInit = await Mina.transaction(deployerAccount, () => {
-    zkAppInstance.initState(snarkyLayer1s, snarkyLayer2s);
-  });
-  await txnInit.prove();
-  txnInit.sign([deployerKey, zkAppPrivateKey]);
-  await (await txnInit.send()).wait();
-  console.log(
-    'layer1 state after init:',
-    zkAppInstance.layer1Hash.get().toString()
-  );
-  console.log(
-    'layer1 state after init:',
-    zkAppInstance.layer2Hash.get().toString()
-  );
+  // const txnInit = await Mina.transaction(deployerAccount, () => {
+  //   zkAppInstance.initState(snarkyLayer1s, snarkyLayer2s);
+  // });
+  // await txnInit.prove();
+  // txnInit.sign([deployerKey, zkAppPrivateKey]);
+  // await (await txnInit.send()).wait();
+  // console.log(
+  //   'layer1 state after init:',
+  //   zkAppInstance.layer1Hash.get().toString()
+  // );
+  // console.log(
+  //   'layer1 state after init:',
+  //   zkAppInstance.layer2Hash.get().toString()
+  // );
   // // ----------------------------------------------------
 
   const txn0 = await Mina.transaction(deployerAccount, () => {

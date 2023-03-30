@@ -31,6 +31,15 @@ The project used Malkofos SnarkyNet-MNIST-Digits
 as a starting point, but improved the concept of zk ML Application by
 porting the prediction into a circuit.
 
+## List of tests
+
+1. Surface area 8: deploy zkApps and check verificationKeyHash
+2. Surface area 1/2: Using proxy zkApp to call another zkApp that verifies a recursive proof
+3. Surface area 1/2: Using proxy zkApp to call another zkApp that verifies a recursive proof
+4. Surface area 7: Setting permission access from proof() to signature(), because permission "setPermission" is signature, should work.
+5. Surface area 7: try to update hashes with signature while "editstate is proof() but the method requires a signature
+6.
+
 ## How to build
 
 ```sh
@@ -41,7 +50,7 @@ npm run build
 
 1. There is a process variable that is used to switch between local and berkeley tests.
    `setEnvVars.js`
-2. In total we have four test files to be able to run test faster.
+2.
 
 ```sh
 npm run test
