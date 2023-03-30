@@ -81,10 +81,12 @@ describe('proxy-recursion-test', () => {
         ({
           verificationKey: smartSnarkyZkAppVerificationKey,
         } = await SmartSnarkyNet.compile());
+        console.log('compiling RecursionZkapp...');
+
         ({
           verificationKey: proxyZkAppVerificationKey,
         } = await ProxyRecursionZkApp.compile());
-        console.log('compiling RecursionZkapp...');
+
         // ({
         //   verificationKey: smartSnarkyZkAppVerificationKey,
         // } = await SmartSnarkyNet.compile());
@@ -345,7 +347,7 @@ describe('proxy-recursion-test', () => {
       );
       await txn_permission.prove();
       txn_permission.sign([deployerKey, smartSnarkyNetPrivateKey]);
-      console.log('txn_permission hashes edit', txn_permission.toPretty());
+      // console.log('txn_permission hashes edit', txn_permission.toPretty());
       await (await txn_permission.send()).wait();
 
       if (isBerkeley) {
@@ -408,7 +410,7 @@ describe('proxy-recursion-test', () => {
       );
       await txn_permission.prove();
       txn_permission.sign([deployerKey, smartSnarkyNetPrivateKey]);
-      console.log('txn_permission hashes edit', txn_permission.toPretty());
+      // console.log('txn_permission hashes edit', txn_permission.toPretty());
       expect(async () => {
         await (await txn_permission.send()).wait();
       }).rejects.toThrow();
@@ -476,10 +478,10 @@ describe('proxy-recursion-test', () => {
       });
 
       const proofLayer1 = await NeuralNet.layer1(architecture, inputImage);
-      console.log('proofLayer1', proofLayer1);
+      // console.log('proofLayer1', proofLayer1);
 
       const proofLayer2 = await NeuralNet.layer2(architecture, proofLayer1);
-      console.log('proofLayer2', proofLayer2);
+      // console.log('proofLayer2', proofLayer2);
 
       const isValidLocal = await verify(proofLayer2, neuralNetVerificationKey);
       console.log('isValidLocal', isValidLocal);
@@ -566,9 +568,6 @@ describe('proxy-recursion-test', () => {
     }, 10000000);
 
     it(`9. changing Permission "access" to signature, BUT permission "setPermission" is impossible - deployToBerkeley?: ${deployToBerkeley}`, async () => {
-      console.log(
-        'changing smartSnarkyNet Permission to impossible to fix architecture...'
-      );
       if (isBerkeley) {
         await fetchAccount({ publicKey: smartSnarkyNetAddress });
       }
