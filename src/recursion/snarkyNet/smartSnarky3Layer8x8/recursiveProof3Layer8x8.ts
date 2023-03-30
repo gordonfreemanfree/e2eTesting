@@ -17,6 +17,7 @@ await isReady;
 
 class Architecture extends Struct({
   inputLayer: SnarkyLayer1_8x8,
+  middleLayer: SnarkyLayer2_10x10,
   outputLayer: SnarkyLayer2_10x10,
 //   precomputedOutputLayer1: Circuit.array(Field, 10),
 //   precomputedOutputLayer2: Circuit.array(Field, 10),

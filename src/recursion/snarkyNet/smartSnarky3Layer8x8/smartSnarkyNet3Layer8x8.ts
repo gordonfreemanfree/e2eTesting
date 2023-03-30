@@ -13,11 +13,13 @@ import {
   Poseidon,
   SelfProof,
 } from 'snarkyjs';
-import { SnarkyLayer1_10x10, SnarkyLayer2_10x10 } from './snarkyLayer10x10.js';
-import { NeuralNetProof_10x10 } from './recursionProof10x10.js';
-import { SnarkyLayer1_8x8 } from './snarkyLayer3Layer8x8.js';
+import {
+  SnarkyLayer1_8x8,
+  SnarkyLayer2_10x10,
+} from './snarkyLayer3Layer8x8.js';
+import { NeuralNetProof3Layer8x8 } from './recursiveProof3Layer8x8.js';
 
-export class SmartSnarkyNet10x10 extends SmartContract {
+export class SmartSnarkyNet3Layer8x8 extends SmartContract {
   events = {
     'set-layer1': Field,
     'set-layer2': Field,
@@ -60,7 +62,7 @@ export class SmartSnarkyNet10x10 extends SmartContract {
     this.emitEvent('set-layer3', Poseidon.hash(layer3.toFields()));
   }
 
-  @method predict(neuralNetProof: NeuralNetProof_10x10) {
+  @method predict(neuralNetProof: NeuralNetProof3Layer8x8) {
     // generating the hash of layers that were used in the proof generation
     let actualLayer1Hash = Poseidon.hash(
       neuralNetProof.publicInput.layer1.toFields()

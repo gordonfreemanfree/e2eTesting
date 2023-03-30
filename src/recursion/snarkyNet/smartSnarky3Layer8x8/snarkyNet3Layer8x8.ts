@@ -2,7 +2,7 @@
 // SnarkyNet is defined to represent the Deep Neural Network model.
 // We use the output of the model to use as input for the NeuralNet ZkProgram
 
-export { SnarkyNet_10x10 };
+export { SnarkyNet_3Layer_8x8 };
 
 import { Field, isReady, Struct } from 'snarkyjs';
 import { InputImage_8x8 } from './inputImage8x8.js';
@@ -16,7 +16,7 @@ await isReady;
 class SnarkyNet_3Layer_8x8 extends Struct({
   layers: [SnarkyLayer1_8x8, SnarkyLayer2_10x10],
 }) {
-  constructor(layers: [SnarkyLayer1_10x10, SnarkyLayer2_10x10]) {
+  constructor(layers: [SnarkyLayer1_8x8, SnarkyLayer2_10x10]) {
     super({ layers });
     this.layers = layers;
   }

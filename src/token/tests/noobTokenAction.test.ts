@@ -269,7 +269,9 @@ describe('Token-test-actions', () => {
         }
       );
       await tx.prove();
-      await (await tx.sign([deployerKey]).send()).wait();
+      // await (await tx.sign([deployerKey]).send()).wait();
+      // Not waitong for the transaction to be included in a block
+      await tx.sign([deployerKey, zkAppPrivateKey]).send();
 
       console.log('action 2');
       tx = await Mina.transaction(
@@ -280,7 +282,9 @@ describe('Token-test-actions', () => {
         }
       );
       await tx.prove();
-      await (await tx.sign([deployerKey]).send()).wait();
+      // await (await tx.sign([deployerKey]).send()).wait();
+      // Not waitong for the transaction to be included in a block
+      await tx.sign([deployerKey, zkAppPrivateKey]).send();
 
       console.log('action 3');
       tx = await Mina.transaction(
@@ -291,7 +295,9 @@ describe('Token-test-actions', () => {
         }
       );
       await tx.prove();
-      await (await tx.sign([deployerKey]).send()).wait();
+      // await (await tx.sign([deployerKey]).send()).wait();
+      // Not waitong for the transaction to be included in a block
+      await tx.sign([deployerKey, zkAppPrivateKey]).send();
     }, 10000000);
     // // ------------------------------------------------------------------------
     // // ------------------------------------------------------------------------
@@ -312,7 +318,7 @@ describe('Token-test-actions', () => {
     }, 10000000);
 
     // // ------------------------------------------------------------------------
-    it(`getting Actions back - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    it(`reduce Actions - deployToBerkeley?: ${deployToBerkeley}`, async () => {
       console.log('rolling up pending actions..');
 
       console.log('state before: ' + zkApp.actionCounter.get());
@@ -320,7 +326,7 @@ describe('Token-test-actions', () => {
       let tx = await Mina.transaction(
         { sender: deployerAccount, fee: 0.2e9 },
         () => {
-          zkApp.rollUpActions();
+          zkApp.reduceActions();
         }
       );
       await tx.prove();
@@ -342,5 +348,5 @@ describe('Token-test-actions', () => {
     }, 10000000);
   }
 
-  // runTests();
+  runTests();
 });
