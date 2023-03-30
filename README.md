@@ -31,14 +31,19 @@ The project used Malkofos SnarkyNet-MNIST-Digits
 as a starting point, but improved the concept of zk ML Application by
 porting the prediction into a circuit.
 
-## List of tests
+### List of tests
 
-1. Surface area 8: deploy zkApps and check verificationKeyHash
-2. Surface area 1/2: Using proxy zkApp to call another zkApp that verifies a recursive proof
-3. Surface area 1/2: Using proxy zkApp to call another zkApp that verifies a recursive proof
-4. Surface area 7: Setting permission access from proof() to signature(), because permission "setPermission" is signature, should work.
-5. Surface area 7: try to update hashes with signature while "editstate is proof() but the method requires a signature
-6.
+1. Surface area 8: deploy zkApps and check verificationKeyHash - expecting success
+2. Surface area 1/2: Using proxy zkApp to call another zkApp that verifies a recursive proof - expecting success
+3. Surface area 7: try to update hashes with signature while "editstate" is proofOrSignature() - expecting success
+4. Surface area 7: set Permission "editState" to proof() - expecting success
+5. Surface area 7: try to update hashes with signature while "editstate" is proof() but the method requires a signature - expecting error
+6. Surface area 7: set permission "access" to signature() - expecting success
+7. Surface area 1/2/7: Using proxy zkApp to call another zkApp that verifies a recursive proof - expecting error because "access" is signature()
+8. Surface area 7: changing Permission: "setZkappUri", "setVerificationKey", "setTokenSymbol", "setPermissions" to impossible() to fix architecture and "access" to proof() to still be able to call predict - expecting success
+9. Surface area 7: changing Permission "access" to signature, BUT permission "setPermission" is impossible - expecting error
+
+## Runtime
 
 ## How to build
 
@@ -49,8 +54,7 @@ npm run build
 ## How to run tests
 
 1. There is a process variable that is used to switch between local and berkeley tests.
-   `setEnvVars.js`
-2.
+   `./setEnvVars.js`
 
 ```sh
 npm run test

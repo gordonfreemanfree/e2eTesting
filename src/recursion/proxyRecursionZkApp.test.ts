@@ -221,38 +221,6 @@ describe('proxy-recursion-test', () => {
       }
     }
 
-    async function printBalances() {
-      //   try {
-      //     console.log(
-      //       `deployerAccount balance: ${deployerAccount.toBase58()} ${Mina.getBalance(
-      //         deployerAccount
-      //       ).div(1e9)} MINA`
-      //     );
-      //     console.log(
-      //       // `zkApp balance: ${Mina.getBalance(zkAppAddress).div(1e9)} MINA`
-      //       `zkApp balance: ${zkAppAddress.toBase58()} ${Mina.getBalance(
-      //         zkAppAddress
-      //       ).div(1e9)} MINA`
-      //     );
-      //     console.log(
-      //       // `zkApp balance: ${Mina.getBalance(zkAppAddress).div(1e9)} MINA`
-      //       `zkApp balance of NOOB token: ${zkAppAddress.toBase58()} ${Mina.getBalance(
-      //         zkAppAddress,
-      //         zkApp.token.id
-      //       ).div(1e9)} NOOB`
-      //     );
-      //     console.log(
-      //       // `zkApp balance: ${Mina.getBalance(zkAppAddress).div(1e9)} MINA`
-      //       `receiver balance of Noob token: ${receiverAddress.toBase58()} ${Mina.getBalance(
-      //         receiverAddress,
-      //         zkApp.token.id
-      //       ).div(1e9)} NOOB`
-      //     );
-      //   } catch (e) {
-      //     console.log('error printing balances', e);
-      //   }
-    }
-
     it(`1. deploy zkApps and check verificationKeys and hashes stored - deployToBerkeley?: ${deployToBerkeley}`, async () => {
       deployToBerkeley ? await berkeleyDeploy() : await localDeploy();
 
@@ -327,10 +295,10 @@ describe('proxy-recursion-test', () => {
       });
 
       const proofLayer1 = await NeuralNet.layer1(architecture, inputImage);
-      console.log('proofLayer1', proofLayer1);
+      // console.log('proofLayer1', proofLayer1);
 
       const proofLayer2 = await NeuralNet.layer2(architecture, proofLayer1);
-      console.log('proofLayer2', proofLayer2);
+      // console.log('proofLayer2', proofLayer2);
 
       const isValidLocal = await verify(proofLayer2, neuralNetVerificationKey);
       console.log('isValidLocal', isValidLocal);
@@ -362,7 +330,7 @@ describe('proxy-recursion-test', () => {
       expect(currentClassification).toEqual(Field(2));
     }, 10000000);
 
-    it(`1. try to update hashes with signature while "editstate is proof()"- deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    it(`3. try to update hashes with signature while "editstate" is proofOrSignature()"- deployToBerkeley?: ${deployToBerkeley}`, async () => {
       if (isBerkeley) {
         await fetchAccount({ publicKey: smartSnarkyNetAddress });
       }
@@ -392,7 +360,7 @@ describe('proxy-recursion-test', () => {
       expect(currentLayer2Hash).toEqual(Field(2));
     }, 10000000);
 
-    it(`set Permission "editState" to proof()"  - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    it(`4. set Permission "editState" to proof()"  - deployToBerkeley?: ${deployToBerkeley}`, async () => {
       if (isBerkeley) {
         await fetchAccount({ publicKey: smartSnarkyNetAddress });
       }
@@ -428,7 +396,7 @@ describe('proxy-recursion-test', () => {
       expect(currentPermissionEdit).toEqual(Permissions.proof());
     }, 10000000);
 
-    it(`try to update hashes with signature while "editstate is proof() but the method requires a signature"- deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    it(`5. try to update hashes with signature while "editstate is proof() but the method requires a signature"- deployToBerkeley?: ${deployToBerkeley}`, async () => {
       if (isBerkeley) {
         await fetchAccount({ publicKey: smartSnarkyNetAddress });
       }
@@ -446,7 +414,7 @@ describe('proxy-recursion-test', () => {
       }).rejects.toThrow();
     }, 10000000);
 
-    it(`set permission "access" to signature() - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    it(`6. set permission "access" to signature() - deployToBerkeley?: ${deployToBerkeley}`, async () => {
       if (isBerkeley) {
         await fetchAccount({ publicKey: smartSnarkyNetAddress });
       }
@@ -482,7 +450,7 @@ describe('proxy-recursion-test', () => {
       expect(currentPermissionAccess).toEqual(Permissions.signature());
     }, 10000000);
 
-    it(`proving that input image was indeed a picture of a 7 BUT access is set to signature() - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    it(`7. proving that input image was indeed a picture of a 7 BUT access is set to signature() - deployToBerkeley?: ${deployToBerkeley}`, async () => {
       console.log('proving that input image was indeed a picture of a 7...');
       let snarkyLayer1s = new SnarkyLayer1(
         preprocessWeights(weights_l1_8x8),
@@ -536,7 +504,7 @@ describe('proxy-recursion-test', () => {
       }).rejects.toThrow();
     }, 10000000);
 
-    it(`changing Permission to impossible to fix architecture - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    it(`8. changing Permission to impossible to fix architecture - deployToBerkeley?: ${deployToBerkeley}`, async () => {
       console.log(
         'changing smartSnarkyNet Permission to impossible to fix architecture...'
       );
@@ -597,7 +565,7 @@ describe('proxy-recursion-test', () => {
       );
     }, 10000000);
 
-    it(`changing Permission "access" to signature, BUT permission "setPermission" is impossible - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    it(`9. changing Permission "access" to signature, BUT permission "setPermission" is impossible - deployToBerkeley?: ${deployToBerkeley}`, async () => {
       console.log(
         'changing smartSnarkyNet Permission to impossible to fix architecture...'
       );
@@ -626,20 +594,18 @@ describe('proxy-recursion-test', () => {
 
       // await txn_permission.prove();
       txn_permission.sign([deployerKey, smartSnarkyNetPrivateKey]);
-      await (await txn_permission.send()).wait();
+      expect(async () => {
+        await (await txn_permission.send()).wait();
 
-      if (isBerkeley) {
-        await fetchAccount({ publicKey: smartSnarkyNetAddress });
-      }
+        if (isBerkeley) {
+          await fetchAccount({ publicKey: smartSnarkyNetAddress });
+        }
 
-      let currentPermissionAccess = Mina.getAccount(smartSnarkyNetAddress)
-        .permissions.access;
+        let currentPermissionAccess = Mina.getAccount(smartSnarkyNetAddress)
+          .permissions.access;
 
-      expect(currentPermissionAccess).toEqual(Permissions.proof());
-    }, 10000000);
-
-    it(`Dummy test - deployToBerkeley?: ${deployToBerkeley}`, async () => {
-      expect(true).toEqual(true);
+        expect(currentPermissionAccess).toEqual(Permissions.signature());
+      }).rejects.toThrow();
     }, 10000000);
   }
   runTests();
