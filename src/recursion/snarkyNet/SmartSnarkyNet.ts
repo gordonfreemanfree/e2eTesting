@@ -15,6 +15,16 @@ import {
 } from 'snarkyjs';
 import { SnarkyLayer1, SnarkyLayer2 } from './snarkyLayer.js';
 import { NeuralNetProof } from './recursionProof.js';
+import { preprocessWeights } from './utils/preprocess.js';
+import { weights_l1_8x8 } from './assets/weights_l1_8x8.js';
+import { weights_l2_8x8 } from './assets/weights_l2_8x8.js';
+
+let snarkyLayer1s = new SnarkyLayer1(preprocessWeights(weights_l1_8x8), 'relu');
+
+let snarkyLayer2s = new SnarkyLayer2(
+  preprocessWeights(weights_l2_8x8),
+  'softmax'
+);
 
 export class SmartSnarkyNet extends SmartContract {
   events = {
@@ -28,28 +38,24 @@ export class SmartSnarkyNet extends SmartContract {
   @state(Field) layer1Hash = State<Field>(); // stored state for Layer1
   @state(Field) layer2Hash = State<Field>(); // stored state for Layer2
 
-  deploy(args: DeployArgs) {
-    super.deploy(args);
-    this.account.permissions.set({
-      ...Permissions.default(),
-      editState: Permissions.proofOrSignature(),
-    });
+  // TODO: make sure that the layers are fixed
+  init() {
+    super.init();
     this.classification.set(Field(0));
-    this.layer1Hash.set(Field(0));
-    this.layer2Hash.set(Field(0));
+    this.layer1Hash.set(Poseidon.hash(snarkyLayer1s.toFields()));
+    this.layer2Hash.set(Poseidon.hash(snarkyLayer2s.toFields()));
   }
 
-  // TODO: make this a real init method
   // TODO: make sure that the layers are fixed
-  @method initState(layer1: SnarkyLayer1, layer2: SnarkyLayer2) {
-    super.init();
-    // Initialize contract state
-    this.classification.set(Field(0));
-    this.layer1Hash.set(Poseidon.hash(layer1.toFields()));
-    this.layer2Hash.set(Poseidon.hash(layer2.toFields()));
-    this.emitEvent('set-layer1', Poseidon.hash(layer1.toFields()));
-    this.emitEvent('set-layer2', Poseidon.hash(layer2.toFields()));
-  }
+  // @method initState(layer1: SnarkyLayer1, layer2: SnarkyLayer2) {
+  //   super.init();
+  //   // Initialize contract state
+  //   this.classification.set(Field(0));
+  //   this.layer1Hash.set(Poseidon.hash(layer1.toFields()));
+  //   this.layer2Hash.set(Poseidon.hash(layer2.toFields()));
+  //   this.emitEvent('set-layer1', Poseidon.hash(layer1.toFields()));
+  //   this.emitEvent('set-layer2', Poseidon.hash(layer2.toFields()));
+  // }
 
   @method predict(neuralNetProof: NeuralNetProof) {
     // generating the hash of layers that were used in the proof generation

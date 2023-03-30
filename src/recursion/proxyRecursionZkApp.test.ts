@@ -301,55 +301,55 @@ describe('proxy-recursion-test', () => {
       );
     }, 100000000);
 
-    it(`init the layer hashes to fix architecture - deployToBerkeley?: ${deployToBerkeley}`, async () => {
-      console.log('init the layer hashes to fix architecture...');
-      // let amount = UInt64.from(100);
-      if (isBerkeley) {
-        await fetchAccount({
-          publicKey: smartSnarkyNetAddress,
-        });
-        await fetchAccount({
-          publicKey: proxyZkAppAddress,
-        });
-      }
+    // it(`init the layer hashes to fix architecture - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    //   console.log('init the layer hashes to fix architecture...');
+    //   // let amount = UInt64.from(100);
+    //   if (isBerkeley) {
+    //     await fetchAccount({
+    //       publicKey: smartSnarkyNetAddress,
+    //     });
+    //     await fetchAccount({
+    //       publicKey: proxyZkAppAddress,
+    //     });
+    //   }
 
-      let snarkyLayer1s = new SnarkyLayer1(
-        preprocessWeights(weights_l1_8x8),
-        'relu'
-      );
+    //   let snarkyLayer1s = new SnarkyLayer1(
+    //     preprocessWeights(weights_l1_8x8),
+    //     'relu'
+    //   );
 
-      let snarkyLayer2s = new SnarkyLayer2(
-        preprocessWeights(weights_l2_8x8),
-        'softmax'
-      );
+    //   let snarkyLayer2s = new SnarkyLayer2(
+    //     preprocessWeights(weights_l2_8x8),
+    //     'softmax'
+    //   );
 
-      let snarkyLayer1sHash = Poseidon.hash(snarkyLayer1s.toFields());
-      let snarkyLayer2sHash = Poseidon.hash(snarkyLayer2s.toFields());
+    //   let snarkyLayer1sHash = Poseidon.hash(snarkyLayer1s.toFields());
+    //   let snarkyLayer2sHash = Poseidon.hash(snarkyLayer2s.toFields());
 
-      const txn = await Mina.transaction(
-        { sender: deployerAccount, fee: 0.1e9 },
-        () => {
-          smartSnarkyNetZkApp.initState(snarkyLayer1s, snarkyLayer2s);
-        }
-      );
-      await txn.prove();
-      txn.sign([deployerKey, smartSnarkyNetPrivateKey]);
-      await (await txn.send()).wait();
+    //   const txn = await Mina.transaction(
+    //     { sender: deployerAccount, fee: 0.1e9 },
+    //     () => {
+    //       smartSnarkyNetZkApp.initState(snarkyLayer1s, snarkyLayer2s);
+    //     }
+    //   );
+    //   await txn.prove();
+    //   txn.sign([deployerKey, smartSnarkyNetPrivateKey]);
+    //   await (await txn.send()).wait();
 
-      if (isBerkeley) {
-        await fetchAccount({ publicKey: smartSnarkyNetAddress });
-      }
-      Mina.getAccount(smartSnarkyNetAddress);
+    //   if (isBerkeley) {
+    //     await fetchAccount({ publicKey: smartSnarkyNetAddress });
+    //   }
+    //   Mina.getAccount(smartSnarkyNetAddress);
 
-      let currentLayer1Hash = smartSnarkyNetZkApp.layer1Hash.get();
-      let currentLayer2Hash = smartSnarkyNetZkApp.layer2Hash.get();
+    //   let currentLayer1Hash = smartSnarkyNetZkApp.layer1Hash.get();
+    //   let currentLayer2Hash = smartSnarkyNetZkApp.layer2Hash.get();
 
-      // let currentDummyState = recursionZkApp.dummyState.get();
-      // console.log('currentDummyState', currentDummyState.toString());
+    //   // let currentDummyState = recursionZkApp.dummyState.get();
+    //   // console.log('currentDummyState', currentDummyState.toString());
 
-      expect(currentLayer1Hash).toEqual(snarkyLayer1sHash);
-      expect(currentLayer2Hash).toEqual(snarkyLayer2sHash);
-    }, 10000000);
+    //   expect(currentLayer1Hash).toEqual(snarkyLayer1sHash);
+    //   expect(currentLayer2Hash).toEqual(snarkyLayer2sHash);
+    // }, 10000000);
 
     it(`proving that input image was indeed a picture of a 2 - deployToBerkeley?: ${deployToBerkeley}`, async () => {
       console.log('proving that input image was indeed a picture of a 2...');

@@ -269,9 +269,9 @@ describe('Token-test-actions', () => {
         }
       );
       await tx.prove();
-      // await (await tx.sign([deployerKey]).send()).wait();
+      await (await tx.sign([deployerKey]).send()).wait();
       // Not waitong for the transaction to be included in a block
-      await tx.sign([deployerKey, zkAppPrivateKey]).send();
+      // await tx.sign([deployerKey, zkAppPrivateKey]).send();
 
       console.log('action 2');
       tx = await Mina.transaction(
@@ -282,9 +282,9 @@ describe('Token-test-actions', () => {
         }
       );
       await tx.prove();
-      // await (await tx.sign([deployerKey]).send()).wait();
+      await (await tx.sign([deployerKey]).send()).wait();
       // Not waitong for the transaction to be included in a block
-      await tx.sign([deployerKey, zkAppPrivateKey]).send();
+      // await tx.sign([deployerKey, zkAppPrivateKey]).send();
 
       console.log('action 3');
       tx = await Mina.transaction(
@@ -295,13 +295,13 @@ describe('Token-test-actions', () => {
         }
       );
       await tx.prove();
-      // await (await tx.sign([deployerKey]).send()).wait();
+      await (await tx.sign([deployerKey]).send()).wait();
       // Not waitong for the transaction to be included in a block
-      await tx.sign([deployerKey, zkAppPrivateKey]).send();
+      // await tx.sign([deployerKey, zkAppPrivateKey]).send();
     }, 10000000);
     // // ------------------------------------------------------------------------
     // // ------------------------------------------------------------------------
-    it(`waiting one block to get Actions back later - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    it(`waiting one block to reduce Actions later - deployToBerkeley?: ${deployToBerkeley}`, async () => {
       console.log('dummy tx');
       let tx = await Mina.transaction(
         {
