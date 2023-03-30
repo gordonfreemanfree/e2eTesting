@@ -66,7 +66,7 @@ describe('proxy-recursion-test', () => {
       // choosing which Blockchain to use
       console.log('choosing blockchain');
       Blockchain = deployToBerkeley
-        ? Mina.Network('https://proxy.berkeley.minaexplorer.com/graphql')
+        ? Mina.Network('https://api.minascan.io/node/berkeley/v1/graphql')
         : Mina.LocalBlockchain({ proofsEnabled });
 
       Mina.setActiveInstance(Blockchain);
@@ -196,7 +196,7 @@ describe('proxy-recursion-test', () => {
 
       if (smartSnarkyZkAppVerificationKey !== undefined) {
         txn = await Mina.transaction(
-          { sender: deployerAccount, fee: 0.1e9 },
+          { sender: deployerAccount, fee: 0.4e9 },
           () => {
             AccountUpdate.fundNewAccount(deployerAccount, 2);
 
@@ -306,7 +306,7 @@ describe('proxy-recursion-test', () => {
       console.log('isValidLocal', isValidLocal);
 
       const txn = await Mina.transaction(
-        { sender: deployerAccount, fee: 0.1e9 },
+        { sender: deployerAccount, fee: 0.4e9 },
         () => {
           proxyZkApp.callPredict(proofLayer2, smartSnarkyNetAddress);
         }
@@ -369,7 +369,7 @@ describe('proxy-recursion-test', () => {
 
       // change permissions for setVerificationKey to impossible
       let txn_permission = await Mina.transaction(
-        { sender: deployerAccount, fee: 0.1e9 },
+        { sender: deployerAccount, fee: 0.4e9 },
         () => {
           let permissionsUpdate = AccountUpdate.createSigned(
             smartSnarkyNetAddress
@@ -403,7 +403,7 @@ describe('proxy-recursion-test', () => {
         await fetchAccount({ publicKey: smartSnarkyNetAddress });
       }
       let txn_permission = await Mina.transaction(
-        { sender: deployerAccount, fee: 0.1e9 },
+        { sender: deployerAccount, fee: 0.4e9 },
         () => {
           smartSnarkyNetZkApp.setLayerHashes(Field(1), Field(2));
         }
@@ -423,7 +423,7 @@ describe('proxy-recursion-test', () => {
 
       // change permissions for setVerificationKey to impossible
       let txn_permission = await Mina.transaction(
-        { sender: deployerAccount, fee: 0.1e9 },
+        { sender: deployerAccount, fee: 0.5e9 },
         () => {
           let permissionsUpdate = AccountUpdate.createSigned(
             smartSnarkyNetAddress
@@ -487,7 +487,7 @@ describe('proxy-recursion-test', () => {
       console.log('isValidLocal', isValidLocal);
 
       const txn = await Mina.transaction(
-        { sender: deployerAccount, fee: 0.1e9 },
+        { sender: deployerAccount, fee: 0.5e9 },
         () => {
           proxyZkApp.callPredict(proofLayer2, smartSnarkyNetAddress);
         }
@@ -516,7 +516,7 @@ describe('proxy-recursion-test', () => {
 
       // change permissions for setVerificationKey to impossible
       let txn_permission = await Mina.transaction(
-        { sender: deployerAccount, fee: 0.1e9 },
+        { sender: deployerAccount, fee: 0.6e9 },
         () => {
           let permissionsUpdate = AccountUpdate.createSigned(
             smartSnarkyNetAddress
@@ -574,7 +574,7 @@ describe('proxy-recursion-test', () => {
 
       // change permissions for setVerificationKey to impossible
       let txn_permission = await Mina.transaction(
-        { sender: deployerAccount, fee: 0.1e9 },
+        { sender: deployerAccount, fee: 0.7e9 },
         () => {
           let permissionsUpdate = AccountUpdate.createSigned(
             smartSnarkyNetAddress
