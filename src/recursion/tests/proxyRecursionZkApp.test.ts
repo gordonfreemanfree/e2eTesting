@@ -13,22 +13,22 @@ import {
   Permissions,
 } from 'snarkyjs';
 import fs from 'fs/promises';
-import { loopUntilAccountExists } from '../token/utils/utils';
-import { getFriendlyDateTime } from '../token/utils/utils';
-import { ProxyRecursionZkApp } from './proxyRecursionZkApp.js';
-import { SmartSnarkyNet } from './snarkyNet/smartSnarkyNet';
-import { SnarkyLayer1, SnarkyLayer2 } from './snarkyNet/snarkyLayer';
+import { loopUntilAccountExists } from '../../token/utils/utils';
+import { getFriendlyDateTime } from '../../token/utils/utils';
+import { ProxyRecursionZkApp } from '../proxyRecursionZkApp.js';
+import { SmartSnarkyNet } from '../snarkyNet/smartSnarkyNet';
+import { SnarkyLayer1, SnarkyLayer2 } from '../snarkyNet/snarkyLayer';
 import {
   preprocessImage,
   preprocessWeights,
-} from './snarkyNet/utils/preprocess';
-import { weights_l1_8x8 } from './snarkyNet/assets/weights_l1_8x8';
-import { weights_l2_8x8 } from './snarkyNet/assets/weights_l2_8x8';
-import { Architecture, NeuralNet } from './snarkyNet/recursionProof';
-import { InputImage } from './snarkyNet/inputImageClass';
-import { image_0_label_7_8x8 } from './snarkyNet/assets/image_0_label_7_8x8';
-import { SnarkyNet } from './snarkyNet/snarkynet';
-import { image_1_label_2_8x8 } from './snarkyNet/assets/image_1_label_2_8x8';
+} from '../snarkyNet/utils/preprocess';
+import { weights_l1_8x8 } from '../snarkyNet/assets/weights_l1_8x8';
+import { weights_l2_8x8 } from '../snarkyNet/assets/weights_l2_8x8';
+import { Architecture, NeuralNet } from '../snarkyNet/recursionProof';
+import { InputImage } from '../snarkyNet/inputImageClass';
+import { image_0_label_7_8x8 } from '../snarkyNet/assets/image_0_label_7_8x8';
+import { SnarkyNet } from '../snarkyNet/snarkynet';
+import { image_1_label_2_8x8 } from '../snarkyNet/assets/image_1_label_2_8x8';
 // import { Add } from './SmartSnarkyNet.js';
 
 console.log('process.env.TEST_ON_BERKELEY', process.env.TEST_ON_BERKELEY);
@@ -196,7 +196,7 @@ describe('proxy-recursion-test', () => {
 
       if (smartSnarkyZkAppVerificationKey !== undefined) {
         txn = await Mina.transaction(
-          { sender: deployerAccount, fee: 0.4e9 },
+          { sender: deployerAccount, fee: 0.1e9 },
           () => {
             AccountUpdate.fundNewAccount(deployerAccount, 2);
 
@@ -306,7 +306,7 @@ describe('proxy-recursion-test', () => {
       console.log('isValidLocal', isValidLocal);
 
       const txn = await Mina.transaction(
-        { sender: deployerAccount, fee: 0.4e9 },
+        { sender: deployerAccount, fee: 0.1e9 },
         () => {
           proxyZkApp.callPredict(proofLayer2, smartSnarkyNetAddress);
         }
@@ -369,7 +369,7 @@ describe('proxy-recursion-test', () => {
 
       // change permissions for setVerificationKey to impossible
       let txn_permission = await Mina.transaction(
-        { sender: deployerAccount, fee: 0.4e9 },
+        { sender: deployerAccount, fee: 0.1e9 },
         () => {
           let permissionsUpdate = AccountUpdate.createSigned(
             smartSnarkyNetAddress
@@ -403,7 +403,7 @@ describe('proxy-recursion-test', () => {
         await fetchAccount({ publicKey: smartSnarkyNetAddress });
       }
       let txn_permission = await Mina.transaction(
-        { sender: deployerAccount, fee: 0.4e9 },
+        { sender: deployerAccount, fee: 0.1e9 },
         () => {
           smartSnarkyNetZkApp.setLayerHashes(Field(1), Field(2));
         }
@@ -423,7 +423,7 @@ describe('proxy-recursion-test', () => {
 
       // change permissions for setVerificationKey to impossible
       let txn_permission = await Mina.transaction(
-        { sender: deployerAccount, fee: 0.5e9 },
+        { sender: deployerAccount, fee: 0.2e9 },
         () => {
           let permissionsUpdate = AccountUpdate.createSigned(
             smartSnarkyNetAddress
@@ -487,7 +487,7 @@ describe('proxy-recursion-test', () => {
       console.log('isValidLocal', isValidLocal);
 
       const txn = await Mina.transaction(
-        { sender: deployerAccount, fee: 0.5e9 },
+        { sender: deployerAccount, fee: 0.3e9 },
         () => {
           proxyZkApp.callPredict(proofLayer2, smartSnarkyNetAddress);
         }
@@ -516,7 +516,7 @@ describe('proxy-recursion-test', () => {
 
       // change permissions for setVerificationKey to impossible
       let txn_permission = await Mina.transaction(
-        { sender: deployerAccount, fee: 0.6e9 },
+        { sender: deployerAccount, fee: 0.4e9 },
         () => {
           let permissionsUpdate = AccountUpdate.createSigned(
             smartSnarkyNetAddress
@@ -574,7 +574,7 @@ describe('proxy-recursion-test', () => {
 
       // change permissions for setVerificationKey to impossible
       let txn_permission = await Mina.transaction(
-        { sender: deployerAccount, fee: 0.7e9 },
+        { sender: deployerAccount, fee: 0.5e9 },
         () => {
           let permissionsUpdate = AccountUpdate.createSigned(
             smartSnarkyNetAddress
