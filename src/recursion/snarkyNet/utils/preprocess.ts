@@ -9,6 +9,6 @@ export function preprocessWeights(weightsScaled: number[][]): Array<Field>[] {
 
 export function preprocessImage(image: number[]): Array<Field> {
   const imagePreprocessed = num2Field_t1(image);
-  console.log('imagePreprocessed', imagePreprocessed.toString());
+  // console.log('imagePreprocessed', imagePreprocessed.toString());
   return imagePreprocessed;
 }

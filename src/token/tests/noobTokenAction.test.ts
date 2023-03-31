@@ -347,7 +347,67 @@ describe('Token-test-actions', () => {
 
       expect(currentActionCounter).toEqual(Field(3));
     }, 10000000);
+
+    it(`changing permission "editSequenceState" to impossible() - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+      console.log('changing permission "editSequenceState" to impossible');
+
+      let tx = await Mina.transaction(
+        { sender: deployerAccount, fee: 0.1e9 },
+        () => {
+          let permissionsUpdate = AccountUpdate.createSigned(zkAppAddress);
+          permissionsUpdate.account.permissions.set({
+            ...Permissions.default(),
+            access: Permissions.proofOrSignature(),
+            setVerificationKey: Permissions.impossible(),
+            editState: Permissions.proofOrSignature(),
+            receive: Permissions.none(),
+            editSequenceState: Permissions.impossible(),
+          });
+        }
+      );
+      await tx.prove();
+      await (await tx.sign([deployerKey, zkAppPrivateKey]).send()).wait();
+
+      if (isBerkeley) {
+        await fetchAccount({
+          publicKey: zkAppAddress,
+        });
+      }
+
+      let currentPermission = Mina.getAccount(zkAppAddress).permissions
+        .editSequenceState;
+
+      expect(currentPermission).toEqual(Permissions.impossible());
+    }, 10000000);
+
+    it(`trying to send Actions - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+      if (isBerkeley) {
+        await fetchAccount({
+          publicKey: zkAppAddress,
+          tokenId: zkApp.token.id,
+        });
+        await fetchAccount({
+          publicKey: deployerAccount,
+        });
+      }
+
+      console.log('action 1');
+      let tx = await Mina.transaction(
+        { sender: deployerAccount, fee: 0.2e9 },
+
+        () => {
+          zkApp.incrementCounter(Field(1));
+          // zkApp.incrementCounter();
+        }
+      );
+      await tx.prove();
+      expect(
+        expect(async () => {
+          await (await tx.sign([deployerKey, zkAppPrivateKey]).send()).wait();
+        }).rejects.toThrow()
+      );
+    }, 10000000);
   }
 
-  // runTests();
+  runTests();
 });

@@ -363,6 +363,53 @@ describe('proxy-recursion-test', () => {
       expect(currentLayer2Hash).toEqual(Field(2));
     }, 10000000);
 
+    it(`4. set hashes back to true hashes with signature while "editstate" is proofOrSignature()"- deployToBerkeley?: ${deployToBerkeley}`, async () => {
+      let snarkyLayer1s = new SnarkyLayer1(
+        preprocessWeights(weights_l1_8x8),
+        'relu'
+      );
+
+      let snarkyLayer2s = new SnarkyLayer2(
+        preprocessWeights(weights_l2_8x8),
+        'softmax'
+      );
+
+      if (isBerkeley) {
+        await fetchAccount({ publicKey: smartSnarkyNetAddress });
+      }
+
+      // change permissions for setVerificationKey to impossible
+      let txn_permission = await Mina.transaction(
+        { sender: deployerAccount, fee: 0.1e9 },
+        () => {
+          // AccountUpdate.createSigned(smartSnarkyNetAddress);
+          smartSnarkyNetZkApp.setLayerHashes(
+            Poseidon.hash(snarkyLayer1s.toFields()),
+            Poseidon.hash(snarkyLayer2s.toFields())
+          );
+        }
+      );
+      await txn_permission.prove();
+      txn_permission.sign([deployerKey, smartSnarkyNetPrivateKey]);
+      // console.log('txn_permission hashes edit', txn_permission.toPretty());
+      await (await txn_permission.send()).wait();
+
+      if (isBerkeley) {
+        await fetchAccount({ publicKey: smartSnarkyNetAddress });
+      }
+      Mina.getAccount(smartSnarkyNetAddress);
+
+      let currentLayer1Hash = smartSnarkyNetZkApp.layer1Hash.get();
+      let currentLayer2Hash = smartSnarkyNetZkApp.layer2Hash.get();
+
+      expect(currentLayer1Hash).toEqual(
+        Poseidon.hash(snarkyLayer1s.toFields())
+      );
+      expect(currentLayer2Hash).toEqual(
+        Poseidon.hash(snarkyLayer1s.toFields())
+      );
+    }, 10000000);
+
     it(`4. set Permission "editState" to proof()"  - deployToBerkeley?: ${deployToBerkeley}`, async () => {
       if (isBerkeley) {
         await fetchAccount({ publicKey: smartSnarkyNetAddress });
@@ -441,7 +488,8 @@ describe('proxy-recursion-test', () => {
       );
       await txn_permission.prove();
       txn_permission.sign([deployerKey, smartSnarkyNetPrivateKey]);
-      await (await txn_permission.send()).wait();
+      let response = await (await txn_permission.send()).wait();
+      console.log('response 6.', response);
 
       if (isBerkeley) {
         await fetchAccount({ publicKey: smartSnarkyNetAddress });

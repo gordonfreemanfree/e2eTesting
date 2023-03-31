@@ -73,17 +73,30 @@ NoobToken is a very basic token contract that is build to test specific scenario
 
 ### Implementation
 
+NoobToken is a really simple zkApp to test different scenarios. It offers different features:
+
+1. minting can depend upon the account balance of Mina.
+2. the minting process can be stopped through a state variable.
+3. Events are emmited after every method call.
+4. Actions can be used to update a state variable.
+5. sending can depend upon timestamp.
+
 ### Limitations
 
-1. We weren't able to do sufficient accuracy tests after the whole scaling and normalization steps. In our very limited tests (20) we found one false classification.
-2. The overall accuracy after the training process and before the implemention into circuits was around about 80%.
+1. No method here is intended to be production ready. Everything is for testing purpose.
 
-### Acknowledgement
+### List of tests
 
-The project used Malkofos SnarkyNet-MNIST-Digits
-"https://github.com/Makalfo/SnarkyNet-MNIST-Digits"
-as a starting point, but improved the concept of zk ML Application by
-porting the prediction into a circuit.
+The tests are splitted up into multiple files. Every test file starts with a new deployment of the zkApp.
+`noobTokenAction.test.ts`
+
+1. Surface area 8: checking that zkAppVerificationKey gets deployed correctly - expecting success
+2. Surface area 3: Sending actions - expecting success
+3. Surface area -: Waiting one block
+4. Surface area 3: Reducing actions and updating state - expecting success
+5.
+
+## Runtime
 
 ## How to build
 

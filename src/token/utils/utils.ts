@@ -50,7 +50,7 @@ async function callFaucet(deployerAccount: PublicKey) {
     // await Mina.faucet(deployerAccount);
   }
   let currentBalance = Mina.getBalance(deployerAccount);
-  if (currentBalance >= UInt64.from(10e9)) {
+  if (currentBalance <= UInt64.from(10e9)) {
     try {
       await Mina.faucet(deployerAccount);
     } catch (e) {
