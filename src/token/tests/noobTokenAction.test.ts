@@ -21,7 +21,7 @@ import {
 import { NoobToken } from '../noobToken';
 
 import fs from 'fs/promises';
-import { loopUntilAccountExists } from '../utils/utils';
+import { callFaucet, loopUntilAccountExists } from '../utils/utils';
 import { getFriendlyDateTime } from '../utils/utils';
 // import { ActionsType } from './noobToken';
 
@@ -154,6 +154,8 @@ describe('Token-test-actions', () => {
     }
 
     async function berkeleyDeploy() {
+      console.log('calling faucet...');
+      callFaucet(deployerAccount);
       console.log('compiling...');
       let { verificationKey: zkAppVerificationKey } = await NoobToken.compile();
       console.log('generating deploy transaction');
@@ -169,7 +171,7 @@ describe('Token-test-actions', () => {
       );
       console.log('generating proof');
       await txn.prove();
-      // this tx needs .sign(), because `deploy()` adds an account update that requires signature authorization
+
       console.log('signing transaction');
       txn.sign([deployerKey, zkAppPrivateKey]);
       let response = await txn.send();
@@ -343,7 +345,6 @@ describe('Token-test-actions', () => {
 
       let currentActionCounter = zkApp.actionCounter.get();
 
-      // console.log('state after rollup: ' + zkApp.actionCounter.get());
       expect(currentActionCounter).toEqual(Field(3));
     }, 10000000);
   }

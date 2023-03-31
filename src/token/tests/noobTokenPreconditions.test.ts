@@ -19,7 +19,7 @@ import {
 import { NoobToken } from '../noobToken';
 
 import fs from 'fs/promises';
-import { loopUntilAccountExists } from '../utils/utils';
+import { callFaucet, loopUntilAccountExists } from '../utils/utils';
 import { getFriendlyDateTime } from '../utils/utils';
 // import { ActionsType } from './noobToken';
 
@@ -152,6 +152,8 @@ describe('token-test-preconditions', () => {
     }
 
     async function berkeleyDeploy() {
+      console.log('calling faucet...');
+      callFaucet(deployerAccount);
       console.log('compiling...');
       let { verificationKey: zkAppVerificationKey } = await NoobToken.compile();
       console.log('generating deploy transaction');

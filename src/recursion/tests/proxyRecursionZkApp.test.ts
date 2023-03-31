@@ -13,7 +13,7 @@ import {
   Permissions,
 } from 'snarkyjs';
 import fs from 'fs/promises';
-import { loopUntilAccountExists } from '../../token/utils/utils';
+import { loopUntilAccountExists, callFaucet } from '../../token/utils/utils';
 import { getFriendlyDateTime } from '../../token/utils/utils';
 import { ProxyRecursionZkApp } from '../proxyRecursionZkApp.js';
 import { SmartSnarkyNet } from '../snarkyNet/smartSnarkyNet';
@@ -29,12 +29,11 @@ import { InputImage } from '../snarkyNet/inputImageClass';
 import { image_0_label_7_8x8 } from '../snarkyNet/assets/image_0_label_7_8x8';
 import { SnarkyNet } from '../snarkyNet/snarkynet';
 import { image_1_label_2_8x8 } from '../snarkyNet/assets/image_1_label_2_8x8';
-// import { Add } from './SmartSnarkyNet.js';
 
 console.log('process.env.TEST_ON_BERKELEY', process.env.TEST_ON_BERKELEY);
 
 const isBerkeley = process.env.TEST_ON_BERKELEY == 'true' ? true : false;
-// const isBerkeley = true;
+
 console.log('isBerkeley:', isBerkeley);
 let proofsEnabled = true;
 
@@ -190,6 +189,8 @@ describe('proxy-recursion-test', () => {
     }
 
     async function berkeleyDeploy() {
+      console.log('calling faucet...');
+      callFaucet(deployerAccount);
       console.log('deploy on Berkeley...');
 
       let txn;
