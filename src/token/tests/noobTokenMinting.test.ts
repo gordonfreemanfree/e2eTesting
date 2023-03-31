@@ -19,7 +19,7 @@ import {
 import { NoobToken } from '../noobToken';
 
 import fs from 'fs/promises';
-import { callFaucet, loopUntilAccountExists } from '../utils/utils';
+import { loopUntilAccountExists } from '../utils/utils';
 import { getFriendlyDateTime } from '../utils/utils';
 // import { ActionsType } from './noobToken';
 
@@ -53,7 +53,7 @@ describe('Token-test-permission', () => {
       console.log('choosing blockchain');
       Blockchain = deployToBerkeley
         ? Mina.Network({
-            mina: 'https://api.minascan.io/node/berkeley/v1/graphql',
+            mina: 'https://proxy.berkeley.minaexplorer.com/graphql',
             archive: 'https://archive.berkeley.minaexplorer.com',
           })
         : Mina.LocalBlockchain({ proofsEnabled });
@@ -69,7 +69,7 @@ describe('Token-test-permission', () => {
           await fs.readFile('config.json', 'utf8')
         );
         // berkeley key hardcoded here
-        let config = configJson.deployAliases['berkeley'];
+        let config = configJson.deployAliases['noobtokenminting'];
         let key: { privateKey: string } = JSON.parse(
           await fs.readFile(config.keyPath, 'utf8')
         );
@@ -153,7 +153,7 @@ describe('Token-test-permission', () => {
 
     async function berkeleyDeploy() {
       console.log('calling faucet...');
-      callFaucet(deployerAccount);
+      await Mina.faucet(deployerAccount);
       console.log('compiling...');
       let { verificationKey: zkAppVerificationKey } = await NoobToken.compile();
       console.log('generating deploy transaction');

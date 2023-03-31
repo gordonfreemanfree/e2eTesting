@@ -15,6 +15,26 @@
       "url": "https://proxy.berkeley.minaexplorer.com/graphql",
       "keyPath": "keys/noobtokenaction.json",
       "fee": ".1"
+    },
+    "proxyrecursionzkapp": {
+      "url": "https://proxy.berkeley.minaexplorer.com/graphql",
+      "keyPath": "keys/proxyrecursionzkapp.json",
+      "fee": ".1"
+    },
+    "noobtokenminting": {
+      "url": "https://proxy.berkeley.minaexplorer.com/graphql",
+      "keyPath": "keys/noobtokenminting.json",
+      "fee": ".1"
+    },
+    "noobtokenpermission": {
+      "url": "https://proxy.berkeley.minaexplorer.com/graphql",
+      "keyPath": "keys/noobtokenpermission.json",
+      "fee": ".1"
+    },
+    "noobtokenprecondition": {
+      "url": "https://proxy.berkeley.minaexplorer.com/graphql",
+      "keyPath": "keys/noobtokenprecondition.json",
+      "fee": ".1"
     }
   }
 }

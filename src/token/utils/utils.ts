@@ -2,7 +2,7 @@ import { Mina, PublicKey, UInt64, fetchAccount } from 'snarkyjs';
 
 export { loopUntilAccountExists };
 export { getFriendlyDateTime };
-export { callFaucet };
+// export { callFaucet };
 
 async function loopUntilAccountExists({
   account,
@@ -44,18 +44,14 @@ function getFriendlyDateTime() {
   return `${day}, ${month} ${date.getDate()}, ${year} at ${time}`;
 }
 
-async function callFaucet(deployerAccount: PublicKey) {
-  // await fetchAccount({ publicKey: deployerAccount });
-  // await Mina.faucet(deployerAccount);
+// async function callFaucet(deployerAccount: PublicKey) {
+//   // await fetchAccount({ publicKey: deployerAccount });
+//   // await Mina.faucet(deployerAccount);
 
-  // let currentBalance = Mina.getBalance(deployerAccount);
-  // console.log('current balance', currentBalance.toString());
+//   // let currentBalance = Mina.getBalance(deployerAccount);
+//   // console.log('current balance', currentBalance.toString());
 
-  try {
-    await Mina.faucet(deployerAccount);
-  } catch (e) {
-    console.log('error with faucet', e);
-  }
-}
+//   await Mina.faucet(deployerAccount);
+// }
 
 const deployTransactionFee = 100_000_000;

@@ -21,7 +21,7 @@ import {
 import { NoobToken } from '../noobToken';
 
 import fs from 'fs/promises';
-import { callFaucet, loopUntilAccountExists } from '../utils/utils';
+import { loopUntilAccountExists } from '../utils/utils';
 import { getFriendlyDateTime } from '../utils/utils';
 // import { ActionsType } from './noobToken';
 
@@ -55,7 +55,7 @@ describe('Token-test-actions', () => {
       console.log('choosing blockchain');
       Blockchain = deployToBerkeley
         ? Mina.Network({
-            mina: 'https://api.minascan.io/node/berkeley/v1/graphql',
+            mina: 'https://proxy.berkeley.minaexplorer.com/graphql',
             archive: 'https://archive.berkeley.minaexplorer.com',
           })
         : Mina.LocalBlockchain({ proofsEnabled });
@@ -155,7 +155,7 @@ describe('Token-test-actions', () => {
 
     async function berkeleyDeploy() {
       console.log('calling faucet...');
-      callFaucet(deployerAccount);
+      await Mina.faucet(deployerAccount);
       console.log('compiling...');
       let { verificationKey: zkAppVerificationKey } = await NoobToken.compile();
       console.log('generating deploy transaction');
@@ -285,21 +285,6 @@ describe('Token-test-actions', () => {
       );
       await tx.prove();
       await (await tx.sign([deployerKey]).send()).wait();
-      // Not waitong for the transaction to be included in a block
-      // await tx.sign([deployerKey, zkAppPrivateKey]).send();
-
-      // console.log('action 3');
-      // tx = await Mina.transaction(
-      //   { sender: deployerAccount, fee: 0.2e9 },
-      //   () => {
-      //     zkApp.incrementCounter(Field(1));
-      //     // zkApp.incrementCounter();
-      //   }
-      // );
-      // await tx.prove();
-      // await (await tx.sign([deployerKey]).send()).wait();
-      // Not waitong for the transaction to be included in a block
-      // await tx.sign([deployerKey, zkAppPrivateKey]).send();
     }, 10000000);
     // // ------------------------------------------------------------------------
     // // ------------------------------------------------------------------------

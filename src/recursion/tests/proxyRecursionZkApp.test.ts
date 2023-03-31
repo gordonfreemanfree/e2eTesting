@@ -13,7 +13,7 @@ import {
   Permissions,
 } from 'snarkyjs';
 import fs from 'fs/promises';
-import { loopUntilAccountExists, callFaucet } from '../../token/utils/utils';
+import { loopUntilAccountExists } from '../../token/utils/utils';
 import { getFriendlyDateTime } from '../../token/utils/utils';
 import { ProxyRecursionZkApp } from '../proxyRecursionZkApp.js';
 import { SmartSnarkyNet } from '../snarkyNet/smartSnarkyNet';
@@ -65,7 +65,7 @@ describe('proxy-recursion-test', () => {
       // choosing which Blockchain to use
       console.log('choosing blockchain');
       Blockchain = deployToBerkeley
-        ? Mina.Network('https://api.minascan.io/node/berkeley/v1/graphql')
+        ? Mina.Network('https://proxy.berkeley.minaexplorer.com/graphql')
         : Mina.LocalBlockchain({ proofsEnabled });
 
       Mina.setActiveInstance(Blockchain);
@@ -102,7 +102,7 @@ describe('proxy-recursion-test', () => {
           await fs.readFile('config.json', 'utf8')
         );
         // berkeley key hardcoded here
-        let config = configJson.deployAliases['proxyRecursionKey'];
+        let config = configJson.deployAliases['proxyrecursionzkapp'];
         let key: { privateKey: string } = JSON.parse(
           await fs.readFile(config.keyPath, 'utf8')
         );
@@ -190,7 +190,8 @@ describe('proxy-recursion-test', () => {
 
     async function berkeleyDeploy() {
       console.log('calling faucet...');
-      callFaucet(deployerAccount);
+      await Mina.faucet(deployerAccount);
+
       console.log('deploy on Berkeley...');
 
       let txn;
