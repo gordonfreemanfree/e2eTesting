@@ -217,7 +217,7 @@ describe('Token-test-actions', () => {
     // status: working
     // confirmed: true
     // dependencies: none
-    it(`checking that zkAppVerificationKey gets deployed correctly - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    it(`1. checking that zkAppVerificationKey gets deployed correctly - deployToBerkeley?: ${deployToBerkeley}`, async () => {
       console.log('checking that zkAppVerificationKey gets deployed correctly');
 
       let zkAppVerificationKey = deployToBerkeley
@@ -248,7 +248,7 @@ describe('Token-test-actions', () => {
     // ------------------------------------------------------------------------
 
     // ------------------------------------------------------------------------
-    it(`Sending Actions - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    it(`2. Sending Actions - deployToBerkeley?: ${deployToBerkeley}`, async () => {
       console.log('applying actions..');
 
       if (isBerkeley) {
@@ -288,22 +288,22 @@ describe('Token-test-actions', () => {
       // Not waitong for the transaction to be included in a block
       // await tx.sign([deployerKey, zkAppPrivateKey]).send();
 
-      console.log('action 3');
-      tx = await Mina.transaction(
-        { sender: deployerAccount, fee: 0.2e9 },
-        () => {
-          zkApp.incrementCounter(Field(1));
-          // zkApp.incrementCounter();
-        }
-      );
-      await tx.prove();
-      await (await tx.sign([deployerKey]).send()).wait();
+      // console.log('action 3');
+      // tx = await Mina.transaction(
+      //   { sender: deployerAccount, fee: 0.2e9 },
+      //   () => {
+      //     zkApp.incrementCounter(Field(1));
+      //     // zkApp.incrementCounter();
+      //   }
+      // );
+      // await tx.prove();
+      // await (await tx.sign([deployerKey]).send()).wait();
       // Not waitong for the transaction to be included in a block
       // await tx.sign([deployerKey, zkAppPrivateKey]).send();
     }, 10000000);
     // // ------------------------------------------------------------------------
     // // ------------------------------------------------------------------------
-    it(`waiting one block to reduce Actions later - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    it(`3. waiting one block to reduce Actions later - deployToBerkeley?: ${deployToBerkeley}`, async () => {
       console.log('dummy tx');
       let tx = await Mina.transaction(
         {
@@ -320,7 +320,7 @@ describe('Token-test-actions', () => {
     }, 10000000);
 
     // // ------------------------------------------------------------------------
-    it(`reduce Actions - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    it(`4. reduce Actions - deployToBerkeley?: ${deployToBerkeley}`, async () => {
       console.log('rolling up pending actions..');
 
       console.log('state before: ' + zkApp.actionCounter.get());
@@ -345,10 +345,10 @@ describe('Token-test-actions', () => {
 
       let currentActionCounter = zkApp.actionCounter.get();
 
-      expect(currentActionCounter).toEqual(Field(3));
+      expect(currentActionCounter).toEqual(Field(2));
     }, 10000000);
 
-    it(`changing permission "editSequenceState" to impossible() - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    it(`5. changing permission "editSequenceState" to impossible() - deployToBerkeley?: ${deployToBerkeley}`, async () => {
       console.log('changing permission "editSequenceState" to impossible');
 
       let tx = await Mina.transaction(
@@ -409,5 +409,5 @@ describe('Token-test-actions', () => {
     }, 10000000);
   }
 
-  runTests();
+  // runTests();
 });

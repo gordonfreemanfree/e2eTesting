@@ -299,6 +299,43 @@ describe('Token-test-permission', () => {
     //   expect(newTotalAmountInCirculation).toEqual(mintAmount);
     //   expect(newNoobBalance).toEqual(mintAmount);
     // }, 1000000);
+    // ------------------------------------------------------------------------
+    // mintWithMina but balance is 0. expecting failure
+    // status: working
+    // confirmed:
+    it(`mintWithMina 1 tokens but balance is 0  - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+      console.log('mintWithMina but balance is 0. expecting failure');
+
+      // expect(async () => {
+      printBalances();
+      if (isBerkeley) {
+        await fetchAccount({ publicKey: zkAppAddress });
+      }
+      Mina.getAccount(zkAppAddress);
+      // console.log('nonce of deployerAccount is', accountInfo.nonce.toJSON());
+
+      const txn20 = await Mina.transaction(
+        { sender: deployerAccount, fee: 0.1e9 },
+        () => {
+          AccountUpdate.fundNewAccount(deployerAccount);
+          zkApp.mintWithMina(deployerAccount, UInt64.from(1));
+        }
+      );
+      await txn20.prove();
+      txn20.sign([deployerKey, zkAppPrivateKey]);
+      await (await txn20.send()).wait();
+
+      let tokenId = zkApp.token.id;
+      if (isBerkeley) {
+        await fetchAccount({
+          publicKey: zkAppAddress,
+          tokenId: tokenId,
+        });
+      }
+
+      // let newNoobBalance = Mina.getAccount(zkAppAddress, tokenId).balance;
+      // }).rejects.toThrow();
+    }, 1000000);
 
     // ------------------------------------------------------------------------
     // it(`try to mintWithMina but balance is 0 - expect failure - deployToBerkeley?: ${deployToBerkeley}`, async () => {

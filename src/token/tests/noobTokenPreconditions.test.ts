@@ -216,7 +216,7 @@ describe('token-test-preconditions', () => {
     // status: working
     // confirmed: true
     // dependencies: none
-    it(`checking that zkAppVerificationKey gets deployed correctly - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    it(`1. checking that zkAppVerificationKey gets deployed correctly - deployToBerkeley?: ${deployToBerkeley}`, async () => {
       console.log('checking that zkAppVerificationKey gets deployed correctly');
 
       let zkAppVerificationKey = deployToBerkeley
@@ -251,7 +251,7 @@ describe('token-test-preconditions', () => {
     // // status: working
     // // confirmed: true
     // // dependencies:
-    it(`check that tokenSymbol is 'NOOB' - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    it(`2. check that tokenSymbol is 'NOOB' - deployToBerkeley?: ${deployToBerkeley}`, async () => {
       if (isBerkeley) {
         await fetchAccount({ publicKey: zkAppAddress });
       }
@@ -261,45 +261,11 @@ describe('token-test-preconditions', () => {
     }, 1000000);
     // // ------------------------------------------------------------------------
 
-    // // ------------------------------------------------------------------------
-    // // set delegate to deployerAccount
-    // // status: working
-    // // confirmed: true
-    // it(`set delegate to deployerAccount - deployToBerkeley?: ${deployToBerkeley}`, async () => {
-    //   console.log('set delegate to  deployerAccount');
-    //   if (isBerkeley) {
-    //     await fetchAccount({ publicKey: zkAppAddress });
-    //   }
-    //   let oldDelegate = Mina.getAccount(zkAppAddress).delegate;
-    //   console.log('oldDelegate is', oldDelegate?.toJSON());
-
-    //   // set delegate for deployerAccount
-    //   let txn_delegate = await Mina.transaction(
-    //     { sender: deployerAccount, fee: 0.1e9 },
-    //     () => {
-    //       let update = AccountUpdate.createSigned(zkAppAddress);
-    //       update.account.delegate.set(deployerAccount);
-    //     }
-    //   );
-    //   await txn_delegate.prove();
-    //   txn_delegate.sign([zkAppPrivateKey, deployerKey]);
-    //   await (await txn_delegate.send()).wait();
-
-    //   if (isBerkeley) {
-    //     await fetchAccount({ publicKey: zkAppAddress });
-    //   }
-    //   let newDelegate = Mina.getAccount(zkAppAddress).delegate;
-    //   console.log('newDelegate is', newDelegate?.toJSON());
-
-    //   expect(newDelegate).toEqual(deployerAccount);
-    // }, 1000000);
-    // // ------------------------------------------------------------------------
-
     // ------------------------------------------------------------------------
     // mint 7 tokens to zkAppAccount
     // status: working
     // confirmed: true
-    it(`mint 7 tokens  - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    it(`3. mint 7 tokens  - deployToBerkeley?: ${deployToBerkeley}`, async () => {
       printBalances();
       console.log('minting 7 tokens');
       let tokenId = zkApp.token.id;
@@ -353,7 +319,7 @@ describe('token-test-preconditions', () => {
     // sendTokens to deployerAccount
     // status: working
     // confirmed: true
-    it(`sendTokens to deployerAccount - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    it(`4. sendTokens to deployerAccount - deployToBerkeley?: ${deployToBerkeley}`, async () => {
       console.log('sendTokens to deployerAccount');
 
       let events = await zkApp.fetchEvents();
@@ -412,7 +378,7 @@ describe('token-test-preconditions', () => {
     // status: working
     // confirmed: true
     // dependencies: mintWithMina / sendTokens to deployerAccount
-    it(`sendNOOBIfCorrectTime to deployerAccount if the network time is correct - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    it(`5. sendNOOBIfCorrectTime to deployerAccount if the network time is correct - deployToBerkeley?: ${deployToBerkeley}`, async () => {
       let amount = UInt64.from(1e9);
 
       if (isBerkeley) {
@@ -477,46 +443,47 @@ describe('token-test-preconditions', () => {
     // status: working
     // confirmed: true
     // dependencies: mint
-    it(`Send NOOB if the network time is NOT correct - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    it(`6. Send NOOB if the network time is NOT correct - deployToBerkeley?: ${deployToBerkeley}`, async () => {
       // testing with incorrect time
-      expect(async () => {
-        let amount = UInt64.from(1e9);
+      // expect(async () => {
+      let amount = UInt64.from(1e9);
 
-        if (isBerkeley) {
-          await fetchAccount({
-            publicKey: zkAppAddress,
-            tokenId: zkApp.token.id,
-          });
-          await fetchAccount({
-            publicKey: deployerAccount,
-            tokenId: zkApp.token.id,
-          });
+      if (isBerkeley) {
+        await fetchAccount({
+          publicKey: zkAppAddress,
+          tokenId: zkApp.token.id,
+        });
+        await fetchAccount({
+          publicKey: deployerAccount,
+          tokenId: zkApp.token.id,
+        });
+      }
+
+      Mina.getAccount(zkAppAddress, zkApp.token.id);
+      Mina.getAccount(deployerAccount, zkApp.token.id);
+
+      let oldDeployerNoobBalance = Mina.getBalance(
+        deployerAccount,
+        zkApp.token.id
+      );
+
+      // assuring that the endDate is always in the past
+      let endDateIncorrect = UInt64.from(Date.now() - 1000000);
+
+      // sending also 1 Mina to the receiverAddress because of the bug in the Mina explorer, otherwise address wouldn't be found
+      let txn = await Mina.transaction(
+        { sender: deployerAccount, fee: 0.1e9 },
+        () => {
+          zkApp.sendNOOBIfCorrectTime(
+            deployerAccount,
+            amount,
+            endDateIncorrect
+          );
         }
-
-        Mina.getAccount(zkAppAddress, zkApp.token.id);
-        Mina.getAccount(deployerAccount, zkApp.token.id);
-
-        let oldDeployerNoobBalance = Mina.getBalance(
-          deployerAccount,
-          zkApp.token.id
-        );
-
-        // assuring that the endDate is always in the past
-        let endDateIncorrect = UInt64.from(Date.now() - 1000000);
-
-        // sending also 1 Mina to the receiverAddress because of the bug in the Mina explorer, otherwise address wouldn't be found
-        let txn = await Mina.transaction(
-          { sender: deployerAccount, fee: 0.1e9 },
-          () => {
-            zkApp.sendNOOBIfCorrectTime(
-              deployerAccount,
-              amount,
-              endDateIncorrect
-            );
-          }
-        );
-        await txn.prove();
-        txn.sign([deployerKey, zkAppPrivateKey]);
+      );
+      await txn.prove();
+      txn.sign([deployerKey, zkAppPrivateKey]);
+      expect(async () => {
         await (await txn.send()).wait();
 
         if (isBerkeley) {
@@ -547,7 +514,7 @@ describe('token-test-preconditions', () => {
     // setPaused to true
     // status: working
     // confirmed: true
-    it(`setPaused to true - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    it(`7. setPaused to true - deployToBerkeley?: ${deployToBerkeley}`, async () => {
       if (isBerkeley) {
         await fetchAccount({
           publicKey: zkAppAddress,
@@ -614,8 +581,6 @@ describe('token-test-preconditions', () => {
         await (await txn.send()).wait();
       }).rejects.toThrow();
     }, 10000000);
-
-    it(`Dummy - deployToBerkeley?: ${deployToBerkeley}`, async () => {}, 10000000);
   }
 
   // runTests();

@@ -94,7 +94,29 @@ The tests are splitted up into multiple files. Every test file starts with a new
 2. Surface area 3: Sending actions - expecting success
 3. Surface area -: Waiting one block
 4. Surface area 3: Reducing actions and updating state - expecting success
-5.
+5. Surface area 7: changing permission "editSequenceState" to impossible() - expecting success
+6. Surface area 3/7: sending action BUT "editSequenceState" is impossible() - expecting error
+
+`noobTokenPermissions.test.ts`
+
+1. Surface area 8: checking that zkAppVerificationKey gets deployed correctly - expecting success
+2. Surface area 7: change zkAppUri with SignedTransaction - expecting success
+3. Surface area 7: change setZkAppUri permissions to none() and updating zkAppUri without signature - expecting success
+4. Surface area 7: change setTiming Permission to impossible() - expecting success
+5. Surface area 7: set voting for Permission to impossible() - expecting success
+6. Surface area 7: set delegate to deployerAccount - expecting success
+7. Surface area 7: setDelegate for Permission to impossible() - expecting success
+
+`noobTokenPrecondition.test.ts`
+
+1. Surface area 8: checking that zkAppVerificationKey gets deployed correctly - expecting success
+2. Surface area 7/9: check that tokenSymbol is 'NOOB' - expecting success
+3. Surface area 9: mint 7 tokens - expecting success
+4. Surface area 9: sendTokens to deployerAccount - expecting success
+5. Surface area 6/9: sendNOOBIfCorrectTime to deployerAccount if the network time is correct - expecting success
+6. Surface area 6/9: Send NOOB if the network time is NOT correct - expecting success
+7. Surface area 5?: setPaused to true - expecting success
+8. Surface area 5/9: Try to mint while isPaused is true - expecting error
 
 ## Runtime
 
