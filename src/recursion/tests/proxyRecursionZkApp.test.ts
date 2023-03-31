@@ -102,7 +102,7 @@ describe('proxy-recursion-test', () => {
           await fs.readFile('config.json', 'utf8')
         );
         // berkeley key hardcoded here
-        let config = configJson.deployAliases['berkeley'];
+        let config = configJson.deployAliases['proxyRecursionKey'];
         let key: { privateKey: string } = JSON.parse(
           await fs.readFile(config.keyPath, 'utf8')
         );
@@ -391,7 +391,7 @@ describe('proxy-recursion-test', () => {
       );
       await txn_permission.prove();
       txn_permission.sign([deployerKey, smartSnarkyNetPrivateKey]);
-      // console.log('txn_permission hashes edit', txn_permission.toPretty());
+      console.log('4. correct hashes again', txn_permission.toPretty());
       await (await txn_permission.send()).wait();
 
       if (isBerkeley) {
@@ -399,14 +399,14 @@ describe('proxy-recursion-test', () => {
       }
       Mina.getAccount(smartSnarkyNetAddress);
 
-      let currentLayer1Hash = smartSnarkyNetZkApp.layer1Hash.get();
-      let currentLayer2Hash = smartSnarkyNetZkApp.layer2Hash.get();
-
-      expect(currentLayer1Hash).toEqual(
-        Poseidon.hash(snarkyLayer1s.toFields())
+      const currentLayer1Hash = smartSnarkyNetZkApp.layer1Hash.get();
+      const currentLayer2Hash = smartSnarkyNetZkApp.layer2Hash.get();
+      // checking classification and the hashes of layers
+      expect(Poseidon.hash(snarkyLayer1s.toFields())).toEqual(
+        currentLayer1Hash
       );
-      expect(currentLayer2Hash).toEqual(
-        Poseidon.hash(snarkyLayer1s.toFields())
+      expect(Poseidon.hash(snarkyLayer2s.toFields())).toEqual(
+        currentLayer2Hash
       );
     }, 10000000);
 
@@ -464,42 +464,42 @@ describe('proxy-recursion-test', () => {
       }).rejects.toThrow();
     }, 10000000);
 
-    // it(`6. set permission "access" to signature() - deployToBerkeley?: ${deployToBerkeley}`, async () => {
-    //   if (isBerkeley) {
-    //     await fetchAccount({ publicKey: smartSnarkyNetAddress });
-    //   }
+    it(`6. set permission "access" to signature() - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+      if (isBerkeley) {
+        await fetchAccount({ publicKey: smartSnarkyNetAddress });
+      }
 
-    //   // change permissions for setVerificationKey to impossible
-    //   let txn_permission = await Mina.transaction(
-    //     { sender: deployerAccount, fee: 0.2e9 },
-    //     () => {
-    //       let permissionsUpdate = AccountUpdate.createSigned(
-    //         smartSnarkyNetAddress
-    //       );
-    //       permissionsUpdate.account.permissions.set({
-    //         ...Permissions.default(),
-    //         editState: Permissions.proof(),
-    //         access: Permissions.signature(),
-    //         setZkappUri: Permissions.proof(),
-    //         setVerificationKey: Permissions.proof(),
-    //         setTokenSymbol: Permissions.impossible(),
-    //       });
-    //     }
-    //   );
-    //   await txn_permission.prove();
-    //   txn_permission.sign([deployerKey, smartSnarkyNetPrivateKey]);
-    //   let response = await (await txn_permission.send()).wait();
-    //   console.log('response 6.', response);
+      // change permissions for setVerificationKey to impossible
+      let txn_permission = await Mina.transaction(
+        { sender: deployerAccount, fee: 0.2e9 },
+        () => {
+          let permissionsUpdate = AccountUpdate.createSigned(
+            smartSnarkyNetAddress
+          );
+          permissionsUpdate.account.permissions.set({
+            ...Permissions.default(),
+            editState: Permissions.proof(),
+            access: Permissions.signature(),
+            setZkappUri: Permissions.proof(),
+            setVerificationKey: Permissions.proof(),
+            setTokenSymbol: Permissions.impossible(),
+          });
+        }
+      );
+      await txn_permission.prove();
+      txn_permission.sign([deployerKey, smartSnarkyNetPrivateKey]);
+      await (await txn_permission.send()).wait();
+      // console.log('response 6.', response);
 
-    //   if (isBerkeley) {
-    //     await fetchAccount({ publicKey: smartSnarkyNetAddress });
-    //   }
+      if (isBerkeley) {
+        await fetchAccount({ publicKey: smartSnarkyNetAddress });
+      }
 
-    //   let currentPermissionAccess = Mina.getAccount(smartSnarkyNetAddress)
-    //     .permissions.access;
+      let currentPermissionAccess = Mina.getAccount(smartSnarkyNetAddress)
+        .permissions.access;
 
-    //   expect(currentPermissionAccess).toEqual(Permissions.signature());
-    // }, 10000000);
+      expect(currentPermissionAccess).toEqual(Permissions.signature());
+    }, 10000000);
 
     it(`7. proving that input image was indeed a picture of a 7 BUT access is set to signature() - deployToBerkeley?: ${deployToBerkeley}`, async () => {
       console.log('proving that input image was indeed a picture of a 7...');

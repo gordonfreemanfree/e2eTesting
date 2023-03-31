@@ -216,7 +216,7 @@ describe('Token-test-permission', () => {
     // status: working
     // confirmed: true
     // dependencies: none
-    it(`checking that zkAppVerificationKey gets deployed correctly - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    it(`1. checking that zkAppVerificationKey gets deployed correctly - deployToBerkeley?: ${deployToBerkeley}`, async () => {
       console.log('checking that zkAppVerificationKey gets deployed correctly');
 
       let zkAppVerificationKey = deployToBerkeley
@@ -303,7 +303,7 @@ describe('Token-test-permission', () => {
     // mintWithMina but balance is 0. expecting failure
     // status: working
     // confirmed:
-    it(`mintWithMina 1 tokens but balance is 0  - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    it(`2. mintWithMina 1 tokens but balance is 0  - deployToBerkeley?: ${deployToBerkeley}`, async () => {
       console.log('mintWithMina but balance is 0. expecting failure');
 
       // expect(async () => {
@@ -398,7 +398,7 @@ describe('Token-test-permission', () => {
     // status: constantly fails on berkeley - no idea why
     // confirmed:
     // dependencies: mint 7 tokens (because otherwise Mina.getAccount fails - error) /
-    it(`sending one 1 Mina to zkAppAddress  - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    it(`3. sending one 1 Mina to zkAppAddress  - deployToBerkeley?: ${deployToBerkeley}`, async () => {
       console.log('mintWithMina 1 tokens, but balance is 1');
       printBalances();
       let tokenId = zkApp.token.id;
@@ -463,7 +463,7 @@ describe('Token-test-permission', () => {
     // }, 10000000);
     // ------------------------------------------------------------------------
 
-    it(`try to mint now that the balance is 1 - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    it(`4. try to mint now that the balance is 1 - deployToBerkeley?: ${deployToBerkeley}`, async () => {
       printBalances();
       let mintWithMinaAmount = UInt64.from(1e9);
       let tokenId = zkApp.token.id;

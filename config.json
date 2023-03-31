@@ -10,6 +10,16 @@
       "url": "https://proxy.berkeley.minaexplorer.com/graphql",
       "keyPath": "keys/zkapp.json",
       "fee": ".1"
+    },
+    "noobTokenActions": {
+      "url": "https://proxy.berkeley.minaexplorer.com/graphql",
+      "keyPath": "keys/zkapp.json",
+      "fee": ".1"
+    },
+    "proxyRecursionKey": {
+      "url": "https://proxy.berkeley.minaexplorer.com/graphql",
+      "keyPath": "keys/zkapp.json",
+      "fee": ".1"
     }
   }
 }

@@ -118,6 +118,13 @@ The tests are splitted up into multiple files. Every test file starts with a new
 7. Surface area 5?: setPaused to true - expecting success
 8. Surface area 5/9: Try to mint while isPaused is true - expecting error
 
+`noobTokenMinting.test.ts`
+
+1. Surface area 8: checking that zkAppVerificationKey gets deployed correctly - expecting success
+2. Surface area 6: mintWithMina 1 tokens but balance is 0 - expecting error
+3. Surface area 6: sending one 1 Mina to zkAppAddress - expecting success
+4. Surface area 6: try to mint now that the balance is 1 - expecting success
+
 ## Runtime
 
 ## How to build

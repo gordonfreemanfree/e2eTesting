@@ -71,7 +71,7 @@ describe('Token-test-actions', () => {
           await fs.readFile('config.json', 'utf8')
         );
         // berkeley key hardcoded here
-        let config = configJson.deployAliases['berkeley'];
+        let config = configJson.deployAliases['noobTokenAction'];
         let key: { privateKey: string } = JSON.parse(
           await fs.readFile(config.keyPath, 'utf8')
         );
@@ -380,7 +380,7 @@ describe('Token-test-actions', () => {
       expect(currentPermission).toEqual(Permissions.impossible());
     }, 10000000);
 
-    it(`trying to send Actions - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    it(`6. trying to send Actions - deployToBerkeley?: ${deployToBerkeley}`, async () => {
       if (isBerkeley) {
         await fetchAccount({
           publicKey: zkAppAddress,

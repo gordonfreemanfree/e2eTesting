@@ -45,17 +45,16 @@ function getFriendlyDateTime() {
 }
 
 async function callFaucet(deployerAccount: PublicKey) {
-  if (process.env.TEST_ON_BERKELEY) {
-    await fetchAccount({ publicKey: deployerAccount });
-    // await Mina.faucet(deployerAccount);
-  }
-  let currentBalance = Mina.getBalance(deployerAccount);
-  if (currentBalance <= UInt64.from(10e9)) {
-    try {
-      await Mina.faucet(deployerAccount);
-    } catch (e) {
-      console.log('error with faucet', e);
-    }
+  // await fetchAccount({ publicKey: deployerAccount });
+  // await Mina.faucet(deployerAccount);
+
+  // let currentBalance = Mina.getBalance(deployerAccount);
+  // console.log('current balance', currentBalance.toString());
+
+  try {
+    await Mina.faucet(deployerAccount);
+  } catch (e) {
+    console.log('error with faucet', e);
   }
 }
 
