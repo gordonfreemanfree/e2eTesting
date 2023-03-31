@@ -55,7 +55,7 @@ describe('Token-test-actions', () => {
       console.log('choosing blockchain');
       Blockchain = deployToBerkeley
         ? Mina.Network({
-            mina: 'https://proxy.berkeley.minaexplorer.com/graphql',
+            mina: 'https://api.minascan.io/node/berkeley/v1/graphql',
             archive: 'https://archive.berkeley.minaexplorer.com',
           })
         : Mina.LocalBlockchain({ proofsEnabled });
