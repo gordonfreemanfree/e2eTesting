@@ -402,11 +402,17 @@ describe('proxy-recursion-test', () => {
       const currentLayer1Hash = smartSnarkyNetZkApp.layer1Hash.get();
       const currentLayer2Hash = smartSnarkyNetZkApp.layer2Hash.get();
       // checking classification and the hashes of layers
-      expect(Poseidon.hash(snarkyLayer1s.toFields())).toEqual(
-        currentLayer1Hash
+      // expect(Poseidon.hash(snarkyLayer1s.toFields())).toEqual(
+      //   currentLayer1Hash
+      // );
+      // expect(Poseidon.hash(snarkyLayer2s.toFields())).toEqual(
+      //   currentLayer2Hash
+      // );
+      expect(currentLayer1Hash).toEqual(
+        Poseidon.hash(snarkyLayer1s.toFields())
       );
-      expect(Poseidon.hash(snarkyLayer2s.toFields())).toEqual(
-        currentLayer2Hash
+      expect(currentLayer2Hash).toEqual(
+        Poseidon.hash(snarkyLayer2s.toFields())
       );
     }, 10000000);
 

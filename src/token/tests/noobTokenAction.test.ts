@@ -71,7 +71,7 @@ describe('Token-test-actions', () => {
           await fs.readFile('config.json', 'utf8')
         );
         // berkeley key hardcoded here
-        let config = configJson.deployAliases['noobTokenAction'];
+        let config = configJson.deployAliases['noobtokenaction'];
         let key: { privateKey: string } = JSON.parse(
           await fs.readFile(config.keyPath, 'utf8')
         );
