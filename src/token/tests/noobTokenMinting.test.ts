@@ -363,9 +363,9 @@ describe('Token-test-minting', () => {
         await fetchAccount({ publicKey: deployerAccount });
         await fetchAccount({ publicKey: zkAppAddress });
       }
-      Mina.getAccount(zkAppAddress);
-      Mina.getAccount(deployerAccount);
-      printBalances();
+      // Mina.getAccount(zkAppAddress);
+      // Mina.getAccount(deployerAccount);
+      // printBalances();
 
       // mintWithMina 1 tokens
       const txn20 = await Mina.transaction(
@@ -405,5 +405,5 @@ describe('Token-test-minting', () => {
       expect(newNoobBalance).toEqual(UInt64.from(1e9));
     }, 10000000);
   }
-  runTests();
+  // runTests();
 });

@@ -495,8 +495,9 @@ describe('proxy-recursion-test', () => {
     it(`6. set permission "access" to signature() - deployToBerkeley?: ${deployToBerkeley}`, async () => {
       if (isBerkeley) {
         await fetchAccount({ publicKey: smartSnarkyNetAddress });
+        await fetchAccount({ publicKey: deployerAccount });
       }
-
+      Mina.getAccount(smartSnarkyNetAddress);
       // change permissions for setVerificationKey to impossible
       let txn_permission = await Mina.transaction(
         { sender: deployerAccount, fee: 0.2e9 },

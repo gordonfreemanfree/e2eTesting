@@ -308,18 +308,30 @@ describe('Token-test-actions', () => {
     // // ------------------------------------------------------------------------
     it(`3. waiting one block to reduce Actions later - deployToBerkeley?: ${deployToBerkeley}`, async () => {
       console.log('dummy tx');
+      if (isBerkeley) {
+        await fetchAccount({
+          publicKey: zkAppAddress,
+        });
+        await fetchAccount({
+          publicKey: deployerAccount,
+        });
+      }
+      Mina.getAccount(zkAppAddress);
+
       let tx = await Mina.transaction(
         {
           sender: deployerAccount,
           memo: 'Dummy Transaction',
           fee: 0.2e9,
         },
-
-        () => {}
+        () => {
+          zkApp.dummy.set(UInt64.from(1));
+        }
       );
       await tx.prove();
       tx.sign([deployerKey]);
       await (await tx.send()).wait();
+      console.log('dummy tx done');
     }, 10000000);
 
     // // ------------------------------------------------------------------------
@@ -328,6 +340,16 @@ describe('Token-test-actions', () => {
 
       console.log('state before: ' + zkApp.actionCounter.get());
 
+      if (isBerkeley) {
+        await fetchAccount({
+          publicKey: zkAppAddress,
+        });
+        await fetchAccount({
+          publicKey: deployerAccount,
+        });
+      }
+      Mina.getAccount(zkAppAddress);
+
       let tx = await Mina.transaction(
         { sender: deployerAccount, fee: 0.2e9 },
         () => {
@@ -335,7 +357,7 @@ describe('Token-test-actions', () => {
         }
       );
       await tx.prove();
-      await (await tx.sign([deployerKey]).send()).wait();
+      await (await tx.sign([deployerKey]).send()).wait({ maxAttempts: 1000 });
 
       if (isBerkeley) {
         await fetchAccount({
@@ -374,7 +396,9 @@ describe('Token-test-actions', () => {
         }
       );
       await tx.prove();
-      await (await tx.sign([deployerKey, zkAppPrivateKey]).send()).wait();
+      await (await tx.sign([deployerKey, zkAppPrivateKey]).send()).wait({
+        maxAttempts: 1000,
+      });
 
       if (isBerkeley) {
         await fetchAccount({
@@ -418,5 +442,5 @@ describe('Token-test-actions', () => {
     }, 10000000);
   }
 
-  // runTests();
+  runTests();
 });
