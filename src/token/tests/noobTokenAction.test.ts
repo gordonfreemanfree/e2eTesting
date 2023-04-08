@@ -344,8 +344,12 @@ describe('Token-test-actions', () => {
         await fetchAccount({
           publicKey: deployerAccount,
         });
+        await fetchAccount({
+          publicKey: zkAppAddress,
+          tokenId: zkApp.token.id,
+        });
       }
-
+      Mina.getAccount(zkAppAddress);
       let currentActionCounter = zkApp.actionCounter.get();
 
       expect(currentActionCounter).toEqual(Field(2));
@@ -414,5 +418,5 @@ describe('Token-test-actions', () => {
     }, 10000000);
   }
 
-  // runTests();
+  runTests();
 });

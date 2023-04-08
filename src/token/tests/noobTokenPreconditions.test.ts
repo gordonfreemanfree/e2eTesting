@@ -535,10 +535,10 @@ describe('token-test-preconditions', () => {
     // confirmed: true
     it(`7. setPaused to true - deployToBerkeley?: ${deployToBerkeley}`, async () => {
       if (isBerkeley) {
-        await fetchAccount({
-          publicKey: zkAppAddress,
-          tokenId: zkApp.token.id,
-        });
+        // await fetchAccount({
+        //   publicKey: zkAppAddress,
+        //   tokenId: zkApp.token.id,
+        // });
         await fetchAccount({
           publicKey: deployerAccount,
           tokenId: zkApp.token.id,
