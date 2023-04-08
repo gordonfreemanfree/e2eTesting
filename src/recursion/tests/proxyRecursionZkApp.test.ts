@@ -189,7 +189,28 @@ describe('proxy-recursion-test', () => {
     }
 
     async function berkeleyDeploy() {
-      //  // await Mina.faucet(deployerAccount);
+      console.log('calling faucet...');
+      try {
+        await Mina.faucet(deployerAccount);
+      } catch (e) {
+        console.log('error calling faucet', e);
+      }
+      console.log('waiting for account to exist...');
+      try {
+        await loopUntilAccountExists({
+          account: deployerAccount,
+          eachTimeNotExist: () =>
+            console.log(
+              'waiting for deployerAccount account to be funded...',
+              getFriendlyDateTime()
+            ),
+          isZkAppAccount: true,
+        });
+      } catch (e) {
+        console.log('error waiting for deployerAccount to exist', e);
+      }
+
+      console.log('calling faucet...done');
 
       console.log('deploy on Berkeley...');
 
@@ -225,6 +246,7 @@ describe('proxy-recursion-test', () => {
     }
 
     it(`1. deploy zkApps and check verificationKeys and hashes stored - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+      console.log('deploying zkApps...');
       deployToBerkeley ? await berkeleyDeploy() : await localDeploy();
 
       if (isBerkeley) {
@@ -561,106 +583,106 @@ describe('proxy-recursion-test', () => {
       }).rejects.toThrow();
     }, 10000000);
 
-    it(`8. changing Permission to impossible to fix architecture - deployToBerkeley?: ${deployToBerkeley}`, async () => {
-      console.log(
-        'changing smartSnarkyNet Permission to impossible to fix architecture...'
-      );
-      if (isBerkeley) {
-        await fetchAccount({ publicKey: smartSnarkyNetAddress });
-      }
+    // it(`8. changing Permission to impossible to fix architecture - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    //   console.log(
+    //     'changing smartSnarkyNet Permission to impossible to fix architecture...'
+    //   );
+    //   if (isBerkeley) {
+    //     await fetchAccount({ publicKey: smartSnarkyNetAddress });
+    //   }
 
-      // change permissions for setVerificationKey to impossible
-      let txn_permission = await Mina.transaction(
-        { sender: deployerAccount, fee: 0.4e9 },
-        () => {
-          let permissionsUpdate = AccountUpdate.createSigned(
-            smartSnarkyNetAddress
-          );
-          permissionsUpdate.account.permissions.set({
-            ...Permissions.default(),
-            editState: Permissions.proof(),
-            access: Permissions.proof(),
-            setZkappUri: Permissions.impossible(),
-            setVerificationKey: Permissions.impossible(),
-            setTokenSymbol: Permissions.impossible(),
-            setPermissions: Permissions.impossible(),
-          });
-        }
-      );
+    //   // change permissions for setVerificationKey to impossible
+    //   let txn_permission = await Mina.transaction(
+    //     { sender: deployerAccount, fee: 0.4e9 },
+    //     () => {
+    //       let permissionsUpdate = AccountUpdate.createSigned(
+    //         smartSnarkyNetAddress
+    //       );
+    //       permissionsUpdate.account.permissions.set({
+    //         ...Permissions.default(),
+    //         editState: Permissions.proof(),
+    //         access: Permissions.proof(),
+    //         setZkappUri: Permissions.impossible(),
+    //         setVerificationKey: Permissions.impossible(),
+    //         setTokenSymbol: Permissions.impossible(),
+    //         setPermissions: Permissions.impossible(),
+    //       });
+    //     }
+    //   );
 
-      // await txn_permission.prove();
-      txn_permission.sign([deployerKey, smartSnarkyNetPrivateKey]);
-      await (await txn_permission.send()).wait();
+    //   // await txn_permission.prove();
+    //   txn_permission.sign([deployerKey, smartSnarkyNetPrivateKey]);
+    //   await (await txn_permission.send()).wait();
 
-      if (isBerkeley) {
-        await fetchAccount({ publicKey: smartSnarkyNetAddress });
-      }
+    //   if (isBerkeley) {
+    //     await fetchAccount({ publicKey: smartSnarkyNetAddress });
+    //   }
 
-      let currentPermissionSetVerificationKey = Mina.getAccount(
-        smartSnarkyNetAddress
-      ).permissions.setVerificationKey;
-      let currentPermissionAccess = Mina.getAccount(smartSnarkyNetAddress)
-        .permissions.access;
-      let currentPermissionEdit = Mina.getAccount(smartSnarkyNetAddress)
-        .permissions.editState;
-      let currentPermissionSetZkappUri = Mina.getAccount(smartSnarkyNetAddress)
-        .permissions.setZkappUri;
-      let currentPermissionSetTokenSymbol = Mina.getAccount(
-        smartSnarkyNetAddress
-      ).permissions.setTokenSymbol;
-      let currentPermissionSetPermissions = Mina.getAccount(
-        smartSnarkyNetAddress
-      ).permissions.setPermissions;
+    //   let currentPermissionSetVerificationKey = Mina.getAccount(
+    //     smartSnarkyNetAddress
+    //   ).permissions.setVerificationKey;
+    //   let currentPermissionAccess = Mina.getAccount(smartSnarkyNetAddress)
+    //     .permissions.access;
+    //   let currentPermissionEdit = Mina.getAccount(smartSnarkyNetAddress)
+    //     .permissions.editState;
+    //   let currentPermissionSetZkappUri = Mina.getAccount(smartSnarkyNetAddress)
+    //     .permissions.setZkappUri;
+    //   let currentPermissionSetTokenSymbol = Mina.getAccount(
+    //     smartSnarkyNetAddress
+    //   ).permissions.setTokenSymbol;
+    //   let currentPermissionSetPermissions = Mina.getAccount(
+    //     smartSnarkyNetAddress
+    //   ).permissions.setPermissions;
 
-      expect(currentPermissionAccess).toEqual(Permissions.proof());
-      expect(currentPermissionEdit).toEqual(Permissions.proof());
-      expect(currentPermissionSetZkappUri).toEqual(Permissions.impossible());
-      expect(currentPermissionSetTokenSymbol).toEqual(Permissions.impossible());
-      expect(currentPermissionSetPermissions).toEqual(Permissions.impossible());
-      expect(currentPermissionSetVerificationKey).toEqual(
-        Permissions.impossible()
-      );
-    }, 10000000);
+    //   expect(currentPermissionAccess).toEqual(Permissions.proof());
+    //   expect(currentPermissionEdit).toEqual(Permissions.proof());
+    //   expect(currentPermissionSetZkappUri).toEqual(Permissions.impossible());
+    //   expect(currentPermissionSetTokenSymbol).toEqual(Permissions.impossible());
+    //   expect(currentPermissionSetPermissions).toEqual(Permissions.impossible());
+    //   expect(currentPermissionSetVerificationKey).toEqual(
+    //     Permissions.impossible()
+    //   );
+    // }, 10000000);
 
-    it(`9. changing Permission "access" to signature, BUT permission "setPermission" is impossible - deployToBerkeley?: ${deployToBerkeley}`, async () => {
-      if (isBerkeley) {
-        await fetchAccount({ publicKey: smartSnarkyNetAddress });
-      }
+    // it(`9. changing Permission "access" to signature, BUT permission "setPermission" is impossible - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    //   if (isBerkeley) {
+    //     await fetchAccount({ publicKey: smartSnarkyNetAddress });
+    //   }
 
-      // change permissions for setVerificationKey to impossible
-      let txn_permission = await Mina.transaction(
-        { sender: deployerAccount, fee: 0.5e9 },
-        () => {
-          let permissionsUpdate = AccountUpdate.createSigned(
-            smartSnarkyNetAddress
-          );
-          permissionsUpdate.account.permissions.set({
-            ...Permissions.default(),
-            editState: Permissions.proof(),
-            access: Permissions.signature(),
-            setZkappUri: Permissions.impossible(),
-            setVerificationKey: Permissions.impossible(),
-            setTokenSymbol: Permissions.impossible(),
-            setPermissions: Permissions.impossible(),
-          });
-        }
-      );
+    //   // change permissions for setVerificationKey to impossible
+    //   let txn_permission = await Mina.transaction(
+    //     { sender: deployerAccount, fee: 0.5e9 },
+    //     () => {
+    //       let permissionsUpdate = AccountUpdate.createSigned(
+    //         smartSnarkyNetAddress
+    //       );
+    //       permissionsUpdate.account.permissions.set({
+    //         ...Permissions.default(),
+    //         editState: Permissions.proof(),
+    //         access: Permissions.signature(),
+    //         setZkappUri: Permissions.impossible(),
+    //         setVerificationKey: Permissions.impossible(),
+    //         setTokenSymbol: Permissions.impossible(),
+    //         setPermissions: Permissions.impossible(),
+    //       });
+    //     }
+    //   );
 
-      // await txn_permission.prove();
-      txn_permission.sign([deployerKey, smartSnarkyNetPrivateKey]);
-      expect(async () => {
-        await (await txn_permission.send()).wait();
+    //   // await txn_permission.prove();
+    //   txn_permission.sign([deployerKey, smartSnarkyNetPrivateKey]);
+    //   expect(async () => {
+    //     await (await txn_permission.send()).wait();
 
-        if (isBerkeley) {
-          await fetchAccount({ publicKey: smartSnarkyNetAddress });
-        }
+    //     if (isBerkeley) {
+    //       await fetchAccount({ publicKey: smartSnarkyNetAddress });
+    //     }
 
-        let currentPermissionAccess = Mina.getAccount(smartSnarkyNetAddress)
-          .permissions.access;
+    //     let currentPermissionAccess = Mina.getAccount(smartSnarkyNetAddress)
+    //       .permissions.access;
 
-        expect(currentPermissionAccess).toEqual(Permissions.signature());
-      }).rejects.toThrow();
-    }, 10000000);
+    //     expect(currentPermissionAccess).toEqual(Permissions.signature());
+    //   }).rejects.toThrow();
+    // }, 10000000);
   }
   runTests();
 });

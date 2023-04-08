@@ -102,7 +102,7 @@ export class NoobToken extends SmartContract {
 
     // Retrieve the list of pending actions using the 'reducer' object and the current actions hash.
     let pendingActions = this.reducer.getActions({
-      fromActionHash: actionsHash,
+      fromActionState: actionsHash,
     });
 
     // Call the 'reduce' method of the 'reducer' object to process the pending actions.

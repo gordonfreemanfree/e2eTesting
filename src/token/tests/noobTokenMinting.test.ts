@@ -153,7 +153,26 @@ describe('Token-test-minting', () => {
 
     async function berkeleyDeploy() {
       console.log('calling faucet...');
-      await Mina.faucet(deployerAccount);
+      try {
+        await Mina.faucet(deployerAccount);
+      } catch (e) {
+        console.log('error calling faucet', e);
+      }
+      console.log('waiting for account to exist...');
+      try {
+        await loopUntilAccountExists({
+          account: deployerAccount,
+          eachTimeNotExist: () =>
+            console.log(
+              'waiting for deployerAccount account to be funded...',
+              getFriendlyDateTime()
+            ),
+          isZkAppAccount: true,
+        });
+      } catch (e) {
+        console.log('error waiting for deployerAccount to exist', e);
+      }
+
       console.log('compiling...');
       let { verificationKey: zkAppVerificationKey } = await NoobToken.compile();
       console.log('generating deploy transaction');

@@ -155,7 +155,25 @@ describe('Token-test-actions', () => {
 
     async function berkeleyDeploy() {
       console.log('calling faucet...');
-      await Mina.faucet(deployerAccount);
+      try {
+        await Mina.faucet(deployerAccount);
+      } catch (e) {
+        console.log('error calling faucet', e);
+      }
+      console.log('waiting for account to exist...');
+      try {
+        await loopUntilAccountExists({
+          account: deployerAccount,
+          eachTimeNotExist: () =>
+            console.log(
+              'waiting for deployerAccount account to be funded...',
+              getFriendlyDateTime()
+            ),
+          isZkAppAccount: true,
+        });
+      } catch (e) {
+        console.log('error waiting for deployerAccount to exist', e);
+      }
       console.log('compiling...');
       let { verificationKey: zkAppVerificationKey } = await NoobToken.compile();
       console.log('generating deploy transaction');
@@ -346,7 +364,8 @@ describe('Token-test-actions', () => {
             setVerificationKey: Permissions.impossible(),
             editState: Permissions.proofOrSignature(),
             receive: Permissions.none(),
-            editSequenceState: Permissions.impossible(),
+            // editSequenceState: Permissions.impossible(),
+            editActionState: Permissions.impossible(),
           });
         }
       );
@@ -359,8 +378,9 @@ describe('Token-test-actions', () => {
         });
       }
 
-      let currentPermission = Mina.getAccount(zkAppAddress).permissions
-        .editSequenceState;
+      let currentPermission =
+        // .editSequenceState;
+        Mina.getAccount(zkAppAddress).permissions.editActionState;
 
       expect(currentPermission).toEqual(Permissions.impossible());
     }, 10000000);
