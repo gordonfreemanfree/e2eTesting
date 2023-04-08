@@ -204,7 +204,7 @@ describe('proxy-recursion-test', () => {
               'waiting for deployerAccount account to be funded...',
               getFriendlyDateTime()
             ),
-          isZkAppAccount: true,
+          isZkAppAccount: false,
         });
       } catch (e) {
         console.log('error waiting for deployerAccount to exist', e);
