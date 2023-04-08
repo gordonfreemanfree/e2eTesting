@@ -478,60 +478,6 @@ describe('Token-test-permission', () => {
       expect(newSetDelegate).toEqual(Permissions.impossible());
     }, 1000000);
     // // ------------------------------------------------------------------------
-
-    // ------------------------------------------------------------------------
-    // mint 7 tokens to zkAppAccount
-    // status: working
-    // confirmed: true
-    // it(`mint 7 tokens  - deployToBerkeley?: ${deployToBerkeley}`, async () => {
-    //   printBalances();
-    //   console.log('minting 7 tokens');
-    //   let tokenId = zkApp.token.id;
-
-    //   let events = await zkApp.fetchEvents();
-
-    //   if (isBerkeley) {
-    //     await fetchAccount({ publicKey: zkAppAddress, tokenId });
-    //     await fetchAccount({ publicKey: deployerAccount, tokenId });
-    //   }
-    //   Mina.getAccount(zkAppAddress);
-    //   Mina.getAccount(deployerAccount);
-
-    //   const mintAmount = UInt64.from(7e9);
-    //   const txn_mint = await Mina.transaction(
-    //     { sender: deployerAccount, fee: 0.1e9 },
-    //     () => {
-    //       AccountUpdate.fundNewAccount(deployerAccount);
-    //       zkApp.mint(zkAppAddress, mintAmount);
-    //     }
-    //   );
-    //   await txn_mint.prove();
-    //   txn_mint.sign([zkAppPrivateKey, deployerKey]);
-    //   await (await txn_mint.send()).wait();
-
-    //   if (isBerkeley) {
-    //     await fetchAccount({
-    //       publicKey: zkAppAddress,
-    //       tokenId: zkApp.token.id,
-    //     });
-    //     await fetchAccount({
-    //       publicKey: zkAppAddress,
-    //     });
-    //   }
-    //   // let newBalance = Mina.getAccount(zkAppAddress, tokenId).balance;
-    //   let newNoobBalance = Mina.getBalance(zkAppAddress, tokenId);
-    //   console.log('mint 7, newBalance is', newNoobBalance.toJSON());
-
-    //   let newTotalAmountInCirculation = zkApp.totalAmountInCirculation.get();
-
-    //   // balance of account is
-    //   console.log('newTotalAmountInCirculation', newTotalAmountInCirculation);
-    //   // console.log('events are', events);
-
-    //   expect(newTotalAmountInCirculation).toEqual(mintAmount);
-    //   expect(newNoobBalance).toEqual(mintAmount);
-    // }, 1000000);
-    // ------------------------------------------------------------------------
   }
 
   // runTests();

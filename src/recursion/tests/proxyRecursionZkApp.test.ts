@@ -189,8 +189,7 @@ describe('proxy-recursion-test', () => {
     }
 
     async function berkeleyDeploy() {
-      console.log('calling faucet...');
-      await Mina.faucet(deployerAccount);
+      //  // await Mina.faucet(deployerAccount);
 
       console.log('deploy on Berkeley...');
 
@@ -198,7 +197,7 @@ describe('proxy-recursion-test', () => {
 
       if (smartSnarkyZkAppVerificationKey !== undefined) {
         txn = await Mina.transaction(
-          { sender: deployerAccount, fee: 0.1e9 },
+          { sender: deployerAccount, fee: 0.2e9 },
           () => {
             AccountUpdate.fundNewAccount(deployerAccount, 2);
 

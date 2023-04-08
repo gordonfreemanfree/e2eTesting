@@ -10,13 +10,13 @@ Mina.Network('https://api.minascan.io/node/berkeley/v1/graphql');
 
 await Mina.faucet(newAddress);
 
-await loopUntilAccountExists({
-  account: newAddress,
-  eachTimeNotExist: () =>
-    console.log(
-      'waiting for smartSnarkyNetZkApp account to be deployed...',
-      getFriendlyDateTime()
-    ),
-  isZkAppAccount: false,
-});
+// await loopUntilAccountExists({
+//   account: newAddress,
+//   eachTimeNotExist: () =>
+//     console.log(
+//       'waiting for smartSnarkyNetZkApp account to be deployed...',
+//       getFriendlyDateTime()
+//     ),
+//   isZkAppAccount: false,
+// });
 shutdown();

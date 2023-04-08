@@ -386,11 +386,11 @@ describe('Token-test-actions', () => {
         }
       );
       await tx.prove();
-      expect(
-        expect(async () => {
-          await (await tx.sign([deployerKey, zkAppPrivateKey]).send()).wait();
-        }).rejects.toThrow()
-      );
+      // expect(
+      expect(async () => {
+        await (await tx.sign([deployerKey, zkAppPrivateKey]).send()).wait();
+      }).rejects.toThrow();
+      // );
     }, 10000000);
   }
 
