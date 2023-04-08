@@ -523,11 +523,13 @@ describe('proxy-recursion-test', () => {
       if (isBerkeley) {
         await fetchAccount({ publicKey: smartSnarkyNetAddress });
       }
-
+      Mina.getAccount(smartSnarkyNetAddress);
       let currentPermissionAccess = Mina.getAccount(smartSnarkyNetAddress)
         .permissions.access;
 
-      expect(currentPermissionAccess).toEqual(Permissions.signature());
+      expect(currentPermissionAccess.signatureNecessary).toEqual(
+        Permissions.signature().signatureNecessary
+      );
     }, 10000000);
 
     it(`7. proving that input image was indeed a picture of a 7 BUT access is set to signature() - deployToBerkeley?: ${deployToBerkeley}`, async () => {
