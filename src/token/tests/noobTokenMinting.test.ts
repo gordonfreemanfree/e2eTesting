@@ -354,6 +354,7 @@ describe('Token-test-minting', () => {
     // ------------------------------------------------------------------------
 
     it(`4. try to mint now that the balance is 1 - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+      console.log('try to mint now that the balance is 1');
       printBalances();
       let mintWithMinaAmount = UInt64.from(1e9);
       let tokenId = zkApp.token.id;
@@ -404,5 +405,5 @@ describe('Token-test-minting', () => {
       expect(newNoobBalance).toEqual(UInt64.from(1e9));
     }, 10000000);
   }
-  // runTests();
+  runTests();
 });

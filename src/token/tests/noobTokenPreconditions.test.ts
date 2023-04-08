@@ -539,13 +539,17 @@ describe('token-test-preconditions', () => {
         //   publicKey: zkAppAddress,
         //   tokenId: zkApp.token.id,
         // });
-        await fetchAccount({
-          publicKey: deployerAccount,
-          tokenId: zkApp.token.id,
-        });
-        await fetchAccount({
-          publicKey: zkAppAddress,
-        });
+        try {
+          await fetchAccount({
+            publicKey: deployerAccount,
+            tokenId: zkApp.token.id,
+          });
+          await fetchAccount({
+            publicKey: zkAppAddress,
+          });
+        } catch (e) {
+          console.log('fetch error in 7. setPaused to true', e);
+        }
       }
 
       let txn = await Mina.transaction(
