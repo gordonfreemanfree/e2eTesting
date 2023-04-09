@@ -440,7 +440,11 @@ describe('proxy-recursion-test', () => {
 
     it(`4. set Permission "editState" to proof()"  - deployToBerkeley?: ${deployToBerkeley}`, async () => {
       if (isBerkeley) {
-        await fetchAccount({ publicKey: smartSnarkyNetAddress });
+        try {
+          await fetchAccount({ publicKey: smartSnarkyNetAddress });
+        } catch (e) {
+          console.log('fetch in 4. errors', e);
+        }
       }
 
       // change permissions for setVerificationKey to impossible
@@ -687,5 +691,5 @@ describe('proxy-recursion-test', () => {
     //   }).rejects.toThrow();
     // }, 10000000);
   }
-  // runTests();
+  runTests();
 });
