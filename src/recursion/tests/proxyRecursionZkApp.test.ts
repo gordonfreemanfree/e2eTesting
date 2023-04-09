@@ -558,17 +558,6 @@ describe('proxy-recursion-test', () => {
       await txn_permission.prove();
       txn_permission.sign([deployerKey, smartSnarkyNetPrivateKey]);
       await (await txn_permission.send()).wait();
-      // console.log('response 6.', response);
-
-      // if (isBerkeley) {
-      // await fetchAccount({
-      //     publicKey: smartSnarkyNetAddress,
-      //   });
-      //   await fetchAccount({ publicKey: deployerAccount });
-      // }
-      // Mina.getAccount(smartSnarkyNetAddress);
-      // let currentPermissionAccess = Mina.getAccount(smartSnarkyNetAddress)
-      //   .permissions.access;
 
       let currentAccount;
       let currentPermissionAccess;
@@ -576,20 +565,23 @@ describe('proxy-recursion-test', () => {
         currentAccount = await fetchAccount({
           publicKey: smartSnarkyNetAddress,
         });
+        console.log('currentAccount', currentAccount.account?.permissions);
         console.log(
           'currentAccount',
-          currentAccount.account?.permissions.toString()
+          currentAccount.account?.permissions.access
         );
-        console.log(
-          'currentAccount',
-          currentAccount.account?.permissions.access.toString()
-        );
-        console.log('currentAccount', currentAccount.account?.toString());
-        // await fetchAccount({ publicKey: deployerAccount });
         currentPermissionAccess = currentAccount.account?.permissions.access;
         console.log(
-          'currentPermissionAccess',
-          currentPermissionAccess?.toString()
+          'currentPermissionAccess constant',
+          currentPermissionAccess?.constant.toJSON()
+        );
+        console.log(
+          'currentPermissionAccess signatureNecessary',
+          currentPermissionAccess?.signatureNecessary.toJSON()
+        );
+        console.log(
+          'currentPermissionAccess signatureSufficient',
+          currentPermissionAccess?.signatureSufficient.toJSON()
         );
       } else {
         currentAccount = Mina.getAccount(smartSnarkyNetAddress);

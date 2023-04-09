@@ -55,7 +55,7 @@ describe('Token-test-minting', () => {
       Blockchain = deployToBerkeley
         ? Mina.Network({
             mina: 'https://proxy.berkeley.minaexplorer.com/graphql',
-            archive: 'https://archive.berkeley.minaexplorer.com',
+            archive: 'https://archive-node-api.p42.xyz/',
           })
         : Mina.LocalBlockchain({ proofsEnabled });
 
