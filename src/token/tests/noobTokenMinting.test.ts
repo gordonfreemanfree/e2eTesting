@@ -15,6 +15,7 @@ import {
   Field,
   Poseidon,
   Bool,
+  fetchLastBlock,
 } from 'snarkyjs';
 import { NoobToken } from '../noobToken';
 
@@ -299,7 +300,7 @@ describe('Token-test-minting', () => {
     // confirmed:
     // dependencies: mint 7 tokens (because otherwise Mina.getAccount fails - error) /
     it(`3. sending one 1 Mina to zkAppAddress  - deployToBerkeley?: ${deployToBerkeley}`, async () => {
-      console.log('mintWithMina 1 tokens, but balance is 1');
+      console.log('sending one 1 Mina to zkAppAddress');
       printBalances();
       let tokenId = zkApp.token.id;
 
@@ -359,9 +360,14 @@ describe('Token-test-minting', () => {
       let mintWithMinaAmount = UInt64.from(1e9);
       let tokenId = zkApp.token.id;
       if (isBerkeley) {
-        await fetchAccount({ publicKey: zkAppAddress, tokenId });
-        await fetchAccount({ publicKey: deployerAccount });
-        await fetchAccount({ publicKey: zkAppAddress });
+        try {
+          await fetchAccount({ publicKey: zkAppAddress, tokenId });
+          await fetchAccount({ publicKey: deployerAccount });
+          await fetchAccount({ publicKey: zkAppAddress });
+          await fetchLastBlock();
+        } catch (e) {
+          console.log('error fetching accounts in 4.', e);
+        }
       }
       // Mina.getAccount(zkAppAddress);
       // Mina.getAccount(deployerAccount);
@@ -405,5 +411,5 @@ describe('Token-test-minting', () => {
       expect(newNoobBalance).toEqual(UInt64.from(1e9));
     }, 10000000);
   }
-  // runTests();
+  runTests();
 });

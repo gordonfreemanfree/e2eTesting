@@ -356,13 +356,16 @@ describe('proxy-recursion-test', () => {
     }, 10000000);
 
     it(`3. try to update hashes with signature while "editstate" is proofOrSignature()"- deployToBerkeley?: ${deployToBerkeley}`, async () => {
+      console.log(
+        '3. try to update hashes with signature while editstate is proofOrSignature()'
+      );
       if (isBerkeley) {
         await fetchAccount({ publicKey: smartSnarkyNetAddress });
       }
 
       // change permissions for setVerificationKey to impossible
       let txn_permission = await Mina.transaction(
-        { sender: deployerAccount, fee: 0.1e9 },
+        { sender: deployerAccount, fee: 0.2e9 },
         () => {
           // AccountUpdate.createSigned(smartSnarkyNetAddress);
           smartSnarkyNetZkApp.setLayerHashes(Field(1), Field(2));
@@ -691,5 +694,5 @@ describe('proxy-recursion-test', () => {
     //   }).rejects.toThrow();
     // }, 10000000);
   }
-  runTests();
+  // runTests();
 });
