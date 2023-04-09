@@ -35,6 +35,11 @@
       "url": "https://proxy.berkeley.minaexplorer.com/graphql",
       "keyPath": "keys/noobtokenprecondition.json",
       "fee": ".1"
+    },
+    "test": {
+      "url": "https://proxy.berkeley.minaexplorer.com/graphql",
+      "keyPath": "keys/test.json",
+      "fee": ".1"
     }
   }
 }
