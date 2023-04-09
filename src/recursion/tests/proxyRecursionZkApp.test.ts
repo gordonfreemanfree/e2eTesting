@@ -483,14 +483,24 @@ describe('proxy-recursion-test', () => {
       txn_permission.sign([deployerKey, smartSnarkyNetPrivateKey]);
       await (await txn_permission.send()).wait();
 
+      let currentAccount;
+      let currentPermissionEdit;
       if (isBerkeley) {
-        await fetchAccount({ publicKey: smartSnarkyNetAddress });
+        currentAccount = await fetchAccount({
+          publicKey: smartSnarkyNetAddress,
+        });
         await fetchAccount({ publicKey: deployerAccount });
+        currentPermissionEdit = currentAccount?.account?.permissions.editState;
+      } else {
+        currentAccount = Mina.getAccount(smartSnarkyNetAddress);
+        currentPermissionEdit = currentAccount?.permissions.editState;
       }
-      Mina.getAccount(smartSnarkyNetAddress);
+      // Mina.getAccount(smartSnarkyNetAddress);
 
-      let currentPermissionEdit = Mina.getAccount(smartSnarkyNetAddress)
-        .permissions.editState;
+      // let currentPermissionEdit = Mina.getAccount(smartSnarkyNetAddress)
+      // .permissions.editState;
+      // currentPermissionEdit =
+      //   currentAccount?.account?.permissions.editState;
 
       expect(currentPermissionEdit).toEqual(Permissions.proof());
     }, 10000000);
@@ -546,15 +556,30 @@ describe('proxy-recursion-test', () => {
       await (await txn_permission.send()).wait();
       // console.log('response 6.', response);
 
-      if (isBerkeley) {
-        await fetchAccount({ publicKey: smartSnarkyNetAddress });
-        await fetchAccount({ publicKey: deployerAccount });
-      }
-      Mina.getAccount(smartSnarkyNetAddress);
-      let currentPermissionAccess = Mina.getAccount(smartSnarkyNetAddress)
-        .permissions.access;
+      // if (isBerkeley) {
+      // await fetchAccount({
+      //     publicKey: smartSnarkyNetAddress,
+      //   });
+      //   await fetchAccount({ publicKey: deployerAccount });
+      // }
+      // Mina.getAccount(smartSnarkyNetAddress);
+      // let currentPermissionAccess = Mina.getAccount(smartSnarkyNetAddress)
+      //   .permissions.access;
 
-      expect(currentPermissionAccess.signatureNecessary).toEqual(
+      let currentAccount;
+      let currentPermissionAccess;
+      if (isBerkeley) {
+        currentAccount = await fetchAccount({
+          publicKey: smartSnarkyNetAddress,
+        });
+        await fetchAccount({ publicKey: deployerAccount });
+        currentPermissionAccess = currentAccount?.account?.permissions.access;
+      } else {
+        currentAccount = Mina.getAccount(smartSnarkyNetAddress);
+        currentPermissionAccess = currentAccount?.permissions.access;
+      }
+
+      expect(currentPermissionAccess?.signatureNecessary).toEqual(
         Permissions.signature().signatureNecessary
       );
     }, 10000000);
