@@ -449,6 +449,7 @@ describe('proxy-recursion-test', () => {
           console.log('fetch in 4. errors', e);
         }
       }
+      Mina.getAccount(smartSnarkyNetAddress);
 
       // change permissions for setVerificationKey to impossible
       let txn_permission = await Mina.transaction(
@@ -474,6 +475,7 @@ describe('proxy-recursion-test', () => {
       if (isBerkeley) {
         await fetchAccount({ publicKey: smartSnarkyNetAddress });
       }
+      Mina.getAccount(smartSnarkyNetAddress);
 
       let currentPermissionEdit = Mina.getAccount(smartSnarkyNetAddress)
         .permissions.editState;
@@ -484,6 +486,7 @@ describe('proxy-recursion-test', () => {
     it(`5. try to update hashes with signature while "editstate is proof() but the method requires a signature"- deployToBerkeley?: ${deployToBerkeley}`, async () => {
       if (isBerkeley) {
         await fetchAccount({ publicKey: smartSnarkyNetAddress });
+        await fetchAccount({ publicKey: deployerAccount });
       }
       let txn_permission = await Mina.transaction(
         { sender: deployerAccount, fee: 0.1e9 },
@@ -529,6 +532,7 @@ describe('proxy-recursion-test', () => {
 
       if (isBerkeley) {
         await fetchAccount({ publicKey: smartSnarkyNetAddress });
+        await fetchAccount({ publicKey: deployerAccount });
       }
       Mina.getAccount(smartSnarkyNetAddress);
       let currentPermissionAccess = Mina.getAccount(smartSnarkyNetAddress)
