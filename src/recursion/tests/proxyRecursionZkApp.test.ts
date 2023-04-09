@@ -576,9 +576,17 @@ describe('proxy-recursion-test', () => {
         currentAccount = await fetchAccount({
           publicKey: smartSnarkyNetAddress,
         });
-        await fetchAccount({ publicKey: deployerAccount });
-        currentPermissionAccess =
-          currentAccount.account?.permissions.access.signatureNecessary;
+        console.log(
+          'currentAccount',
+          currentAccount.account?.permissions.toString()
+        );
+        console.log(
+          'currentAccount',
+          currentAccount.account?.permissions.access.toString()
+        );
+        console.log('currentAccount', currentAccount.account?.toString());
+        // await fetchAccount({ publicKey: deployerAccount });
+        currentPermissionAccess = currentAccount.account?.permissions.access;
         console.log(
           'currentPermissionAccess',
           currentPermissionAccess?.toString()
@@ -588,9 +596,7 @@ describe('proxy-recursion-test', () => {
         currentPermissionAccess = currentAccount?.permissions.access;
       }
 
-      expect(currentPermissionAccess).toEqual(
-        Permissions.signature().signatureNecessary
-      );
+      expect(currentPermissionAccess).toEqual(Permissions.signature());
     }, 10000000);
 
     // it(`8. proving that input image was indeed a picture of a 7 BUT access is set to signature() - deployToBerkeley?: ${deployToBerkeley}`, async () => {
