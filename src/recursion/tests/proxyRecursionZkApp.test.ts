@@ -401,11 +401,16 @@ describe('proxy-recursion-test', () => {
 
       if (isBerkeley) {
         await fetchAccount({ publicKey: smartSnarkyNetAddress });
+        await fetchAccount({ publicKey: deployerAccount });
       }
 
       // change permissions for setVerificationKey to impossible
       let txn_permission = await Mina.transaction(
-        { sender: deployerAccount, fee: 0.1e9 },
+        {
+          sender: deployerAccount,
+          fee: 0.1e9,
+          memo: '4. correct hashes again',
+        },
         () => {
           // AccountUpdate.createSigned(smartSnarkyNetAddress);
           smartSnarkyNetZkApp.setLayerHashes(
@@ -421,6 +426,7 @@ describe('proxy-recursion-test', () => {
 
       if (isBerkeley) {
         await fetchAccount({ publicKey: smartSnarkyNetAddress });
+        await fetchAccount({ publicKey: deployerAccount });
       }
       Mina.getAccount(smartSnarkyNetAddress);
 
@@ -441,19 +447,24 @@ describe('proxy-recursion-test', () => {
       );
     }, 10000000);
 
-    it(`4. set Permission "editState" to proof()"  - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    it(`5. set Permission "editState" to proof()"  - deployToBerkeley?: ${deployToBerkeley}`, async () => {
       if (isBerkeley) {
         try {
           await fetchAccount({ publicKey: smartSnarkyNetAddress });
+          await fetchAccount({ publicKey: deployerAccount });
         } catch (e) {
-          console.log('fetch in 4. errors', e);
+          console.log('fetch in 5. errors', e);
         }
       }
       Mina.getAccount(smartSnarkyNetAddress);
 
       // change permissions for setVerificationKey to impossible
       let txn_permission = await Mina.transaction(
-        { sender: deployerAccount, fee: 0.1e9 },
+        {
+          sender: deployerAccount,
+          fee: 0.1e9,
+          memo: '5. set editState to proof',
+        },
         () => {
           let permissionsUpdate = AccountUpdate.createSigned(
             smartSnarkyNetAddress
@@ -474,6 +485,7 @@ describe('proxy-recursion-test', () => {
 
       if (isBerkeley) {
         await fetchAccount({ publicKey: smartSnarkyNetAddress });
+        await fetchAccount({ publicKey: deployerAccount });
       }
       Mina.getAccount(smartSnarkyNetAddress);
 
@@ -483,7 +495,7 @@ describe('proxy-recursion-test', () => {
       expect(currentPermissionEdit).toEqual(Permissions.proof());
     }, 10000000);
 
-    it(`5. try to update hashes with signature while "editstate is proof() but the method requires a signature"- deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    it(`6. try to update hashes with signature while "editstate is proof() but the method requires a signature"- deployToBerkeley?: ${deployToBerkeley}`, async () => {
       if (isBerkeley) {
         await fetchAccount({ publicKey: smartSnarkyNetAddress });
         await fetchAccount({ publicKey: deployerAccount });
@@ -502,7 +514,7 @@ describe('proxy-recursion-test', () => {
       }).rejects.toThrow();
     }, 10000000);
 
-    it(`6. set permission "access" to signature() - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    it(`7. set permission "access" to signature() - deployToBerkeley?: ${deployToBerkeley}`, async () => {
       if (isBerkeley) {
         await fetchAccount({ publicKey: smartSnarkyNetAddress });
         await fetchAccount({ publicKey: deployerAccount });
@@ -510,7 +522,11 @@ describe('proxy-recursion-test', () => {
       Mina.getAccount(smartSnarkyNetAddress);
       // change permissions for setVerificationKey to impossible
       let txn_permission = await Mina.transaction(
-        { sender: deployerAccount, fee: 0.2e9 },
+        {
+          sender: deployerAccount,
+          fee: 0.2e9,
+          memo: '7. set access to signature',
+        },
         () => {
           let permissionsUpdate = AccountUpdate.createSigned(
             smartSnarkyNetAddress
@@ -543,8 +559,13 @@ describe('proxy-recursion-test', () => {
       );
     }, 10000000);
 
-    it(`7. proving that input image was indeed a picture of a 7 BUT access is set to signature() - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    it(`8. proving that input image was indeed a picture of a 7 BUT access is set to signature() - deployToBerkeley?: ${deployToBerkeley}`, async () => {
       console.log('proving that input image was indeed a picture of a 7...');
+
+      if (isBerkeley) {
+        await fetchAccount({ publicKey: smartSnarkyNetAddress });
+        await fetchAccount({ publicKey: deployerAccount });
+      }
       let snarkyLayer1s = new SnarkyLayer1(
         preprocessWeights(weights_l1_8x8),
         'relu'
@@ -578,7 +599,7 @@ describe('proxy-recursion-test', () => {
       console.log('isValidLocal', isValidLocal);
 
       const txn = await Mina.transaction(
-        { sender: deployerAccount, fee: 0.3e9 },
+        { sender: deployerAccount, fee: 0.3e9, memo: '8. set classification' },
         () => {
           proxyZkApp.callPredict(proofLayer2, smartSnarkyNetAddress);
         }
@@ -590,6 +611,7 @@ describe('proxy-recursion-test', () => {
 
         if (isBerkeley) {
           await fetchAccount({ publicKey: smartSnarkyNetAddress });
+          await fetchAccount({ publicKey: deployerAccount });
         }
         let currentClassification = smartSnarkyNetZkApp.classification.get();
 
@@ -597,7 +619,7 @@ describe('proxy-recursion-test', () => {
       }).rejects.toThrow();
     }, 10000000);
 
-    // it(`8. changing Permission to impossible to fix architecture - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    // it(`9. changing Permission to impossible to fix architecture - deployToBerkeley?: ${deployToBerkeley}`, async () => {
     //   console.log(
     //     'changing smartSnarkyNet Permission to impossible to fix architecture...'
     //   );
@@ -658,7 +680,7 @@ describe('proxy-recursion-test', () => {
     //   );
     // }, 10000000);
 
-    // it(`9. changing Permission "access" to signature, BUT permission "setPermission" is impossible - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+    // it(`10. changing Permission "access" to signature, BUT permission "setPermission" is impossible - deployToBerkeley?: ${deployToBerkeley}`, async () => {
     //   if (isBerkeley) {
     //     await fetchAccount({ publicKey: smartSnarkyNetAddress });
     //   }
@@ -698,5 +720,5 @@ describe('proxy-recursion-test', () => {
     //   }).rejects.toThrow();
     // }, 10000000);
   }
-  // runTests();
+  runTests();
 });
