@@ -243,7 +243,7 @@ export class NoobToken extends SmartContract {
     let balance = this.account.balance.get();
 
     // Log the balance in the zkApp.
-    Circuit.log('balance in zkApp is', balance);
+    Circuit.log('balance in zkApp is, mintwithMina', balance);
 
     // Assert that the account balance is as expected.
     this.account.balance.assertEquals(balance);
