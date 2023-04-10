@@ -534,7 +534,7 @@ describe('proxy-recursion-test', () => {
         await fetchAccount({ publicKey: deployerAccount });
       }
       Mina.getAccount(smartSnarkyNetAddress);
-      // change permissions for setVerificationKey to impossible
+      // change permissions for access to signature
       let txn_permission = await Mina.transaction(
         {
           sender: deployerAccount,
@@ -559,8 +559,16 @@ describe('proxy-recursion-test', () => {
       txn_permission.sign([deployerKey, smartSnarkyNetPrivateKey]);
       await (await txn_permission.send()).wait();
 
-      // wait for 1 minute to make sure the transaction is included in the block
-      await new Promise((resolve) => setTimeout(resolve, 60000));
+      // wait for 2 minutes to make sure the transaction is included in the block
+      console.log(
+        'waiting for 1 minute to make sure the transaction is included in the block',
+        getFriendlyDateTime()
+      );
+      await new Promise((resolve) => setTimeout(resolve, 12000));
+      console.log(
+        'done waiting for 1 minute to make sure the transaction is included in the block',
+        getFriendlyDateTime()
+      );
 
       let currentAccount;
       let currentPermissionAccess;
@@ -568,29 +576,16 @@ describe('proxy-recursion-test', () => {
         currentAccount = await fetchAccount({
           publicKey: smartSnarkyNetAddress,
         });
-        console.log('currentAccount', currentAccount.account?.permissions);
-        console.log(
-          'currentAccount',
-          currentAccount.account?.permissions.access
-        );
         currentPermissionAccess = currentAccount.account?.permissions.access;
-        console.log(
-          'currentPermissionAccess constant',
-          currentPermissionAccess?.constant.toJSON()
-        );
-        console.log(
-          'currentPermissionAccess signatureNecessary',
-          currentPermissionAccess?.signatureNecessary.toJSON()
-        );
-        console.log(
-          'currentPermissionAccess signatureSufficient',
-          currentPermissionAccess?.signatureSufficient.toJSON()
-        );
       } else {
         currentAccount = Mina.getAccount(smartSnarkyNetAddress);
         currentPermissionAccess = currentAccount?.permissions.access;
       }
-      console.log('currentPermissionAccess', currentPermissionAccess);
+
+      console.log(
+        'currentPermissionAccess',
+        currentPermissionAccess?.signatureSufficient
+      );
 
       expect(currentPermissionAccess).toEqual(Permissions.signature());
     }, 10000000);
