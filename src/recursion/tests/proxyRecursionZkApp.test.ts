@@ -564,7 +564,8 @@ describe('proxy-recursion-test', () => {
         'waiting for 1 minute to make sure the transaction is included in the block',
         getFriendlyDateTime()
       );
-      await new Promise((resolve) => setTimeout(resolve, 12000));
+
+      await new Promise((resolve) => setTimeout(resolve, 120000));
       console.log(
         'done waiting for 1 minute to make sure the transaction is included in the block',
         getFriendlyDateTime()
