@@ -559,6 +559,9 @@ describe('proxy-recursion-test', () => {
       txn_permission.sign([deployerKey, smartSnarkyNetPrivateKey]);
       await (await txn_permission.send()).wait();
 
+      // wait for 1 minute to make sure the transaction is included in the block
+      await new Promise((resolve) => setTimeout(resolve, 60000));
+
       let currentAccount;
       let currentPermissionAccess;
       if (isBerkeley) {
@@ -587,6 +590,7 @@ describe('proxy-recursion-test', () => {
         currentAccount = Mina.getAccount(smartSnarkyNetAddress);
         currentPermissionAccess = currentAccount?.permissions.access;
       }
+      console.log('currentPermissionAccess', currentPermissionAccess);
 
       expect(currentPermissionAccess).toEqual(Permissions.signature());
     }, 10000000);
