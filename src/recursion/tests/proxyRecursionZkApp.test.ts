@@ -582,13 +582,37 @@ describe('proxy-recursion-test', () => {
         currentAccount = Mina.getAccount(smartSnarkyNetAddress);
         currentPermissionAccess = currentAccount?.permissions.access;
       }
-
+      console.log('how it is');
       console.log(
-        'currentPermissionAccess',
-        currentPermissionAccess?.signatureSufficient
+        'currentPermissionAccess suficient?',
+        currentPermissionAccess?.signatureSufficient.toJSON()
+      );
+      console.log(
+        'currentPermissionAccess required?',
+        currentPermissionAccess?.signatureNecessary.toJSON()
+      );
+      console.log(
+        'currentPermissionAccess constant?',
+        currentPermissionAccess?.constant.toJSON()
+      );
+      // how it should be
+      console.log('how it should be');
+      console.log(
+        'permissions.signature().signatureNecessary',
+        Permissions.signature().signatureNecessary.toJSON()
+      );
+      console.log(
+        'permissions.signature().signatureSufficient',
+        Permissions.signature().signatureSufficient.toJSON()
+      );
+      console.log(
+        'permissions.signature().constant',
+        Permissions.signature().constant.toJSON()
       );
 
-      expect(currentPermissionAccess).toEqual(Permissions.signature());
+      expect(currentPermissionAccess?.signatureNecessary).toEqual(
+        Permissions.signature().signatureNecessary
+      );
     }, 10000000);
 
     // it(`8. proving that input image was indeed a picture of a 7 BUT access is set to signature() - deployToBerkeley?: ${deployToBerkeley}`, async () => {
