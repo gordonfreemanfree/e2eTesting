@@ -411,5 +411,5 @@ describe('Token-test-minting', () => {
       expect(newNoobBalance).toEqual(UInt64.from(1e9));
     }, 10000000);
   }
-  // runTests();
+  runTests();
 });
