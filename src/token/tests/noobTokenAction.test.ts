@@ -308,6 +308,8 @@ describe('Token-test-actions', () => {
     // // ------------------------------------------------------------------------
     it(`3. waiting one block to reduce Actions later - deployToBerkeley?: ${deployToBerkeley}`, async () => {
       console.log('sending dummy tx to wait 1 block...');
+      let currentAccount;
+      let currentNonce;
       if (isBerkeley) {
         await fetchAccount({
           publicKey: zkAppAddress,
@@ -315,6 +317,12 @@ describe('Token-test-actions', () => {
         await fetchAccount({
           publicKey: deployerAccount,
         });
+        currentAccount = await fetchAccount({
+          publicKey: deployerAccount,
+        });
+        currentNonce = currentAccount?.account?.nonce;
+      } else {
+        currentNonce = Mina.getAccount(deployerAccount).nonce;
       }
       Mina.getAccount(zkAppAddress);
 
@@ -323,6 +331,7 @@ describe('Token-test-actions', () => {
           sender: deployerAccount,
           memo: 'Dummy Transaction',
           fee: 0.2e9,
+          nonce: Number(currentNonce),
         },
         () => {
           zkApp.dummy.set(UInt64.from(1));
@@ -470,5 +479,5 @@ describe('Token-test-actions', () => {
     }, 10000000);
   }
 
-  // runTests();
+  runTests();
 });

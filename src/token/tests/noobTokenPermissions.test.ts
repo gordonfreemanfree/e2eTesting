@@ -286,7 +286,7 @@ describe('Token-test-permission', () => {
       );
       // await txn_changeZkappUri.prove();
       txn_changeZkappUri.sign([zkAppPrivateKey, deployerKey]);
-      await (await txn_changeZkappUri.send()).wait();
+      await (await txn_changeZkappUri.send()).wait({ maxAttempts: 100 });
 
       if (isBerkeley) {
         await fetchAccount({ publicKey: zkAppAddress });
@@ -326,7 +326,7 @@ describe('Token-test-permission', () => {
       );
       await txn_permission.prove();
       txn_permission.sign([zkAppPrivateKey, deployerKey]);
-      await (await txn_permission.send()).wait();
+      await (await txn_permission.send()).wait({ maxAttempts: 100 });
       // let oldUri = Mina.getAccount(zkAppAddress).zkapp?.zkappUri;
 
       // try to change zkappUri without signature
@@ -378,7 +378,7 @@ describe('Token-test-permission', () => {
       );
       await txn_permission.prove();
       txn_permission.sign([zkAppPrivateKey, deployerKey]);
-      await (await txn_permission.send()).wait();
+      await (await txn_permission.send()).wait({ maxAttempts: 100 });
 
       if (isBerkeley) {
         await fetchAccount({ publicKey: zkAppAddress });
@@ -416,7 +416,7 @@ describe('Token-test-permission', () => {
       );
       await txn_votingForPermission.prove();
       txn_votingForPermission.sign([zkAppPrivateKey, deployerKey]);
-      await (await txn_votingForPermission.send()).wait();
+      await (await txn_votingForPermission.send()).wait({ maxAttempts: 100 });
 
       if (isBerkeley) {
         await fetchAccount({ publicKey: zkAppAddress });
@@ -451,15 +451,22 @@ describe('Token-test-permission', () => {
       );
       await txn_delegate.prove();
       txn_delegate.sign([zkAppPrivateKey, deployerKey]);
-      await (await txn_delegate.send()).wait();
+      await (await txn_delegate.send()).wait({ maxAttempts: 100 });
 
+      let currentAccount;
+      let currentDelegate;
       if (isBerkeley) {
-        await fetchAccount({ publicKey: zkAppAddress });
+        currentAccount = await fetchAccount({ publicKey: zkAppAddress });
+        currentDelegate = currentAccount.account?.delegate;
+      } else {
+        currentAccount = Mina.getAccount(zkAppAddress);
+        currentDelegate = currentAccount.delegate;
       }
-      let newDelegate = Mina.getAccount(zkAppAddress).delegate;
-      console.log('newDelegate is', newDelegate?.toJSON());
+      // let newDelegate = Mina.getAccount(zkAppAddress).delegate;
+      // console.log('newDelegate is', newDelegate?.toJSON());
+      console.log('newDelegate is', currentDelegate?.toJSON());
 
-      expect(newDelegate).toEqual(deployerAccount);
+      expect(currentDelegate).toEqual(deployerAccount);
     }, 1000000);
     // // ------------------------------------------------------------------------
 
@@ -489,17 +496,24 @@ describe('Token-test-permission', () => {
       );
       await txn_votingForPermission.prove();
       txn_votingForPermission.sign([zkAppPrivateKey, deployerKey]);
-      await (await txn_votingForPermission.send()).wait();
+      await (await txn_votingForPermission.send()).wait({ maxAttempts: 100 });
 
+      let currentAccount;
+      let currentDelegatePermission;
       if (isBerkeley) {
-        await fetchAccount({ publicKey: zkAppAddress });
+        currentAccount = await fetchAccount({ publicKey: zkAppAddress });
+        currentDelegatePermission =
+          currentAccount.account?.permissions.setDelegate;
+      } else {
+        currentAccount = Mina.getAccount(zkAppAddress);
+        currentDelegatePermission = currentAccount.permissions.setDelegate;
       }
 
-      let newSetDelegate = Mina.getAccount(zkAppAddress).permissions
-        .setDelegate;
-      console.log('newVotingForPermission is', newSetDelegate);
+      // let newSetDelegate = Mina.getAccount(zkAppAddress).permissions
+      //   .setDelegate;
+      console.log('newVotingForPermission is', currentDelegatePermission);
 
-      expect(newSetDelegate).toEqual(Permissions.impossible());
+      expect(currentDelegatePermission).toEqual(Permissions.impossible());
     }, 1000000);
     // // ------------------------------------------------------------------------
   }
