@@ -279,7 +279,7 @@ describe('Token-test-actions', () => {
         });
       }
 
-      console.log('action 1');
+      console.log('sending action 1');
       let tx = await Mina.transaction(
         { sender: deployerAccount, fee: 0.2e9 },
 
@@ -293,7 +293,7 @@ describe('Token-test-actions', () => {
       // Not waitong for the transaction to be included in a block
       // await tx.sign([deployerKey, zkAppPrivateKey]).send();
 
-      console.log('action 2');
+      console.log('sending action 2');
       tx = await Mina.transaction(
         { sender: deployerAccount, fee: 0.2e9 },
         () => {
@@ -307,7 +307,7 @@ describe('Token-test-actions', () => {
     // // ------------------------------------------------------------------------
     // // ------------------------------------------------------------------------
     it(`3. waiting one block to reduce Actions later - deployToBerkeley?: ${deployToBerkeley}`, async () => {
-      console.log('dummy tx');
+      console.log('sending dummy tx to wait 1 block...');
       if (isBerkeley) {
         await fetchAccount({
           publicKey: zkAppAddress,
@@ -359,20 +359,48 @@ describe('Token-test-actions', () => {
       await tx.prove();
       await (await tx.sign([deployerKey]).send()).wait({ maxAttempts: 1000 });
 
+      let currentAccount;
+      let currentActionCounter;
       if (isBerkeley) {
-        await fetchAccount({
+        currentAccount = await fetchAccount({
           publicKey: zkAppAddress,
         });
-        await fetchAccount({
-          publicKey: deployerAccount,
-        });
-        await fetchAccount({
-          publicKey: zkAppAddress,
-          tokenId: zkApp.token.id,
-        });
+        // await fetchAccount({
+        //   publicKey: deployerAccount,
+        // });
+        // await fetchAccount({
+        //   publicKey: zkAppAddress,
+        //   tokenId: zkApp.token.id,
+        // });
+        currentActionCounter = currentAccount?.account?.zkapp?.appState[4];
+      } else {
+        currentAccount = Mina.getAccount(zkAppAddress);
+        currentActionCounter = currentAccount?.zkapp?.appState[4];
       }
-      Mina.getAccount(zkAppAddress);
-      let currentActionCounter = zkApp.actionCounter.get();
+      // Mina.getAccount(zkAppAddress);
+      // console.log(
+      //   'state after with zkApp.actionCounter.get(): ',
+      //   zkApp.actionCounter.get()
+      // );
+      // console.log(
+      //   'currentAccount',
+      //   currentAccount?.account?.zkapp?.appState.toString()
+      // );
+      // console.log(
+      //   'currentAccount [3]',
+      //   currentAccount?.account?.zkapp?.appState?.[3].toString()
+      // );
+      // console.log(
+      //   'currentAccount 3',
+      //   currentAccount?.account?.zkapp?.appState[3]
+      // );
+      // console.log(
+      //   'currentAccount 3 json',
+      //   currentAccount?.account?.zkapp?.appState[3].toJSON()
+      // );
+      console.log('currentAccount 4 json', currentActionCounter?.toJSON());
+      // let currentAppState = currentAccount?.account?.zkapp?.appState;
+      // let currentActionCounter = currentAppState?.[4];
 
       expect(currentActionCounter).toEqual(Field(2));
     }, 10000000);

@@ -270,6 +270,12 @@ describe('Token-test-permission', () => {
     // // confirmed: true
     it(`2. change zkAppUri with SignedTransaction - deployToBerkeley?: ${deployToBerkeley}`, async () => {
       console.log('change zkAppUri with SignedTransaction');
+      if (isBerkeley) {
+        await fetchAccount({ publicKey: zkAppAddress });
+      } else {
+        Mina.getAccount(zkAppAddress);
+      }
+
       let newUri = 'https://www.newUri.com';
       const txn_changeZkappUri = await Mina.transaction(
         { sender: deployerAccount, fee: 0.1e9 },
