@@ -571,13 +571,32 @@ describe('proxy-recursion-test', () => {
         getFriendlyDateTime()
       );
 
+      // wait one block after the transaction is included in the block
+      // let txn = await Mina.transaction(
+      //   {
+      //     sender: deployerAccount,
+      //     fee: 0.1e9,
+      //     memo: 'dummy transaction',
+      //   },
+      //   () => {
+      //     let update = AccountUpdate.createSigned(smartSnarkyNetAddress);
+      //     update.account.zkappUri.set('dummy');
+      //   }
+      // );
+      // await txn.prove();
+      // txn.sign([deployerKey, smartSnarkyNetPrivateKey]);
+      // await (await txn.send()).wait();
+      // console.log('done waiting one block');
+
       let currentAccount;
       let currentPermissionAccess;
       if (isBerkeley) {
-        currentAccount = await fetchAccount({
-          publicKey: smartSnarkyNetAddress,
-        });
-        currentPermissionAccess = currentAccount.account?.permissions.access;
+        currentAccount = (
+          await fetchAccount({
+            publicKey: smartSnarkyNetAddress,
+          })
+        ).account;
+        currentPermissionAccess = currentAccount?.permissions.access;
       } else {
         currentAccount = Mina.getAccount(smartSnarkyNetAddress);
         currentPermissionAccess = currentAccount?.permissions.access;
