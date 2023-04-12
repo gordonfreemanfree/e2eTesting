@@ -55,6 +55,21 @@
       "url": "https://proxy.berkeley.minaexplorer.com/graphql",
       "keyPath": "keys/test4.json",
       "fee": ".1"
+    },
+    "test5": {
+      "url": "https://proxy.berkeley.minaexplorer.com/graphql",
+      "keyPath": "keys/test5.json",
+      "fee": ".1"
+    },
+    "test6": {
+      "url": "https://proxy.berkeley.minaexplorer.com/graphql",
+      "keyPath": "keys/test6.json",
+      "fee": ".1"
+    },
+    "test7": {
+      "url": "https://proxy.berkeley.minaexplorer.com/graphql",
+      "keyPath": "keys/test7.json",
+      "fee": ".1"
     }
   }
 }

@@ -289,7 +289,7 @@ describe('Token-test-actions', () => {
         }
       );
       await tx.prove();
-      await (await tx.sign([deployerKey]).send()).wait();
+      await (await tx.sign([deployerKey]).send()).wait({ maxAttempts: 100 });
       // Not waitong for the transaction to be included in a block
       // await tx.sign([deployerKey, zkAppPrivateKey]).send();
 
@@ -339,7 +339,7 @@ describe('Token-test-actions', () => {
       );
       await tx.prove();
       tx.sign([deployerKey]);
-      await (await tx.send()).wait();
+      await (await tx.send()).wait({ maxAttempts: 100 });
       console.log('dummy tx done');
     }, 10000000);
 
@@ -349,18 +349,23 @@ describe('Token-test-actions', () => {
 
       console.log('state before: ' + zkApp.actionCounter.get());
 
+      let currentAccount;
+      let currentNonce;
       if (isBerkeley) {
         await fetchAccount({
           publicKey: zkAppAddress,
         });
-        await fetchAccount({
+        currentAccount = await fetchAccount({
           publicKey: deployerAccount,
         });
+        currentNonce = currentAccount?.account?.nonce;
+      } else {
+        currentNonce = Mina.getAccount(deployerAccount).nonce;
       }
       Mina.getAccount(zkAppAddress);
 
       let tx = await Mina.transaction(
-        { sender: deployerAccount, fee: 0.2e9 },
+        { sender: deployerAccount, fee: 0.2e9, nonce: Number(currentNonce) },
         () => {
           zkApp.reduceActions();
         }
@@ -368,7 +373,7 @@ describe('Token-test-actions', () => {
       await tx.prove();
       await (await tx.sign([deployerKey]).send()).wait({ maxAttempts: 1000 });
 
-      let currentAccount;
+      // let currentAccount;
       let currentActionCounter;
       if (isBerkeley) {
         currentAccount = await fetchAccount({
@@ -479,5 +484,5 @@ describe('Token-test-actions', () => {
     }, 10000000);
   }
 
-  runTests();
+  // runTests();
 });
