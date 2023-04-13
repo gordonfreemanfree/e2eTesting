@@ -1,5 +1,3 @@
-// Description: SnarkyNet and SnarkyLayers allow for the implementation of a SnarkyJS
-// version of a Deep Neural Network.
 // SnarkyLayers are defined to represent the Dense Neural Network layers combined in
 // SnarkyNet for prediction.
 

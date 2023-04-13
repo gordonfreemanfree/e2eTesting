@@ -427,7 +427,7 @@ describe('proxy-recursion-test', () => {
       );
       await txn_permission.prove();
       txn_permission.sign([deployerKey, smartSnarkyNetPrivateKey]);
-      console.log('4. correct hashes again', txn_permission.toPretty());
+      // console.log('4. correct hashes again', txn_permission.toPretty());
       await (await txn_permission.send()).wait();
 
       if (isBerkeley) {
@@ -562,16 +562,16 @@ describe('proxy-recursion-test', () => {
       await (await txn_permission.send()).wait();
 
       // wait for 2 minutes to make sure the transaction is included in the block
-      console.log(
-        'waiting for 1 minute to make sure the transaction is included in the block',
-        getFriendlyDateTime()
-      );
+      // console.log(
+      //   'waiting for 1 minute to make sure the transaction is included in the block',
+      //   getFriendlyDateTime()
+      // );
 
-      await new Promise((resolve) => setTimeout(resolve, 120000));
-      console.log(
-        'done waiting for 1 minute to make sure the transaction is included in the block',
-        getFriendlyDateTime()
-      );
+      // await new Promise((resolve) => setTimeout(resolve, 120000));
+      // console.log(
+      //   'done waiting for 1 minute to make sure the transaction is included in the block',
+      //   getFriendlyDateTime()
+      // );
 
       // wait one block after the transaction is included in the block
       // let txn = await Mina.transaction(
@@ -603,33 +603,33 @@ describe('proxy-recursion-test', () => {
         currentAccount = Mina.getAccount(smartSnarkyNetAddress);
         currentPermissionAccess = currentAccount?.permissions.access;
       }
-      console.log('how it is');
-      console.log(
-        'currentPermissionAccess suficient?',
-        currentPermissionAccess?.signatureSufficient.toJSON()
-      );
-      console.log(
-        'currentPermissionAccess required?',
-        currentPermissionAccess?.signatureNecessary.toJSON()
-      );
-      console.log(
-        'currentPermissionAccess constant?',
-        currentPermissionAccess?.constant.toJSON()
-      );
-      // how it should be
-      console.log('how it should be');
-      console.log(
-        'permissions.signature().signatureNecessary',
-        Permissions.signature().signatureNecessary.toJSON()
-      );
-      console.log(
-        'permissions.signature().signatureSufficient',
-        Permissions.signature().signatureSufficient.toJSON()
-      );
-      console.log(
-        'permissions.signature().constant',
-        Permissions.signature().constant.toJSON()
-      );
+      // console.log('how it is');
+      // console.log(
+      //   'currentPermissionAccess suficient?',
+      //   currentPermissionAccess?.signatureSufficient.toJSON()
+      // );
+      // console.log(
+      //   'currentPermissionAccess required?',
+      //   currentPermissionAccess?.signatureNecessary.toJSON()
+      // );
+      // console.log(
+      //   'currentPermissionAccess constant?',
+      //   currentPermissionAccess?.constant.toJSON()
+      // );
+      // // how it should be
+      // console.log('how it should be');
+      // console.log(
+      //   'permissions.signature().signatureNecessary',
+      //   Permissions.signature().signatureNecessary.toJSON()
+      // );
+      // console.log(
+      //   'permissions.signature().signatureSufficient',
+      //   Permissions.signature().signatureSufficient.toJSON()
+      // );
+      // console.log(
+      //   'permissions.signature().constant',
+      //   Permissions.signature().constant.toJSON()
+      // );
 
       expect(currentPermissionAccess?.signatureNecessary).toEqual(
         Permissions.signature().signatureNecessary
@@ -800,5 +800,5 @@ describe('proxy-recursion-test', () => {
       }).rejects.toThrow();
     }, 10000000);
   }
-  // runTests();
+  runTests();
 });

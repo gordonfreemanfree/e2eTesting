@@ -1,3 +1,5 @@
+// proxy for the recursion zkApp
+
 import {
   SmartContract,
   State,

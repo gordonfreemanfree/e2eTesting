@@ -20,7 +20,7 @@ class SnarkyNet extends Struct({
   predict(
     inputs: InputImage
   ): { result: Field[]; intermediateResults: Field[][] } {
-    console.log('in predict start');
+    // console.log('in predict start');
     // Prediction method to run the model
     // Step 1. Convert initial inputs to a float
     let x = [inputs.value];

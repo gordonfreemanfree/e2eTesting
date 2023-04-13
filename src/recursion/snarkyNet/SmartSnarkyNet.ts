@@ -8,11 +8,9 @@ import {
   state,
   State,
   Circuit,
-  DeployArgs,
   Permissions,
   Poseidon,
-  SelfProof,
-  CircuitString,
+  UInt32,
 } from 'snarkyjs';
 import { SnarkyLayer1, SnarkyLayer2 } from './snarkyLayer.js';
 import { NeuralNetProof } from './recursionProof.js';
@@ -39,7 +37,6 @@ export class SmartSnarkyNet extends SmartContract {
   @state(Field) layer1Hash = State<Field>(); // stored state for Layer1
   @state(Field) layer2Hash = State<Field>(); // stored state for Layer2
 
-  // TODO: make sure that the layers are fixed
   init() {
     super.init();
     this.classification.set(Field(0));
@@ -86,25 +83,20 @@ export class SmartSnarkyNet extends SmartContract {
     //obtain the predictions
     let prediction = neuralNetProof.publicInput.precomputedOutputLayer2;
 
-    // let max01 = Field(0);
-    // let classification01 = Field(0);
-
     // finding the max value of the prediction array
     // and returning the index of the max value
     let max = Field(0);
     let classificationTest = Field(0);
     for (let i = 0; i < prediction.length; i++) {
       [max, classificationTest] = Circuit.if(
-        max.greaterThan(prediction[i]),
+        // commented out because of bug in snarkyjs 0.9.8
+        // max.greaterThan(prediction[i]),
+        UInt32.from(max).greaterThan(UInt32.from(prediction[i])),
+
         [max, classificationTest],
         [prediction[i], Field(i)]
       );
     }
-
-    Circuit.log('classificationTest', classificationTest);
-    Circuit.log('classificationTest', classificationTest);
-    Circuit.log('max', max);
-    Circuit.log('max', max);
 
     // ---------------------------- set the classification ----------------------------
     let classification = this.classification.get();
