@@ -559,7 +559,7 @@ describe('proxy-recursion-test', () => {
       );
       await txn_permission.prove();
       txn_permission.sign([deployerKey, smartSnarkyNetPrivateKey]);
-      await (await txn_permission.send()).wait();
+      await (await txn_permission.send()).wait({ maxAttempts: 100 });
 
       // wait for 2 minutes to make sure the transaction is included in the block
       // console.log(
@@ -800,5 +800,5 @@ describe('proxy-recursion-test', () => {
       }).rejects.toThrow();
     }, 10000000);
   }
-  // runTests();
+  runTests();
 });

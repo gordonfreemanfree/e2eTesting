@@ -36,14 +36,15 @@ porting the prediction into a circuit.
 1. Surface area 8: deploy zkApps and check verificationKeyHash - expecting success
 2. Surface area 1/2: Using proxy zkApp to call another zkApp that verifies a recursive proof - expecting success
 3. Surface area 7: try to update hashes with signature while "editstate" is proofOrSignature() - expecting success
-4. Surface area 7: set Permission "editState" to proof() - expecting success
-5. Surface area 7: try to update hashes with signature while "editstate" is proof() but the method requires a signature - expecting error
-6. Surface area 7: set permission "access" to signature() - expecting success
-7. Surface area 1/2/7: Using proxy zkApp to call another zkApp that verifies a recursive proof - expecting error because "access" is signature()
-8. Surface area 7: changing Permission: "setZkappUri", "setVerificationKey", "setTokenSymbol", "setPermissions" to impossible() to fix architecture and "access" to proof() to still be able to call predict - expecting success
-9. Surface area 7: changing Permission "access" to signature, BUT permission "setPermission" is impossible - expecting error
+4. Surface area 7: set hashes back to true hashes with signature while "editstate" is proofOrSignature() - expecting success
+5. Surface area 7: set Permission "editState" to proof() - expecting success
+6. Surface area 7: try to update hashes with signature while "editstate" is proof() but the method requires a signature - expecting error
+7. Surface area 7: set permission "access" to signature() - expecting success
+8. Surface area 1/2/7: Using proxy zkApp to call another zkApp that verifies a recursive proof - expecting error because "access" is signature()
+9. Surface area 7: changing Permission: "setZkappUri", "setVerificationKey", "setTokenSymbol", "setPermissions" to impossible() to fix architecture and "access" to proof() to still be able to call predict - expecting success
+10. Surface area 7: changing Permission "access" to signature, BUT permission "setPermission" is impossible - expecting error
 
-## Runtime
+## Expected Runtime
 
 ## How to build
 
@@ -57,8 +58,8 @@ npm run build
    `./setEnvVars.js`
 
 ```sh
-npm run test
-npm run testw # watch mode
+npm run test -- -t "proxy-recursion-test"
+
 ```
 
 ## How to run coverage
@@ -139,8 +140,14 @@ There is a process variable that is used to switch between local and berkeley te
 `setEnvVars.js`
 
 ```sh
-npm run test
-npm run testw # watch mode
+npm run test -- -t "Token-test-actions"
+runtime:
+npm run test -- -t "Token-test-minting"
+runtime:
+npm run test -- -t "Token-test-permission"
+runtime:
+npm run test -- -t "Token-test-preconditions"
+runtime:
 ```
 
 ## How to run coverage

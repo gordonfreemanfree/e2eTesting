@@ -31,7 +31,7 @@ const isBerkeley = process.env.TEST_ON_BERKELEY == 'true' ? true : false;
 console.log('isBerkeley:', isBerkeley);
 let proofsEnabled = true;
 
-describe('token-test-preconditions', () => {
+describe('Token-test-preconditions', () => {
   async function runTests(deployToBerkeley: boolean = isBerkeley) {
     let Blockchain;
     let deployerAccount: PublicKey,
@@ -606,5 +606,5 @@ describe('token-test-preconditions', () => {
     }, 10000000);
   }
 
-  // runTests();
+  runTests();
 });
