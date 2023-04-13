@@ -25,6 +25,7 @@ export class NoobToken extends SmartContract {
     'tokens-sent-to': PublicKey,
     'tokens-minted-to': PublicKey,
     'is-Paused': Bool,
+    'action-state-update': Field,
   };
 
   @state(UInt64) totalAmountInCirculation = State<UInt64>();
@@ -126,6 +127,7 @@ export class NoobToken extends SmartContract {
 
     // Update the action counter with the new state value.
     this.actionCounter.set(newState);
+    this.emitEvent('action-state-update', newState);
   }
 
   /**

@@ -415,6 +415,12 @@ describe('Token-test-actions', () => {
       console.log('currentAccount 4 json', currentActionCounter?.toJSON());
       // let currentAppState = currentAccount?.account?.zkapp?.appState;
       // let currentActionCounter = currentAppState?.[4];
+      let events = await zkApp.fetchEvents();
+      // console.log('events', events.toLocaleString());
+      // console.log('events', events[1].event.data);
+      // console.log('events', events[1].event.data);
+
+      console.log('hello');
 
       expect(currentActionCounter).toEqual(Field(2));
     }, 10000000);
@@ -484,5 +490,5 @@ describe('Token-test-actions', () => {
     }, 10000000);
   }
 
-  // runTests();
+  runTests();
 });

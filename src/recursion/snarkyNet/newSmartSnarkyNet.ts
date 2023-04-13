@@ -13,6 +13,7 @@ import {
   Poseidon,
   SelfProof,
   CircuitString,
+  UInt32,
 } from 'snarkyjs';
 import { SnarkyLayer1, SnarkyLayer2 } from './snarkyLayer.js';
 import { SnarkyLayerStruct1, SnarkyLayerStruct2 } from './newSnarkyLayer.js';
@@ -96,7 +97,8 @@ export class newSmartSnarkyNet extends SmartContract {
     let classificationTest = Field(0);
     for (let i = 0; i < prediction.length; i++) {
       [max, classificationTest] = Circuit.if(
-        max.greaterThan(prediction[i]),
+        // max.greaterThan(prediction[i]),
+        UInt32.from(max).greaterThan(UInt32.from(prediction[i])),
         [max, classificationTest],
         [prediction[i], Field(i)]
       );

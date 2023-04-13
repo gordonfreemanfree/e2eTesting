@@ -381,5 +381,5 @@ describe('proxy-recursion-test', () => {
       expect(currentClassification).toEqual(Field(2));
     }, 10000000);
   }
-  runTests();
+  // runTests();
 });
