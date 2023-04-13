@@ -49,7 +49,12 @@ async function main() {
     'softmax'
   );
 
-  let inputImage = new InputImage(preprocessImage(image_0_label_7_8x8));
+  // let inputImage = new InputImage(preprocessImage(image_0_label_7_8x8));
+
+  // code for Struct update
+  let inputImage = new InputImage({
+    value: preprocessImage(image_0_label_7_8x8),
+  });
 
   let model = new SnarkyNet([snarkyLayer1s, snarkyLayer2s]);
 

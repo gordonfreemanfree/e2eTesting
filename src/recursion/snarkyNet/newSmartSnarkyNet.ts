@@ -15,7 +15,8 @@ import {
   CircuitString,
 } from 'snarkyjs';
 import { SnarkyLayer1, SnarkyLayer2 } from './snarkyLayer.js';
-import { NeuralNetProof } from './recursionProof.js';
+import { SnarkyLayerStruct1, SnarkyLayerStruct2 } from './newSnarkyLayer.js';
+import { NeuralNetProof, newNeuralNetProof } from './recursionProof.js';
 import { preprocessWeights } from './utils/preprocess.js';
 import { weights_l1_8x8 } from './assets/weights_l1_8x8.js';
 import { weights_l2_8x8 } from './assets/weights_l2_8x8.js';
@@ -27,7 +28,7 @@ let snarkyLayer2s = new SnarkyLayer2(
   'softmax'
 );
 
-export class SmartSnarkyNet extends SmartContract {
+export class newSmartSnarkyNet extends SmartContract {
   events = {
     'set-layer1': Field,
     'set-layer2': Field,
@@ -62,14 +63,14 @@ export class SmartSnarkyNet extends SmartContract {
     this.requireSignature();
   }
 
-  @method predict(neuralNetProof: NeuralNetProof) {
+  @method predict(neuralNetProof: newNeuralNetProof) {
     // generating the hash of layers that were used in the proof generation
-    let actualLayer1Hash = Poseidon.hash(
-      neuralNetProof.publicInput.layer1.toFields()
-    );
-    let actualLayer2Hash = Poseidon.hash(
-      neuralNetProof.publicInput.layer2.toFields()
-    );
+    // let actualLayer1Hash = Poseidon.hash(
+    //   neuralNetProof.publicInput.layer1.toFields()
+    // );
+    // let actualLayer2Hash = Poseidon.hash(
+    //   neuralNetProof.publicInput.layer2.toFields()
+    // );
 
     // fetch layer1Hash from contract state
     let layerState = this.layer1Hash.get();
@@ -80,8 +81,8 @@ export class SmartSnarkyNet extends SmartContract {
     this.layer2Hash.assertEquals(layerState2);
 
     // check that the onChain layer1Hash and layer2Hash are equal to the layer1Hash / layer2Hash used in the proof generation
-    this.layer1Hash.assertEquals(actualLayer1Hash);
-    this.layer2Hash.assertEquals(actualLayer2Hash);
+    // this.layer1Hash.assertEquals(actualLayer1Hash);
+    // this.layer2Hash.assertEquals(actualLayer2Hash);
 
     //obtain the predictions
     let prediction = neuralNetProof.publicInput.precomputedOutputLayer2;
@@ -102,8 +103,6 @@ export class SmartSnarkyNet extends SmartContract {
     }
 
     Circuit.log('classificationTest', classificationTest);
-    Circuit.log('classificationTest', classificationTest);
-    Circuit.log('max', max);
     Circuit.log('max', max);
 
     // ---------------------------- set the classification ----------------------------

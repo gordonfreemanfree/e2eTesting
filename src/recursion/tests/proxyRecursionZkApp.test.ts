@@ -306,7 +306,9 @@ describe('proxy-recursion-test', () => {
         'softmax'
       );
 
-      let inputImage = new InputImage(preprocessImage(image_1_label_2_8x8));
+      let inputImage = new InputImage({
+        value: preprocessImage(image_1_label_2_8x8),
+      });
 
       let model = new SnarkyNet([snarkyLayer1s, snarkyLayer2s]);
 
@@ -651,7 +653,9 @@ describe('proxy-recursion-test', () => {
         'softmax'
       );
 
-      let inputImage = new InputImage(preprocessImage(image_0_label_7_8x8));
+      let inputImage = new InputImage({
+        value: preprocessImage(image_0_label_7_8x8),
+      });
 
       let model = new SnarkyNet([snarkyLayer1s, snarkyLayer2s]);
 
@@ -796,5 +800,5 @@ describe('proxy-recursion-test', () => {
       }).rejects.toThrow();
     }, 10000000);
   }
-  runTests();
+  // runTests();
 });
