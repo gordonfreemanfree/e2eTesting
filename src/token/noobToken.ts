@@ -123,7 +123,7 @@ export class NoobToken extends SmartContract {
     this.actionsHash.set(newActionsHash);
 
     // Log the new state value.
-    Circuit.log('newState is', newState);
+    // Circuit.log('newState is', newState);
 
     // Update the action counter with the new state value.
     this.actionCounter.set(newState);

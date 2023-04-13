@@ -87,13 +87,13 @@ NoobToken is a really simple zkApp to test different scenarios. It offers differ
 
 ### List of tests
 
-The tests are splitted up into multiple files. Every test file starts with a new deployment of the zkApp.
+The tests are splitted up into multiple files. Every test file starts with a new deployment of the zkApp and has different deployer keys
 `noobTokenAction.test.ts`
 
 1. Surface area 8: checking that zkAppVerificationKey gets deployed correctly - expecting success
 2. Surface area 3: Sending actions - expecting success
 3. Surface area -: Waiting one block
-4. Surface area 3: Reducing actions and updating state - expecting success
+4. Surface area 3/4: Reducing actions and updating state - expecting success
 5. Surface area 7: changing permission "editSequenceState" to impossible() - expecting success
 6. Surface area 3/7: sending action BUT "editSequenceState" is impossible() - expecting error
 
@@ -121,9 +121,9 @@ The tests are splitted up into multiple files. Every test file starts with a new
 `noobTokenMinting.test.ts`
 
 1. Surface area 8: checking that zkAppVerificationKey gets deployed correctly - expecting success
-2. Surface area 6: mintWithMina 1 tokens but balance is 0 - expecting error
+2. Surface area 5/9: mintWithMina 1 tokens but balance is 0 - expecting error
 3. Surface area 6: sending one 1 Mina to zkAppAddress - expecting success
-4. Surface area 6: try to mint now that the balance is 1 - expecting success
+4. Surface area 5/9: try to mint now that the balance is 1 - expecting success
 
 ## Runtime
 

@@ -403,13 +403,13 @@ describe('Token-test-minting', () => {
       let newTotalAmountInCirculation = zkApp.totalAmountInCirculation.get();
 
       // balance of account is
-      console.log(
-        'newTotalAmountInCirculation',
-        newTotalAmountInCirculation.toJSON()
-      );
+      // console.log(
+      //   'newTotalAmountInCirculation',
+      //   newTotalAmountInCirculation.toJSON()
+      // );
 
       expect(newNoobBalance).toEqual(UInt64.from(1e9));
     }, 10000000);
   }
-  // runTests();
+  runTests();
 });

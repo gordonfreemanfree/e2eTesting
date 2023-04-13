@@ -412,15 +412,19 @@ describe('Token-test-actions', () => {
       //   'currentAccount 3 json',
       //   currentAccount?.account?.zkapp?.appState[3].toJSON()
       // );
-      console.log('currentAccount 4 json', currentActionCounter?.toJSON());
+      // console.log('currentAccount 4 json', currentActionCounter?.toJSON());
       // let currentAppState = currentAccount?.account?.zkapp?.appState;
       // let currentActionCounter = currentAppState?.[4];
       let events = await zkApp.fetchEvents();
+      // wait one minute
+      await new Promise((resolve) => setTimeout(resolve, 60000));
+
       // console.log('events', events.toLocaleString());
       // console.log('events', events[1].event.data);
       // console.log('events', events[1].event.data);
 
-      console.log('hello');
+      // console.log('hello');
+      expect(events[0].event.data).toEqual(Field(2));
 
       expect(currentActionCounter).toEqual(Field(2));
     }, 10000000);
@@ -490,5 +494,5 @@ describe('Token-test-actions', () => {
     }, 10000000);
   }
 
-  // runTests();
+  runTests();
 });

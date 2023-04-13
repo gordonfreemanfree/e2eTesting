@@ -326,7 +326,7 @@ describe('token-test-preconditions', () => {
       let newTotalAmountInCirculation = zkApp.totalAmountInCirculation.get();
 
       // balance of account is
-      console.log('newTotalAmountInCirculation', newTotalAmountInCirculation);
+      // console.log('newTotalAmountInCirculation', newTotalAmountInCirculation);
       // console.log('events are', events);
 
       expect(newTotalAmountInCirculation).toEqual(mintAmount);
@@ -348,7 +348,7 @@ describe('token-test-preconditions', () => {
           publicKey: zkAppAddress,
           tokenId: zkApp.token.id,
         });
-        console.log('fetchAccount:', fetch);
+        // console.log('fetchAccount:', fetch);
       }
       Mina.getAccount(zkAppAddress, zkApp.token.id);
 
