@@ -379,48 +379,16 @@ describe('Token-test-actions', () => {
         currentAccount = await fetchAccount({
           publicKey: zkAppAddress,
         });
-        // await fetchAccount({
-        //   publicKey: deployerAccount,
-        // });
-        // await fetchAccount({
-        //   publicKey: zkAppAddress,
-        //   tokenId: zkApp.token.id,
-        // });
+
         currentActionCounter = currentAccount?.account?.zkapp?.appState[4];
       } else {
         currentAccount = Mina.getAccount(zkAppAddress);
         currentActionCounter = currentAccount?.zkapp?.appState[4];
       }
-      // Mina.getAccount(zkAppAddress);
-      // console.log(
-      //   'state after with zkApp.actionCounter.get(): ',
-      //   zkApp.actionCounter.get()
-      // );
-      // console.log(
-      //   'currentAccount',
-      //   currentAccount?.account?.zkapp?.appState.toString()
-      // );
-      // console.log(
-      //   'currentAccount [3]',
-      //   currentAccount?.account?.zkapp?.appState?.[3].toString()
-      // );
-      // console.log(
-      //   'currentAccount 3',
-      //   currentAccount?.account?.zkapp?.appState[3]
-      // );
-      // console.log(
-      //   'currentAccount 3 json',
-      //   currentAccount?.account?.zkapp?.appState[3].toJSON()
-      // );
-      console.log('currentAccount 4 json', currentActionCounter?.toJSON());
-      // let currentAppState = currentAccount?.account?.zkapp?.appState;
-      // let currentActionCounter = currentAppState?.[4];
-      let events = await zkApp.fetchEvents();
-      // console.log('events', events.toLocaleString());
-      // console.log('events', events[1].event.data);
-      // console.log('events', events[1].event.data);
 
-      console.log('hello');
+      let events = await zkApp.fetchEvents();
+
+      expect(events[0]?.event?.data).toEqual(Field(2));
 
       expect(currentActionCounter).toEqual(Field(2));
     }, 10000000);
