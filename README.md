@@ -147,7 +147,7 @@ runtime:
 npm run test -- -t "Token-test-permission"
 runtime:
 npm run test -- -t "Token-test-preconditions"
-runtime:
+runtime:        1067.311 s
 ```
 
 ## How to run coverage

@@ -19,7 +19,7 @@ import {
 import { NoobToken } from '../noobToken';
 
 import fs from 'fs/promises';
-import { loopUntilAccountExists } from '../utils/utils';
+import { fetchAndLoopAccount, loopUntilAccountExists } from '../utils/utils';
 import { getFriendlyDateTime } from '../utils/utils';
 // import { ActionsType } from './noobToken';
 
@@ -456,8 +456,8 @@ describe('Token-test-permission', () => {
       let currentAccount;
       let currentDelegate;
       if (isBerkeley) {
-        currentAccount = await fetchAccount({ publicKey: zkAppAddress });
-        currentDelegate = currentAccount.account?.delegate;
+        currentAccount = await fetchAndLoopAccount(zkAppAddress);
+        currentDelegate = currentAccount.delegate;
       } else {
         currentAccount = Mina.getAccount(zkAppAddress);
         currentDelegate = currentAccount.delegate;
@@ -501,9 +501,8 @@ describe('Token-test-permission', () => {
       let currentAccount;
       let currentDelegatePermission;
       if (isBerkeley) {
-        currentAccount = await fetchAccount({ publicKey: zkAppAddress });
-        currentDelegatePermission =
-          currentAccount.account?.permissions.setDelegate;
+        currentAccount = await fetchAndLoopAccount(zkAppAddress);
+        currentDelegatePermission = currentAccount.permissions.setDelegate;
       } else {
         currentAccount = Mina.getAccount(zkAppAddress);
         currentDelegatePermission = currentAccount.permissions.setDelegate;

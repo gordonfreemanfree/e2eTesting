@@ -22,8 +22,11 @@ import { NoobToken } from '../noobToken';
 
 import fs from 'fs/promises';
 import { loopUntilAccountExists } from '../utils/utils';
-import { getFriendlyDateTime } from '../utils/utils';
-// import { ActionsType } from './noobToken';
+import {
+  getFriendlyDateTime,
+  fetchAndLoopEvents,
+  fetchAndLoopAccount,
+} from '../utils/utils';
 
 console.log('process.env.TEST_ON_BERKELEY', process.env.TEST_ON_BERKELEY);
 
@@ -373,57 +376,24 @@ describe('Token-test-actions', () => {
       await tx.prove();
       await (await tx.sign([deployerKey]).send()).wait({ maxAttempts: 1000 });
 
-      // let currentAccount;
       let currentActionCounter;
+      let events;
       if (isBerkeley) {
-        currentAccount = await fetchAccount({
-          publicKey: zkAppAddress,
-        });
-        // await fetchAccount({
-        //   publicKey: deployerAccount,
-        // });
-        // await fetchAccount({
+        // currentAccount = await fetchAccount({
         //   publicKey: zkAppAddress,
-        //   tokenId: zkApp.token.id,
         // });
-        currentActionCounter = currentAccount?.account?.zkapp?.appState[4];
+        currentAccount = await fetchAndLoopAccount(zkAppAddress);
+        currentActionCounter = currentAccount?.zkapp?.appState[4];
+
+        events = await fetchAndLoopEvents(zkApp);
       } else {
         currentAccount = Mina.getAccount(zkAppAddress);
         currentActionCounter = currentAccount?.zkapp?.appState[4];
+        events = await zkApp.fetchEvents();
       }
-      // Mina.getAccount(zkAppAddress);
-      // console.log(
-      //   'state after with zkApp.actionCounter.get(): ',
-      //   zkApp.actionCounter.get()
-      // );
-      // console.log(
-      //   'currentAccount',
-      //   currentAccount?.account?.zkapp?.appState.toString()
-      // );
-      // console.log(
-      //   'currentAccount [3]',
-      //   currentAccount?.account?.zkapp?.appState?.[3].toString()
-      // );
-      // console.log(
-      //   'currentAccount 3',
-      //   currentAccount?.account?.zkapp?.appState[3]
-      // );
-      // console.log(
-      //   'currentAccount 3 json',
-      //   currentAccount?.account?.zkapp?.appState[3].toJSON()
-      // );
-      // console.log('currentAccount 4 json', currentActionCounter?.toJSON());
-      // let currentAppState = currentAccount?.account?.zkapp?.appState;
-      // let currentActionCounter = currentAppState?.[4];
-      let events = await zkApp.fetchEvents();
-      // wait one minute
+
       await new Promise((resolve) => setTimeout(resolve, 60000));
 
-      // console.log('events', events.toLocaleString());
-      // console.log('events', events[1].event.data);
-      // console.log('events', events[1].event.data);
-
-      // console.log('hello');
       expect(events[0].event.data).toEqual(Field(2));
 
       expect(currentActionCounter).toEqual(Field(2));
@@ -452,15 +422,18 @@ describe('Token-test-actions', () => {
         maxAttempts: 1000,
       });
 
+      let currentAccount;
+      let currentPermission;
       if (isBerkeley) {
-        await fetchAccount({
-          publicKey: zkAppAddress,
-        });
+        // currentAccount = await fetchAccount({
+        //   publicKey: zkAppAddress,
+        // });
+        currentAccount = await fetchAndLoopAccount(zkAppAddress);
+        currentPermission = currentAccount?.permissions.editActionState;
+      } else {
+        currentAccount = Mina.getAccount(zkAppAddress);
+        currentPermission = currentAccount.permissions.editActionState;
       }
-
-      let currentPermission =
-        // .editSequenceState;
-        Mina.getAccount(zkAppAddress).permissions.editActionState;
 
       expect(currentPermission).toEqual(Permissions.impossible());
     }, 10000000);

@@ -1,4 +1,4 @@
-import { Mina, PublicKey, UInt64, fetchAccount } from 'snarkyjs';
+import { Mina, PublicKey, SmartContract, UInt64, fetchAccount } from 'snarkyjs';
 
 export { loopUntilAccountExists };
 export { getFriendlyDateTime };
@@ -44,14 +44,24 @@ function getFriendlyDateTime() {
   return `${day}, ${month} ${date.getDate()}, ${year} at ${time}`;
 }
 
-// async function callFaucet(deployerAccount: PublicKey) {
-//   // await fetchAccount({ publicKey: deployerAccount });
-//   // await Mina.faucet(deployerAccount);
+export async function fetchAndLoopEvents(zkApp: SmartContract) {
+  for (;;) {
+    let events = await zkApp.fetchEvents();
+    if (events.length > 0) {
+      return events;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+  }
+}
 
-//   // let currentBalance = Mina.getBalance(deployerAccount);
-//   // console.log('current balance', currentBalance.toString());
-
-//   await Mina.faucet(deployerAccount);
-// }
+export async function fetchAndLoopAccount(account: PublicKey) {
+  for (;;) {
+    let response = await fetchAccount({ publicKey: account });
+    if (response.account !== undefined) {
+      return response.account;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+  }
+}
 
 const deployTransactionFee = 100_000_000;
