@@ -1,6 +1,7 @@
 # Mina zkApp: E2etesting
 
-The Repo consists of two zkApps - noobToken and smartSnarkyNet
+The Repo consists of two zkApps - noobToken and smartSnarkyNet.
+Tested with `snarkyJS 0.9.8`
 
 ## SmartSnarkyNet
 
@@ -52,7 +53,7 @@ porting the prediction into a circuit.
 npm run build
 ```
 
-## How to run tests
+## How to run test
 
 1. There is a process variable that is used to switch between local and berkeley tests.
    `./setEnvVars.js`
@@ -141,13 +142,13 @@ There is a process variable that is used to switch between local and berkeley te
 
 ```sh
 npm run test -- -t "Token-test-actions"
-runtime:
+runtime: ~45min
 npm run test -- -t "Token-test-minting"
-runtime:
+runtime: ~25min
 npm run test -- -t "Token-test-permission"
-runtime:
+runtime: ~50min
 npm run test -- -t "Token-test-preconditions"
-runtime:        1067.311 s
+runtime: ~25min
 ```
 
 ## How to run coverage

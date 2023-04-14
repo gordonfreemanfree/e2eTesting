@@ -363,7 +363,7 @@ describe('Token-test-permission', () => {
         await fetchAccount({ publicKey: zkAppAddress });
       }
       let oldTiming = Mina.getAccount(zkAppAddress).permissions.setTiming;
-      console.log('oldTiming Permission is', oldTiming);
+      // console.log('oldTiming Permission is', oldTiming);
 
       // change permissions for setTiming to impossible
       let txn_permission = await Mina.transaction(

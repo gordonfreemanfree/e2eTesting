@@ -1,16 +1,6 @@
 {
   "version": 1,
   "deployAliases": {
-    "berkeley": {
-      "url": "https://proxy.berkeley.minaexplorer.com/graphql",
-      "keyPath": "keys/berkeley.json",
-      "fee": ".1"
-    },
-    "zkapp": {
-      "url": "https://proxy.berkeley.minaexplorer.com/graphql",
-      "keyPath": "keys/zkapp.json",
-      "fee": ".1"
-    },
     "noobtokenaction": {
       "url": "https://proxy.berkeley.minaexplorer.com/graphql",
       "keyPath": "keys/noobtokenaction.json",
@@ -39,51 +29,6 @@
     "test": {
       "url": "https://proxy.berkeley.minaexplorer.com/graphql",
       "keyPath": "keys/test.json",
-      "fee": ".1"
-    },
-    "test2": {
-      "url": "https://proxy.berkeley.minaexplorer.com/graphql",
-      "keyPath": "keys/test2.json",
-      "fee": ".1"
-    },
-    "test3": {
-      "url": "https://proxy.berkeley.minaexplorer.com/graphql",
-      "keyPath": "keys/test3.json",
-      "fee": ".1"
-    },
-    "test4": {
-      "url": "https://proxy.berkeley.minaexplorer.com/graphql",
-      "keyPath": "keys/test4.json",
-      "fee": ".1"
-    },
-    "test5": {
-      "url": "https://proxy.berkeley.minaexplorer.com/graphql",
-      "keyPath": "keys/test5.json",
-      "fee": ".1"
-    },
-    "test6": {
-      "url": "https://proxy.berkeley.minaexplorer.com/graphql",
-      "keyPath": "keys/test6.json",
-      "fee": ".1"
-    },
-    "test7": {
-      "url": "https://proxy.berkeley.minaexplorer.com/graphql",
-      "keyPath": "keys/test7.json",
-      "fee": ".1"
-    },
-    "test8": {
-      "url": "https://proxy.berkeley.minaexplorer.com/graphql",
-      "keyPath": "keys/test8.json",
-      "fee": ".1"
-    },
-    "test9": {
-      "url": "https://proxy.berkeley.minaexplorer.com/graphql",
-      "keyPath": "keys/test9.json",
-      "fee": ".1"
-    },
-    "test10": {
-      "url": "https://proxy.berkeley.minaexplorer.com/graphql",
-      "keyPath": "keys/test10.json",
       "fee": ".1"
     }
   }
