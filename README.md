@@ -1,4 +1,4 @@
-# Mina zkApp: E2etesting
+# Mina zkApps: E2E Testing
 
 The Repo consists of two zkApps - noobToken and smartSnarkyNet.
 Tested with `snarkyJS 0.9.8`
@@ -32,6 +32,11 @@ The project used Malkofos SnarkyNet-MNIST-Digits
 as a starting point, but improved the concept of zk ML Application by
 porting the prediction into a circuit.
 
+## Keys and deployment
+
+In the beginning of every test run the respective zkApp gets deployed. New keys are generated on every run to avoid errors.
+Every test has his own deployerAccount ( == feePayerAccount) which is constant.
+
 ### List of tests
 
 1. Surface area 8: deploy zkApps and check verificationKeyHash - expecting success
@@ -44,8 +49,6 @@ porting the prediction into a circuit.
 8. Surface area 1/2/7: Using proxy zkApp to call another zkApp that verifies a recursive proof - expecting error because "access" is signature()
 9. Surface area 7: changing Permission: "setZkappUri", "setVerificationKey", "setTokenSymbol", "setPermissions" to impossible() to fix architecture and "access" to proof() to still be able to call predict - expecting success
 10. Surface area 7: changing Permission "access" to signature, BUT permission "setPermission" is impossible - expecting error
-
-## Expected Runtime
 
 ## How to build
 
@@ -60,7 +63,7 @@ npm run build
 
 ```sh
 npm run test -- -t "proxy-recursion-test"
-
+runtime: ~55min
 ```
 
 ## How to run coverage
@@ -85,7 +88,7 @@ NoobToken is a really simple zkApp to test different scenarios. It offers differ
 
 ### Limitations
 
-1. No method here is intended to be production ready. Everything is for testing purpose.
+No method here is intended to be production ready. Everything is for testing purpose.
 
 ### List of tests
 
@@ -127,7 +130,10 @@ The tests are splitted up into multiple files. Every test file starts with a new
 3. Surface area 6: sending one 1 Mina to zkAppAddress - expecting success
 4. Surface area 5/9: try to mint now that the balance is 1 - expecting success
 
-## Runtime
+## Keys and deployment
+
+In the beginning of every test run the respective zkApp gets deployed. New keys are generated on every run to avoid errors.
+Every test has his own deployerAccount ( == feePayerAccount) which is constant.
 
 ## How to build
 
