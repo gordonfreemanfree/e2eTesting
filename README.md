@@ -35,7 +35,9 @@ porting the prediction into a circuit.
 ## Keys and deployment
 
 In the beginning of every test run the respective zkApp gets deployed. New keys are generated on every run to avoid errors.
-Every test has his own deployerAccount ( == feePayerAccount) which is constant.
+Every test has his own deployerAccount ( == feePayerAccount) which is constant and can be found in the attached keys folder.
+
+Keys and verificationKeys are stored temporarily in a json file in the ./src folder. Files are overwritten on every new test run.
 
 ### List of tests
 
@@ -133,7 +135,9 @@ The tests are splitted up into multiple files. Every test file starts with a new
 ## Keys and deployment
 
 In the beginning of every test run the respective zkApp gets deployed. New keys are generated on every run to avoid errors.
-Every test has his own deployerAccount ( == feePayerAccount) which is constant.
+Every test has his own deployerAccount ( == feePayerAccount) which is constant and can be found in the attached keys folder.
+
+Keys and verificationKeys are stored temporarily in a json file in the ./src folder. Files are overwritten on every new test run.
 
 ## How to build
 

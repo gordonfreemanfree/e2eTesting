@@ -6,15 +6,8 @@ import {
   PrivateKey,
   AccountUpdate,
   UInt64,
-  Permissions,
-  Signature,
   fetchAccount,
-  setGraphqlEndpoint,
-  Account,
-  VerificationKey,
   Field,
-  Poseidon,
-  Bool,
   fetchLastBlock,
 } from 'snarkyjs';
 import { NoobToken } from '../noobToken';
@@ -22,12 +15,12 @@ import { NoobToken } from '../noobToken';
 import fs from 'fs/promises';
 import { loopUntilAccountExists } from '../utils/utils';
 import { getFriendlyDateTime } from '../utils/utils';
-// import { ActionsType } from './noobToken';
+import { saveVerificationKey } from '../utils/generateVerificationKey';
 
 console.log('process.env.TEST_ON_BERKELEY', process.env.TEST_ON_BERKELEY);
 
 const isBerkeley = process.env.TEST_ON_BERKELEY == 'true' ? true : false;
-// const isBerkeley = true;
+
 console.log('isBerkeley:', isBerkeley);
 let proofsEnabled = true;
 
@@ -77,13 +70,6 @@ describe('Token-test-minting', () => {
         deployerKey = PrivateKey.fromBase58(key.privateKey);
         deployerAccount = deployerKey.toPublicKey();
 
-        // load zkAppKey from config file
-        // let zkAppKey: { privateKey: string } = JSON.parse(
-        //   await fs.readFile(config.keyPath, 'utf8')
-        // );
-        // zkAppPrivateKey = PrivateKey.fromBase58(zkAppKey.privateKey);
-        // zkAppAddress = zkAppPrivateKey.toPublicKey();
-
         zkAppPrivateKey = PrivateKey.random();
         zkAppAddress = zkAppPrivateKey.toPublicKey();
 
@@ -98,22 +84,15 @@ describe('Token-test-minting', () => {
           privateKey: deployerKey,
           publicKey: deployerAccount,
         } = Local.testAccounts[0]);
-        // ({
-        //   privateKey: senderKey,
-        //   publicKey: senderAccount,
-        // } = Local.testAccounts[1]);
+
         zkAppPrivateKey = PrivateKey.random();
         zkAppAddress = zkAppPrivateKey.toPublicKey();
 
         receiverKey = PrivateKey.random();
         receiverAddress = receiverKey.toPublicKey();
 
-        // zkAppBPrivateKey = PrivateKey.random();
-        // zkAppBAddress = zkAppPrivateKey.toPublicKey();
-
         zkApp = new NoobToken(zkAppAddress);
       }
-      // const { deployerKey ,deployerAccount } = Blockchain.testAccounts[0]
     }, 1000000);
 
     afterAll(() => {
@@ -139,6 +118,13 @@ describe('Token-test-minting', () => {
             zkappKey: zkAppPrivateKey,
           });
         });
+        await saveVerificationKey(
+          zkAppVerificationKey.hash,
+          zkAppVerificationKey.data,
+          'minting',
+          zkAppAddress,
+          zkAppPrivateKey
+        );
       } else {
         console.log('zkAppVerificationKey is not defined');
       }
@@ -176,11 +162,17 @@ describe('Token-test-minting', () => {
 
       console.log('compiling...');
       let { verificationKey: zkAppVerificationKey } = await NoobToken.compile();
+      await saveVerificationKey(
+        zkAppVerificationKey.hash,
+        zkAppVerificationKey.data,
+        'minting',
+        zkAppAddress,
+        zkAppPrivateKey
+      );
       console.log('generating deploy transaction');
       const txn = await Mina.transaction(
         { sender: deployerAccount, fee: 1.1e9 },
         () => {
-          //   AccountUpdate.createSigned(deployerAccount);
           AccountUpdate.fundNewAccount(deployerAccount);
           zkApp.deploy({
             verificationKey: zkAppVerificationKey,
@@ -277,7 +269,6 @@ describe('Token-test-minting', () => {
         await fetchAccount({ publicKey: zkAppAddress });
       }
       Mina.getAccount(zkAppAddress);
-      // console.log('nonce of deployerAccount is', accountInfo.nonce.toJSON());
       expect(async () => {
         const txn20 = await Mina.transaction(
           { sender: deployerAccount, fee: 0.1e9 },
@@ -288,7 +279,7 @@ describe('Token-test-minting', () => {
         );
         await txn20.prove();
         txn20.sign([deployerKey, zkAppPrivateKey]);
-        await (await txn20.send()).wait();
+        await (await txn20.send()).wait({ maxAttempts: 1000 });
       }).rejects.toThrow();
     }, 1000000);
 
@@ -322,7 +313,7 @@ describe('Token-test-minting', () => {
         }
       );
       await tx.prove();
-      await (await tx.sign([deployerKey]).send()).wait();
+      await (await tx.sign([deployerKey]).send()).wait({ maxAttempts: 1000 });
 
       if (isBerkeley) {
         await fetchAccount({ publicKey: deployerAccount });
@@ -335,24 +326,6 @@ describe('Token-test-minting', () => {
       printBalances();
       expect(newBalance).toEqual(UInt64.from(1e9));
     }, 1000000);
-
-    // ------------------------------------------------------------------------
-    // it(`waiting one block to get txn confirmation - deployToBerkeley?: ${deployToBerkeley}`, async () => {
-    //   console.log('dummy tx');
-    //   let tx = await Mina.transaction(
-    //     {
-    //       sender: deployerAccount,
-    //       memo: 'Dummy Transaction',
-    //       fee: 0.2e9,
-    //     },
-
-    //     () => {}
-    //   );
-    //   await tx.prove();
-    //   tx.sign([deployerKey]);
-    //   await (await tx.send()).wait();
-    // }, 10000000);
-    // ------------------------------------------------------------------------
 
     it(`4. try to mint now that the balance is 1 - deployToBerkeley?: ${deployToBerkeley}`, async () => {
       console.log('try to mint now that the balance is 1');
@@ -369,9 +342,6 @@ describe('Token-test-minting', () => {
           console.log('error fetching accounts in 4.', e);
         }
       }
-      // Mina.getAccount(zkAppAddress);
-      // Mina.getAccount(deployerAccount);
-      // printBalances();
 
       // mintWithMina 1 tokens
       const txn20 = await Mina.transaction(
@@ -385,8 +355,7 @@ describe('Token-test-minting', () => {
 
       await txn20.prove();
       txn20.sign([deployerKey, zkAppPrivateKey]);
-      //   txn20.sign([deployerKey]);
-      await (await txn20.send()).wait();
+      await (await txn20.send()).wait({ maxAttempts: 1000 });
 
       if (isBerkeley) {
         await fetchAccount({
@@ -399,14 +368,6 @@ describe('Token-test-minting', () => {
       }
       let newNoobBalance = zkApp.account.balance.get();
       console.log('mintWithMina, newNoobBalance is', newNoobBalance.toJSON());
-
-      let newTotalAmountInCirculation = zkApp.totalAmountInCirculation.get();
-
-      // balance of account is
-      // console.log(
-      //   'newTotalAmountInCirculation',
-      //   newTotalAmountInCirculation.toJSON()
-      // );
 
       expect(newNoobBalance).toEqual(UInt64.from(1e9));
     }, 10000000);

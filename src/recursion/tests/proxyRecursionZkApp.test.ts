@@ -5,7 +5,6 @@ import {
   isReady,
   shutdown,
   AccountUpdate,
-  UInt64,
   fetchAccount,
   Field,
   Poseidon,
@@ -29,6 +28,7 @@ import { InputImage } from '../snarkyNet/inputImageClass';
 import { image_0_label_7_8x8 } from '../snarkyNet/assets/image_0_label_7_8x8';
 import { SnarkyNet } from '../snarkyNet/snarkynet';
 import { image_1_label_2_8x8 } from '../snarkyNet/assets/image_1_label_2_8x8';
+import { saveVerificationKey } from '../../token/utils/generateVerificationKey';
 
 console.log('process.env.TEST_ON_BERKELEY', process.env.TEST_ON_BERKELEY);
 
@@ -42,8 +42,6 @@ describe('proxy-recursion-test', () => {
     let Blockchain;
     let deployerAccount: PublicKey,
       deployerKey: PrivateKey,
-      //   senderAccount: PublicKey,
-      //   senderKey: PrivateKey,
       proxyZkAppAddress: PublicKey,
       proxyZkAppPrivateKey: PrivateKey,
       proxyZkApp: ProxyRecursionZkApp,
@@ -80,15 +78,12 @@ describe('proxy-recursion-test', () => {
         ({
           verificationKey: smartSnarkyZkAppVerificationKey,
         } = await SmartSnarkyNet.compile());
+
         console.log('compiling RecursionZkapp...');
 
         ({
           verificationKey: proxyZkAppVerificationKey,
         } = await ProxyRecursionZkApp.compile());
-
-        // ({
-        //   verificationKey: smartSnarkyZkAppVerificationKey,
-        // } = await SmartSnarkyNet.compile());
       } catch (e) {
         console.log('error compiling one of the zkapps', e);
       }
@@ -246,6 +241,20 @@ describe('proxy-recursion-test', () => {
     }
 
     it(`1. deploy zkApps and check verificationKeys and hashes stored - deployToBerkeley?: ${deployToBerkeley}`, async () => {
+      await saveVerificationKey(
+        smartSnarkyZkAppVerificationKey?.hash,
+        smartSnarkyZkAppVerificationKey?.data,
+        'recursionSmartSnarkyNet',
+        smartSnarkyNetAddress,
+        smartSnarkyNetPrivateKey
+      );
+      await saveVerificationKey(
+        proxyZkAppVerificationKey?.hash,
+        proxyZkAppVerificationKey?.data,
+        'recursionProxy',
+        proxyZkAppAddress,
+        proxyZkAppPrivateKey
+      );
       console.log('deploying zkApps...');
       deployToBerkeley ? await berkeleyDeploy() : await localDeploy();
 
@@ -322,11 +331,7 @@ describe('proxy-recursion-test', () => {
       });
 
       const proofLayer1 = await NeuralNet.layer1(architecture, inputImage);
-      // console.log('proofLayer1', proofLayer1);
-
       const proofLayer2 = await NeuralNet.layer2(architecture, proofLayer1);
-      // console.log('proofLayer2', proofLayer2);
-
       const isValidLocal = await verify(proofLayer2, neuralNetVerificationKey);
       console.log('isValidLocal', isValidLocal);
 
@@ -343,7 +348,7 @@ describe('proxy-recursion-test', () => {
       if (isBerkeley) {
         await fetchAccount({ publicKey: smartSnarkyNetAddress });
       }
-      // let currentClassification = smartSnarkyNetZkApp.classification.get();
+
       const currentClassification = smartSnarkyNetZkApp.classification.get();
       const currentLayer1Hash = smartSnarkyNetZkApp.layer1Hash.get();
       const currentLayer2Hash = smartSnarkyNetZkApp.layer2Hash.get();
@@ -373,14 +378,12 @@ describe('proxy-recursion-test', () => {
           memo: '3. update hashes with signature',
         },
         () => {
-          // AccountUpdate.createSigned(smartSnarkyNetAddress);
           smartSnarkyNetZkApp.setLayerHashes(Field(1), Field(2));
         }
       );
       await txn_permission.prove();
       txn_permission.sign([deployerKey, smartSnarkyNetPrivateKey]);
-      // console.log('txn_permission hashes edit', txn_permission.toPretty());
-      await (await txn_permission.send()).wait();
+      await (await txn_permission.send()).wait({ maxAttempts: 100 });
 
       if (isBerkeley) {
         await fetchAccount({ publicKey: smartSnarkyNetAddress });
@@ -395,6 +398,9 @@ describe('proxy-recursion-test', () => {
     }, 10000000);
 
     it(`4. set hashes back to true hashes with signature while "editstate" is proofOrSignature()"- deployToBerkeley?: ${deployToBerkeley}`, async () => {
+      console.log(
+        '4. set hashes back to true hashes with signature while "editstate" is proofOrSignature()'
+      );
       let snarkyLayer1s = new SnarkyLayer1(
         preprocessWeights(weights_l1_8x8),
         'relu'
@@ -414,11 +420,10 @@ describe('proxy-recursion-test', () => {
       let txn_permission = await Mina.transaction(
         {
           sender: deployerAccount,
-          fee: 0.1e9,
+          fee: 0.2e9,
           memo: '4. correct hashes again',
         },
         () => {
-          // AccountUpdate.createSigned(smartSnarkyNetAddress);
           smartSnarkyNetZkApp.setLayerHashes(
             Poseidon.hash(snarkyLayer1s.toFields()),
             Poseidon.hash(snarkyLayer2s.toFields())
@@ -427,8 +432,7 @@ describe('proxy-recursion-test', () => {
       );
       await txn_permission.prove();
       txn_permission.sign([deployerKey, smartSnarkyNetPrivateKey]);
-      // console.log('4. correct hashes again', txn_permission.toPretty());
-      await (await txn_permission.send()).wait();
+      await (await txn_permission.send()).wait({ maxAttempts: 100 });
 
       if (isBerkeley) {
         await fetchAccount({ publicKey: smartSnarkyNetAddress });
@@ -438,13 +442,7 @@ describe('proxy-recursion-test', () => {
 
       const currentLayer1Hash = smartSnarkyNetZkApp.layer1Hash.get();
       const currentLayer2Hash = smartSnarkyNetZkApp.layer2Hash.get();
-      // checking classification and the hashes of layers
-      // expect(Poseidon.hash(snarkyLayer1s.toFields())).toEqual(
-      //   currentLayer1Hash
-      // );
-      // expect(Poseidon.hash(snarkyLayer2s.toFields())).toEqual(
-      //   currentLayer2Hash
-      // );
+
       expect(currentLayer1Hash).toEqual(
         Poseidon.hash(snarkyLayer1s.toFields())
       );
@@ -468,7 +466,7 @@ describe('proxy-recursion-test', () => {
       let txn_permission = await Mina.transaction(
         {
           sender: deployerAccount,
-          fee: 0.1e9,
+          fee: 0.2e9,
           memo: '5. set editState to proof',
         },
         () => {
@@ -501,12 +499,6 @@ describe('proxy-recursion-test', () => {
         currentAccount = Mina.getAccount(smartSnarkyNetAddress);
         currentPermissionEdit = currentAccount?.permissions.editState;
       }
-      // Mina.getAccount(smartSnarkyNetAddress);
-
-      // let currentPermissionEdit = Mina.getAccount(smartSnarkyNetAddress)
-      // .permissions.editState;
-      // currentPermissionEdit =
-      //   currentAccount?.account?.permissions.editState;
 
       expect(currentPermissionEdit).toEqual(Permissions.proof());
     }, 10000000);
@@ -526,7 +518,7 @@ describe('proxy-recursion-test', () => {
       txn_permission.sign([deployerKey, smartSnarkyNetPrivateKey]);
       // console.log('txn_permission hashes edit', txn_permission.toPretty());
       expect(async () => {
-        await (await txn_permission.send()).wait();
+        await (await txn_permission.send()).wait({ maxAttempts: 1000 });
       }).rejects.toThrow();
     }, 10000000);
 
@@ -561,35 +553,6 @@ describe('proxy-recursion-test', () => {
       txn_permission.sign([deployerKey, smartSnarkyNetPrivateKey]);
       await (await txn_permission.send()).wait({ maxAttempts: 100 });
 
-      // wait for 2 minutes to make sure the transaction is included in the block
-      // console.log(
-      //   'waiting for 1 minute to make sure the transaction is included in the block',
-      //   getFriendlyDateTime()
-      // );
-
-      // await new Promise((resolve) => setTimeout(resolve, 120000));
-      // console.log(
-      //   'done waiting for 1 minute to make sure the transaction is included in the block',
-      //   getFriendlyDateTime()
-      // );
-
-      // wait one block after the transaction is included in the block
-      // let txn = await Mina.transaction(
-      //   {
-      //     sender: deployerAccount,
-      //     fee: 0.1e9,
-      //     memo: 'dummy transaction',
-      //   },
-      //   () => {
-      //     let update = AccountUpdate.createSigned(smartSnarkyNetAddress);
-      //     update.account.zkappUri.set('dummy');
-      //   }
-      // );
-      // await txn.prove();
-      // txn.sign([deployerKey, smartSnarkyNetPrivateKey]);
-      // await (await txn.send()).wait();
-      // console.log('done waiting one block');
-
       let currentAccount;
       let currentPermissionAccess;
       if (isBerkeley) {
@@ -603,33 +566,6 @@ describe('proxy-recursion-test', () => {
         currentAccount = Mina.getAccount(smartSnarkyNetAddress);
         currentPermissionAccess = currentAccount?.permissions.access;
       }
-      // console.log('how it is');
-      // console.log(
-      //   'currentPermissionAccess suficient?',
-      //   currentPermissionAccess?.signatureSufficient.toJSON()
-      // );
-      // console.log(
-      //   'currentPermissionAccess required?',
-      //   currentPermissionAccess?.signatureNecessary.toJSON()
-      // );
-      // console.log(
-      //   'currentPermissionAccess constant?',
-      //   currentPermissionAccess?.constant.toJSON()
-      // );
-      // // how it should be
-      // console.log('how it should be');
-      // console.log(
-      //   'permissions.signature().signatureNecessary',
-      //   Permissions.signature().signatureNecessary.toJSON()
-      // );
-      // console.log(
-      //   'permissions.signature().signatureSufficient',
-      //   Permissions.signature().signatureSufficient.toJSON()
-      // );
-      // console.log(
-      //   'permissions.signature().constant',
-      //   Permissions.signature().constant.toJSON()
-      // );
 
       expect(currentPermissionAccess?.signatureNecessary).toEqual(
         Permissions.signature().signatureNecessary
@@ -784,7 +720,6 @@ describe('proxy-recursion-test', () => {
         }
       );
 
-      // await txn_permission.prove();
       txn_permission.sign([deployerKey, smartSnarkyNetPrivateKey]);
       expect(async () => {
         await (await txn_permission.send()).wait();

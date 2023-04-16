@@ -6,14 +6,8 @@ import {
   PrivateKey,
   AccountUpdate,
   UInt64,
-  Permissions,
-  Signature,
   fetchAccount,
-  setGraphqlEndpoint,
-  Account,
-  VerificationKey,
   Field,
-  Poseidon,
   Bool,
 } from 'snarkyjs';
 import { NoobToken } from '../noobToken';
@@ -22,12 +16,12 @@ import fs from 'fs/promises';
 import { loopUntilAccountExists } from '../utils/utils';
 import { getFriendlyDateTime } from '../utils/utils';
 import { Transaction } from 'snarkyjs/dist/node/lib/mina';
-// import { ActionsType } from './noobToken';
+import { saveVerificationKey } from '../utils/generateVerificationKey';
 
 console.log('process.env.TEST_ON_BERKELEY', process.env.TEST_ON_BERKELEY);
 
 const isBerkeley = process.env.TEST_ON_BERKELEY == 'true' ? true : false;
-// const isBerkeley = true;
+
 console.log('isBerkeley:', isBerkeley);
 let proofsEnabled = true;
 
@@ -77,13 +71,6 @@ describe('Token-test-preconditions', () => {
         deployerKey = PrivateKey.fromBase58(key.privateKey);
         deployerAccount = deployerKey.toPublicKey();
 
-        // load zkAppKey from config file
-        // let zkAppKey: { privateKey: string } = JSON.parse(
-        //   await fs.readFile(config.keyPath, 'utf8')
-        // );
-        // zkAppPrivateKey = PrivateKey.fromBase58(zkAppKey.privateKey);
-        // zkAppAddress = zkAppPrivateKey.toPublicKey();
-
         zkAppPrivateKey = PrivateKey.random();
         zkAppAddress = zkAppPrivateKey.toPublicKey();
 
@@ -98,22 +85,15 @@ describe('Token-test-preconditions', () => {
           privateKey: deployerKey,
           publicKey: deployerAccount,
         } = Local.testAccounts[0]);
-        // ({
-        //   privateKey: senderKey,
-        //   publicKey: senderAccount,
-        // } = Local.testAccounts[1]);
+
         zkAppPrivateKey = PrivateKey.random();
         zkAppAddress = zkAppPrivateKey.toPublicKey();
 
         receiverKey = PrivateKey.random();
         receiverAddress = receiverKey.toPublicKey();
 
-        // zkAppBPrivateKey = PrivateKey.random();
-        // zkAppBAddress = zkAppPrivateKey.toPublicKey();
-
         zkApp = new NoobToken(zkAppAddress);
       }
-      // const { deployerKey ,deployerAccount } = Blockchain.testAccounts[0]
     }, 1000000);
 
     afterAll(() => {
@@ -139,6 +119,13 @@ describe('Token-test-preconditions', () => {
             zkappKey: zkAppPrivateKey,
           });
         });
+        await saveVerificationKey(
+          zkAppVerificationKey.hash,
+          zkAppVerificationKey.data,
+          'preconditions',
+          zkAppAddress,
+          zkAppPrivateKey
+        );
       } else {
         console.log('zkAppVerificationKey is not defined');
       }
@@ -175,11 +162,17 @@ describe('Token-test-preconditions', () => {
       }
       console.log('compiling...');
       let { verificationKey: zkAppVerificationKey } = await NoobToken.compile();
+      await saveVerificationKey(
+        zkAppVerificationKey.hash,
+        zkAppVerificationKey.data,
+        'preconditions',
+        zkAppAddress,
+        zkAppPrivateKey
+      );
       console.log('generating deploy transaction');
       const txn = await Mina.transaction(
         { sender: deployerAccount, fee: 1.1e9 },
         () => {
-          //   AccountUpdate.createSigned(deployerAccount);
           AccountUpdate.fundNewAccount(deployerAccount);
           zkApp.deploy({
             verificationKey: zkAppVerificationKey,
@@ -308,7 +301,7 @@ describe('Token-test-preconditions', () => {
       );
       await txn_mint.prove();
       txn_mint.sign([zkAppPrivateKey, deployerKey]);
-      await (await txn_mint.send()).wait();
+      await (await txn_mint.send()).wait({ maxAttempts: 1000 });
 
       if (isBerkeley) {
         await fetchAccount({
@@ -324,10 +317,6 @@ describe('Token-test-preconditions', () => {
       console.log('mint 7, newBalance is', newNoobBalance.toJSON());
 
       let newTotalAmountInCirculation = zkApp.totalAmountInCirculation.get();
-
-      // balance of account is
-      // console.log('newTotalAmountInCirculation', newTotalAmountInCirculation);
-      // console.log('events are', events);
 
       expect(newTotalAmountInCirculation).toEqual(mintAmount);
       expect(newNoobBalance).toEqual(mintAmount);
@@ -348,7 +337,6 @@ describe('Token-test-preconditions', () => {
           publicKey: zkAppAddress,
           tokenId: zkApp.token.id,
         });
-        // console.log('fetchAccount:', fetch);
       }
       Mina.getAccount(zkAppAddress, zkApp.token.id);
 
@@ -368,7 +356,7 @@ describe('Token-test-preconditions', () => {
       );
       await txn_send.prove();
       txn_send.sign([deployerKey, zkAppPrivateKey]);
-      await (await txn_send.send()).wait();
+      await (await txn_send.send()).wait({ maxAttempts: 1000 });
 
       if (isBerkeley) {
         await fetchAccount({
@@ -431,7 +419,7 @@ describe('Token-test-preconditions', () => {
       );
       await txn.prove();
       txn.sign([deployerKey, zkAppPrivateKey, receiverKey]);
-      await (await txn.send()).wait();
+      await (await txn.send()).wait({ maxAttempts: 1000 });
 
       if (isBerkeley) {
         await fetchAccount({
@@ -503,7 +491,7 @@ describe('Token-test-preconditions', () => {
         await txn.prove();
         txn.sign([deployerKey, zkAppPrivateKey]);
 
-        await (await txn.send()).wait();
+        await (await txn.send()).wait({ maxAttempts: 1000 });
       }).rejects.toThrow();
 
       if (isBerkeley) {
@@ -521,12 +509,6 @@ describe('Token-test-preconditions', () => {
         deployerAccount,
         zkApp.token.id
       );
-      // console.log('updateBalance is', newDeployerNoobBalance.toString());
-
-      // printBalances();
-      // expect(newDeployerNoobBalance).toEqual(
-      //   oldDeployerNoobBalance
-      // );
     }, 10000000);
 
     // ------------------------------------------------------------------------
@@ -535,10 +517,6 @@ describe('Token-test-preconditions', () => {
     // confirmed: true
     it(`7. setPaused to true - deployToBerkeley?: ${deployToBerkeley}`, async () => {
       if (isBerkeley) {
-        // await fetchAccount({
-        //   publicKey: zkAppAddress,
-        //   tokenId: zkApp.token.id,
-        // });
         try {
           await fetchAccount({
             publicKey: deployerAccount,
@@ -555,13 +533,12 @@ describe('Token-test-preconditions', () => {
       let txn = await Mina.transaction(
         { sender: deployerAccount, fee: 0.2e9 },
         () => {
-          // AccountUpdate.createSigned(deployerAccount);
           zkApp.pause(new Bool(true));
         }
       );
-      // await txn.prove();
+
       txn.sign([deployerKey, zkAppPrivateKey]);
-      await (await txn.send()).wait();
+      await (await txn.send()).wait({ maxAttempts: 1000 });
 
       if (isBerkeley) {
         await fetchAccount({
@@ -599,9 +576,9 @@ describe('Token-test-preconditions', () => {
             zkApp.mint(zkAppAddress, UInt64.from(1));
           }
         );
-        // await txn.prove();
+
         txn.sign([deployerKey, zkAppPrivateKey]);
-        await (await txn.send()).wait();
+        await (await txn.send()).wait({ maxAttempts: 1000 });
       }).rejects.toThrow();
     }, 10000000);
   }

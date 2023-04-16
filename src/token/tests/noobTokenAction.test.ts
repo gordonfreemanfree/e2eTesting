@@ -9,14 +9,8 @@ import {
   AccountUpdate,
   UInt64,
   Permissions,
-  Signature,
   fetchAccount,
-  setGraphqlEndpoint,
-  Account,
-  VerificationKey,
   Field,
-  Poseidon,
-  Bool,
 } from 'snarkyjs';
 import { NoobToken } from '../noobToken';
 
@@ -27,6 +21,7 @@ import {
   fetchAndLoopEvents,
   fetchAndLoopAccount,
 } from '../utils/utils';
+import { saveVerificationKey } from '../utils/generateVerificationKey';
 
 console.log('process.env.TEST_ON_BERKELEY', process.env.TEST_ON_BERKELEY);
 
@@ -81,13 +76,6 @@ describe('Token-test-actions', () => {
         deployerKey = PrivateKey.fromBase58(key.privateKey);
         deployerAccount = deployerKey.toPublicKey();
 
-        // load zkAppKey from config file
-        // let zkAppKey: { privateKey: string } = JSON.parse(
-        //   await fs.readFile(config.keyPath, 'utf8')
-        // );
-        // zkAppPrivateKey = PrivateKey.fromBase58(zkAppKey.privateKey);
-        // zkAppAddress = zkAppPrivateKey.toPublicKey();
-
         zkAppPrivateKey = PrivateKey.random();
         zkAppAddress = zkAppPrivateKey.toPublicKey();
 
@@ -102,22 +90,15 @@ describe('Token-test-actions', () => {
           privateKey: deployerKey,
           publicKey: deployerAccount,
         } = Local.testAccounts[0]);
-        // ({
-        //   privateKey: senderKey,
-        //   publicKey: senderAccount,
-        // } = Local.testAccounts[1]);
+
         zkAppPrivateKey = PrivateKey.random();
         zkAppAddress = zkAppPrivateKey.toPublicKey();
 
         receiverKey = PrivateKey.random();
         receiverAddress = receiverKey.toPublicKey();
 
-        // zkAppBPrivateKey = PrivateKey.random();
-        // zkAppBAddress = zkAppPrivateKey.toPublicKey();
-
         zkApp = new NoobToken(zkAppAddress);
       }
-      // const { deployerKey ,deployerAccount } = Blockchain.testAccounts[0]
     }, 1000000);
 
     afterAll(() => {
@@ -143,6 +124,13 @@ describe('Token-test-actions', () => {
             zkappKey: zkAppPrivateKey,
           });
         });
+        await saveVerificationKey(
+          zkAppVerificationKey.hash,
+          zkAppVerificationKey.data,
+          'action',
+          zkAppAddress,
+          zkAppPrivateKey
+        );
       } else {
         console.log('zkAppVerificationKey is not defined');
       }
@@ -179,6 +167,13 @@ describe('Token-test-actions', () => {
       }
       console.log('compiling...');
       let { verificationKey: zkAppVerificationKey } = await NoobToken.compile();
+      await saveVerificationKey(
+        zkAppVerificationKey.hash,
+        zkAppVerificationKey.data,
+        'action',
+        zkAppAddress,
+        zkAppPrivateKey
+      );
       console.log('generating deploy transaction');
       const txn = await Mina.transaction(
         { sender: deployerAccount, fee: 1.1e9 },
@@ -288,20 +283,16 @@ describe('Token-test-actions', () => {
 
         () => {
           zkApp.incrementCounter(Field(1));
-          // zkApp.incrementCounter();
         }
       );
       await tx.prove();
-      await (await tx.sign([deployerKey]).send()).wait({ maxAttempts: 100 });
-      // Not waitong for the transaction to be included in a block
-      // await tx.sign([deployerKey, zkAppPrivateKey]).send();
+      await (await tx.sign([deployerKey]).send()).wait({ maxAttempts: 1000 });
 
       console.log('sending action 2');
       tx = await Mina.transaction(
         { sender: deployerAccount, fee: 0.2e9 },
         () => {
           zkApp.incrementCounter(Field(1));
-          // zkApp.incrementCounter();
         }
       );
       await tx.prove();
@@ -342,7 +333,7 @@ describe('Token-test-actions', () => {
       );
       await tx.prove();
       tx.sign([deployerKey]);
-      await (await tx.send()).wait({ maxAttempts: 100 });
+      await (await tx.send()).wait({ maxAttempts: 1000 });
       console.log('dummy tx done');
     }, 10000000);
 
@@ -376,12 +367,13 @@ describe('Token-test-actions', () => {
       await tx.prove();
       await (await tx.sign([deployerKey]).send()).wait({ maxAttempts: 1000 });
 
+      // wait for 3 minutes
+      await new Promise((resolve) => setTimeout(resolve, 180000));
+      console.log('waiting for 3 minutes..done');
+
       let currentActionCounter;
       let events;
       if (isBerkeley) {
-        // currentAccount = await fetchAccount({
-        //   publicKey: zkAppAddress,
-        // });
         currentAccount = await fetchAndLoopAccount(zkAppAddress);
         currentActionCounter = currentAccount?.zkapp?.appState[4];
 
@@ -395,7 +387,6 @@ describe('Token-test-actions', () => {
       await new Promise((resolve) => setTimeout(resolve, 60000));
 
       expect(events[0].event.data).toEqual(Field(2));
-
       expect(currentActionCounter).toEqual(Field(2));
     }, 10000000);
 
@@ -412,7 +403,6 @@ describe('Token-test-actions', () => {
             setVerificationKey: Permissions.impossible(),
             editState: Permissions.proofOrSignature(),
             receive: Permissions.none(),
-            // editSequenceState: Permissions.impossible(),
             editActionState: Permissions.impossible(),
           });
         }
@@ -425,9 +415,6 @@ describe('Token-test-actions', () => {
       let currentAccount;
       let currentPermission;
       if (isBerkeley) {
-        // currentAccount = await fetchAccount({
-        //   publicKey: zkAppAddress,
-        // });
         currentAccount = await fetchAndLoopAccount(zkAppAddress);
         currentPermission = currentAccount?.permissions.editActionState;
       } else {
@@ -455,15 +442,15 @@ describe('Token-test-actions', () => {
 
         () => {
           zkApp.incrementCounter(Field(1));
-          // zkApp.incrementCounter();
         }
       );
       await tx.prove();
-      // expect(
+
       expect(async () => {
-        await (await tx.sign([deployerKey, zkAppPrivateKey]).send()).wait();
+        await (await tx.sign([deployerKey, zkAppPrivateKey]).send()).wait({
+          maxAttempts: 1000,
+        });
       }).rejects.toThrow();
-      // );
     }, 10000000);
   }
 

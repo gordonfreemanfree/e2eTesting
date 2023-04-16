@@ -21,6 +21,7 @@ export default {
     '^(\\.{1,2}/.+)\\.js$': '$1',
   },
   setupFiles: ['<rootDir>/setEnvVars.js'],
+  testTimeout: 2000000, // Set the timeout to 2000000 ms (2000 seconds) for all tests
 };
 // module.exports = {
 //   setupFiles: ['<rootDir>/setEnvVars.js'],

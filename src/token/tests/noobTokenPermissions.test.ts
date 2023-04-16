@@ -21,12 +21,11 @@ import { NoobToken } from '../noobToken';
 import fs from 'fs/promises';
 import { fetchAndLoopAccount, loopUntilAccountExists } from '../utils/utils';
 import { getFriendlyDateTime } from '../utils/utils';
-// import { ActionsType } from './noobToken';
+import { saveVerificationKey } from '../utils/generateVerificationKey';
 
 console.log('process.env.TEST_ON_BERKELEY', process.env.TEST_ON_BERKELEY);
 
 const isBerkeley = process.env.TEST_ON_BERKELEY == 'true' ? true : false;
-// const isBerkeley = true;
 console.log('isBerkeley:', isBerkeley);
 let proofsEnabled = true;
 
@@ -76,13 +75,6 @@ describe('Token-test-permission', () => {
         deployerKey = PrivateKey.fromBase58(key.privateKey);
         deployerAccount = deployerKey.toPublicKey();
 
-        // load zkAppKey from config file
-        // let zkAppKey: { privateKey: string } = JSON.parse(
-        //   await fs.readFile(config.keyPath, 'utf8')
-        // );
-        // zkAppPrivateKey = PrivateKey.fromBase58(zkAppKey.privateKey);
-        // zkAppAddress = zkAppPrivateKey.toPublicKey();
-
         zkAppPrivateKey = PrivateKey.random();
         zkAppAddress = zkAppPrivateKey.toPublicKey();
 
@@ -97,22 +89,15 @@ describe('Token-test-permission', () => {
           privateKey: deployerKey,
           publicKey: deployerAccount,
         } = Local.testAccounts[0]);
-        // ({
-        //   privateKey: senderKey,
-        //   publicKey: senderAccount,
-        // } = Local.testAccounts[1]);
+
         zkAppPrivateKey = PrivateKey.random();
         zkAppAddress = zkAppPrivateKey.toPublicKey();
 
         receiverKey = PrivateKey.random();
         receiverAddress = receiverKey.toPublicKey();
 
-        // zkAppBPrivateKey = PrivateKey.random();
-        // zkAppBAddress = zkAppPrivateKey.toPublicKey();
-
         zkApp = new NoobToken(zkAppAddress);
       }
-      // const { deployerKey ,deployerAccount } = Blockchain.testAccounts[0]
     }, 1000000);
 
     afterAll(() => {
@@ -138,6 +123,13 @@ describe('Token-test-permission', () => {
             zkappKey: zkAppPrivateKey,
           });
         });
+        await saveVerificationKey(
+          zkAppVerificationKey.hash,
+          zkAppVerificationKey.data,
+          'permission',
+          zkAppAddress,
+          zkAppPrivateKey
+        );
       } else {
         console.log('zkAppVerificationKey is not defined');
       }
@@ -174,11 +166,17 @@ describe('Token-test-permission', () => {
       }
       console.log('compiling...');
       let { verificationKey: zkAppVerificationKey } = await NoobToken.compile();
+      await saveVerificationKey(
+        zkAppVerificationKey.hash,
+        zkAppVerificationKey.data,
+        'permission',
+        zkAppAddress,
+        zkAppPrivateKey
+      );
       console.log('generating deploy transaction');
       const txn = await Mina.transaction(
         { sender: deployerAccount, fee: 1.1e9 },
         () => {
-          //   AccountUpdate.createSigned(deployerAccount);
           AccountUpdate.fundNewAccount(deployerAccount);
           zkApp.deploy({
             verificationKey: zkAppVerificationKey,
@@ -284,7 +282,7 @@ describe('Token-test-permission', () => {
           update.account.zkappUri.set(newUri);
         }
       );
-      // await txn_changeZkappUri.prove();
+
       txn_changeZkappUri.sign([zkAppPrivateKey, deployerKey]);
       await (await txn_changeZkappUri.send()).wait({ maxAttempts: 100 });
 
@@ -326,8 +324,7 @@ describe('Token-test-permission', () => {
       );
       await txn_permission.prove();
       txn_permission.sign([zkAppPrivateKey, deployerKey]);
-      await (await txn_permission.send()).wait({ maxAttempts: 100 });
-      // let oldUri = Mina.getAccount(zkAppAddress).zkapp?.zkappUri;
+      await (await txn_permission.send()).wait({ maxAttempts: 1000 });
 
       // try to change zkappUri without signature
       const txn_changeZkappUri = await Mina.transaction(
@@ -362,8 +359,6 @@ describe('Token-test-permission', () => {
       if (isBerkeley) {
         await fetchAccount({ publicKey: zkAppAddress });
       }
-      let oldTiming = Mina.getAccount(zkAppAddress).permissions.setTiming;
-      // console.log('oldTiming Permission is', oldTiming);
 
       // change permissions for setTiming to impossible
       let txn_permission = await Mina.transaction(
@@ -378,7 +373,7 @@ describe('Token-test-permission', () => {
       );
       await txn_permission.prove();
       txn_permission.sign([zkAppPrivateKey, deployerKey]);
-      await (await txn_permission.send()).wait({ maxAttempts: 100 });
+      await (await txn_permission.send()).wait({ maxAttempts: 1000 });
 
       if (isBerkeley) {
         await fetchAccount({ publicKey: zkAppAddress });
@@ -401,7 +396,6 @@ describe('Token-test-permission', () => {
       }
       let oldVotingForPermission = Mina.getAccount(zkAppAddress).permissions
         .setVotingFor;
-      console.log('oldVotingForPermission is', oldVotingForPermission);
 
       // set voting for Permission to impossible()
       let txn_votingForPermission = await Mina.transaction(
@@ -416,7 +410,7 @@ describe('Token-test-permission', () => {
       );
       await txn_votingForPermission.prove();
       txn_votingForPermission.sign([zkAppPrivateKey, deployerKey]);
-      await (await txn_votingForPermission.send()).wait({ maxAttempts: 100 });
+      await (await txn_votingForPermission.send()).wait({ maxAttempts: 1000 });
 
       if (isBerkeley) {
         await fetchAccount({ publicKey: zkAppAddress });
@@ -451,19 +445,21 @@ describe('Token-test-permission', () => {
       );
       await txn_delegate.prove();
       txn_delegate.sign([zkAppPrivateKey, deployerKey]);
-      await (await txn_delegate.send()).wait({ maxAttempts: 100 });
+      await (await txn_delegate.send()).wait({ maxAttempts: 1000 });
 
       let currentAccount;
       let currentDelegate;
       if (isBerkeley) {
-        currentAccount = await fetchAndLoopAccount(zkAppAddress);
-        currentDelegate = currentAccount.delegate;
+        // currentAccount = await fetchAndLoopAccount(zkAppAddress);
+        // currentDelegate = currentAccount.delegate;
+
+        currentAccount = await fetchAccount({ publicKey: zkAppAddress });
+        currentDelegate = currentAccount.account?.delegate;
       } else {
         currentAccount = Mina.getAccount(zkAppAddress);
         currentDelegate = currentAccount.delegate;
       }
-      // let newDelegate = Mina.getAccount(zkAppAddress).delegate;
-      // console.log('newDelegate is', newDelegate?.toJSON());
+
       console.log('newDelegate is', currentDelegate?.toJSON());
 
       expect(currentDelegate).toEqual(deployerAccount);
@@ -481,7 +477,6 @@ describe('Token-test-permission', () => {
       }
       let oldVotingForPermission = Mina.getAccount(zkAppAddress).permissions
         .setVotingFor;
-      console.log('oldVotingForPermission is', oldVotingForPermission);
 
       // set voting for Permission to impossible()
       let txn_votingForPermission = await Mina.transaction(
@@ -496,20 +491,20 @@ describe('Token-test-permission', () => {
       );
       await txn_votingForPermission.prove();
       txn_votingForPermission.sign([zkAppPrivateKey, deployerKey]);
-      await (await txn_votingForPermission.send()).wait({ maxAttempts: 100 });
+      await (await txn_votingForPermission.send()).wait({ maxAttempts: 1000 });
 
       let currentAccount;
       let currentDelegatePermission;
       if (isBerkeley) {
-        currentAccount = await fetchAndLoopAccount(zkAppAddress);
-        currentDelegatePermission = currentAccount.permissions.setDelegate;
+        // currentAccount = await fetchAndLoopAccount(zkAppAddress);
+        // currentDelegatePermission = currentAccount.permissions.setDelegate;
+        currentAccount = await fetchAccount({ publicKey: zkAppAddress });
+        currentDelegatePermission = currentAccount.account?.permissions;
       } else {
         currentAccount = Mina.getAccount(zkAppAddress);
         currentDelegatePermission = currentAccount.permissions.setDelegate;
       }
 
-      // let newSetDelegate = Mina.getAccount(zkAppAddress).permissions
-      //   .setDelegate;
       console.log('newVotingForPermission is', currentDelegatePermission);
 
       expect(currentDelegatePermission).toEqual(Permissions.impossible());
