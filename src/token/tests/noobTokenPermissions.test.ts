@@ -499,7 +499,8 @@ describe('Token-test-permission', () => {
         // currentAccount = await fetchAndLoopAccount(zkAppAddress);
         // currentDelegatePermission = currentAccount.permissions.setDelegate;
         currentAccount = await fetchAccount({ publicKey: zkAppAddress });
-        currentDelegatePermission = currentAccount.account?.permissions;
+        currentDelegatePermission =
+          currentAccount.account?.permissions.setDelegate;
       } else {
         currentAccount = Mina.getAccount(zkAppAddress);
         currentDelegatePermission = currentAccount.permissions.setDelegate;
